@@ -8,7 +8,11 @@ import os
 app = FastAPI()
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
-client = Groq(api_key=os.environ.get("GROQ_API_KEY"))
+def get_client():
+    key = os.environ.get("GROQ_API_KEY")
+    if not key:
+        raise ValueError("GROQ_API_KEY environment variable is not set")
+    return Groq(api_key=key)
 
 SYSTEM_PROMPT = """You are "Fahamu Shamba," an AI-powered agricultural assistant built for farmers in Kenya.
 Your role is to provide ONLY agricultural guidance and ignore or politely decline non-agricultural queries.
@@ -34,25 +38,39 @@ def ask_groq(user_message: str, mode: str = "app") -> str:
         "app": "Respond with full detail, context, and helpful formatting."
     }.get(mode, "")
 
-    response = client.chat.completions.create(
-        model="llama3-8b-8192",
-        messages=[
-            {"role": "system", "content": SYSTEM_PROMPT + f"\n\nMode: {mode_instruction}"},
-            {"role": "user", "content": user_message}
-        ],
-        max_tokens=500 if mode == "app" else 100
-    )
-    return response.choices[0].message.content.strip()
+    try:
+        client = get_client()
+        response = client.chat.completions.create(
+            model="llama3-8b-8192",
+            messages=[
+                {"role": "system", "content": SYSTEM_PROMPT + f"\n\nMode: {mode_instruction}"},
+                {"role": "user", "content": user_message}
+            ],
+            max_tokens=500 if mode == "app" else 100
+        )
+        return response.choices[0].message.content.strip()
+    except ValueError as e:
+        return f"Configuration error: {str(e)}"
+    except Exception as e:
+        return "Sorry, I am currently unavailable. Please try again shortly."
 
 
 # ── App Chat Endpoint ──────────────────────────────────────────────────────────
 class ChatRequest(BaseModel):
     message: str
 
+@app.get("/health")
+async def health():
+    key = os.environ.get("GROQ_API_KEY")
+    return {"status": "ok", "groq_key_set": bool(key)}
+
 @app.post("/chat")
 async def chat(req: ChatRequest):
-    reply = ask_groq(req.message, mode="app")
-    return {"reply": reply}
+    try:
+        reply = ask_groq(req.message, mode="app")
+        return {"reply": reply}
+    except Exception as e:
+        return {"reply": "Sorry, something went wrong. Please try again."}
 
 
 # ── USSD Endpoint (Africa's Talking) ──────────────────────────────────────────
