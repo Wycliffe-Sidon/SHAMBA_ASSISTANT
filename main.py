@@ -1,9 +1,10 @@
-from fastapi import FastAPI, Request, Form
+from fastapi import FastAPI, Request, Form, File, UploadFile
 from fastapi.responses import HTMLResponse, PlainTextResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 from groq import Groq
 import os
+import base64
 import logging
 
 logging.basicConfig(level=logging.INFO)
@@ -58,6 +59,27 @@ def ask_groq(user_message: str, mode: str = "app") -> str:
         raise
 
 
+def ask_groq_vision(image_bytes: bytes, mime_type: str, user_message: str) -> str:
+    try:
+        client = get_client()
+        b64 = base64.standard_b64encode(image_bytes).decode("utf-8")
+        response = client.chat.completions.create(
+            model="meta-llama/llama-4-scout-17b-16e-instruct",
+            messages=[
+                {"role": "system", "content": SYSTEM_PROMPT},
+                {"role": "user", "content": [
+                    {"type": "text", "text": user_message or "Identify any pest, disease, or crop condition visible in this image. Provide agricultural advice."},
+                    {"type": "image_url", "image_url": {"url": f"data:{mime_type};base64,{b64}"}}
+                ]}
+            ],
+            max_tokens=600
+        )
+        return response.choices[0].message.content.strip()
+    except Exception as e:
+        logger.error(f"Groq vision error: {e}")
+        raise
+
+
 # ── App Chat Endpoint ──────────────────────────────────────────────────────────
 class ChatRequest(BaseModel):
     message: str
@@ -84,6 +106,18 @@ async def chat(req: ChatRequest):
     except Exception as e:
         logger.error(f"/chat error: {e}")
         return {"reply": f"Error: {str(e)}"}
+
+
+@app.post("/analyze-image")
+async def analyze_image(image: UploadFile = File(...), message: str = Form(default="")):
+    try:
+        image_bytes = await image.read()
+        mime_type = image.content_type or "image/jpeg"
+        reply = ask_groq_vision(image_bytes, mime_type, message)
+        return {"reply": reply}
+    except Exception as e:
+        logger.error(f"/analyze-image error: {e}")
+        return {"reply": f"Error analyzing image: {str(e)}"}
 
 
 # ── USSD Endpoint (Africa's Talking) ──────────────────────────────────────────
