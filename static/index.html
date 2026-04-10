@@ -73,31 +73,34 @@ header p{font-size:.72rem;opacity:.85}
 /* Voice overlay */
 #voice-overlay{
   display:none;position:fixed;inset:0;
-  background:rgba(10,30,10,.82);z-index:200;
-  flex-direction:column;align-items:center;justify-content:center;gap:18px
+  background:rgba(10,30,10,.88);z-index:200;
+  flex-direction:column;align-items:center;justify-content:center;gap:16px
 }
 #voice-overlay.show{display:flex}
 .voice-ring{
-  width:100px;height:100px;border-radius:50%;
+  width:110px;height:110px;border-radius:50%;
   background:linear-gradient(135deg,#2d6a2d,#4a8c3f);
-  display:flex;align-items:center;justify-content:center;font-size:40px;
-  transition:transform .2s
+  display:flex;align-items:center;justify-content:center;font-size:44px;
+  cursor:pointer;transition:transform .15s;user-select:none
 }
+.voice-ring:active{transform:scale(.93)}
 .voice-ring.listening{animation:ring 1s ease-in-out infinite}
-.voice-ring.speaking{animation:speakpulse 0.6s ease-in-out infinite}
-@keyframes ring{0%,100%{box-shadow:0 0 0 0 rgba(74,140,63,.7)}70%{box-shadow:0 0 0 28px rgba(74,140,63,0)}}
-@keyframes speakpulse{0%,100%{transform:scale(1)}50%{transform:scale(1.08)}}
-#voice-state-label{color:#fff;font-size:1.05rem;font-weight:700;letter-spacing:.5px}
+.voice-ring.speaking{animation:speakpulse .6s ease-in-out infinite}
+.voice-ring.waiting{animation:blink 1.2s infinite}
+@keyframes ring{0%,100%{box-shadow:0 0 0 0 rgba(74,140,63,.7)}70%{box-shadow:0 0 0 30px rgba(74,140,63,0)}}
+@keyframes speakpulse{0%,100%{transform:scale(1)}50%{transform:scale(1.1)}}
+#voice-state-label{color:#fff;font-size:1.05rem;font-weight:700;letter-spacing:.4px}
+#voice-hint{color:rgba(255,255,255,.55);font-size:.75rem;margin-top:-8px}
 #voice-transcript-box{
-  background:rgba(255,255,255,.1);border-radius:12px;
-  padding:10px 18px;max-width:320px;text-align:center;
-  color:rgba(255,255,255,.9);font-size:.85rem;min-height:44px;
-  border:1px solid rgba(255,255,255,.15)
+  background:rgba(255,255,255,.1);border-radius:14px;
+  padding:10px 20px;width:300px;text-align:center;
+  color:rgba(255,255,255,.92);font-size:.85rem;min-height:46px;
+  border:1px solid rgba(255,255,255,.15);line-height:1.5
 }
 #end-voice-btn{
   background:#c0392b;color:#fff;border:none;
   padding:11px 28px;border-radius:24px;font-size:.88rem;
-  font-weight:600;cursor:pointer;margin-top:4px
+  font-weight:600;cursor:pointer;margin-top:6px
 }
 
 /* Input bar */
@@ -171,6 +174,7 @@ header p{font-size:.72rem;opacity:.85}
 <div id="voice-overlay">
   <div class="voice-ring" id="voice-ring">🎤</div>
   <p id="voice-state-label">Listening...</p>
+  <small id="voice-hint">Tap the circle to interrupt</small>
   <div id="voice-transcript-box">Speak now...</div>
   <button id="end-voice-btn">End Conversation</button>
 </div>
@@ -317,11 +321,8 @@ async function sendMessage(text, file = null, autoSpeak = false) {
     const reply = await fetchReply(text, file);
     removeTyping();
     addBubble(reply.replace(/\n/g,'<br>'), 'bot');
-    if (autoSpeak) {
-      setVoiceState('speaking');
-      speak(reply, () => {
-        if (voiceActive) setVoiceState('listening');
-      });
+    if (autoSpeak && voiceActive) {
+      speakReplyThenClose(reply);
     }
   } catch(e) {
     removeTyping();
@@ -369,53 +370,13 @@ document.addEventListener('click', () => {
 }, { once: true });
 
 if (SRClass) {
-  function makeRecog() {
-    const r = new SRClass();
-    r.lang = 'en-US';
-    r.continuous = false;
-    r.interimResults = true;
-    r.onresult = e => {
-      const transcript = Array.from(e.results).map(x => x[0].transcript).join('');
-      if (voiceActive) {
-        voiceTranscript.textContent = `"${transcript}"`;
-        // store latest final result
-        if (e.results[e.results.length-1].isFinal) {
-          voiceTranscript.dataset.final = transcript;
-        }
-      } else {
-        userInput.value = transcript;
-      }
-    };
-    r.onend = () => {
-      micBtn.classList.remove('recording');
-      if (!voiceActive) return;
-      const said = (voiceTranscript.dataset.final || '').trim();
-      voiceTranscript.dataset.final = '';
-      if (said && voiceState === 'listening') {
-        setVoiceState('processing');
-        sendMessage(said, null, true);
-      } else if (voiceState === 'listening') {
-        setTimeout(startRecog, 600);
-      }
-    };
-    r.onerror = e => {
-      micBtn.classList.remove('recording');
-      if (!voiceActive) return;
-      if (e.error === 'no-speech') { setTimeout(startRecog, 400); }
-      else if (e.error !== 'aborted') { setTimeout(startRecog, 1000); }
-    };
-    return r;
-  }
-  recog = makeRecog();
-
-  // Single-query mic button
+  // Single-query mic button (makeRecog defined below in voice state section)
   micBtn.addEventListener('click', () => {
     if (voiceActive) return;
     if (micBtn.classList.contains('recording')) {
-      recog.stop();
+      if (recog) recog.stop();
       micBtn.classList.remove('recording');
     } else {
-      // recreate to avoid InvalidStateError on reuse
       recog = makeRecog();
       micBtn.classList.add('recording');
       try { recog.start(); } catch(e){ micBtn.classList.remove('recording'); }
@@ -430,6 +391,9 @@ if (SRClass) {
 }
 
 // ── Voice state machine ───────────────────────────────────────────────────────
+// States: idle | listening | processing | speaking | waiting
+const voiceHint = document.getElementById('voice-hint');
+
 function setVoiceState(state) {
   voiceState = state;
   voiceRing.className = 'voice-ring';
@@ -438,24 +402,161 @@ function setVoiceState(state) {
     voiceRing.classList.add('listening');
     voiceStateLabel.textContent = 'Listening...';
     voiceTranscript.textContent = 'Speak now...';
+    voiceHint.textContent = 'Tap circle to interrupt';
   } else if (state === 'processing') {
     voiceRing.textContent = '⏳';
     voiceStateLabel.textContent = 'Thinking...';
+    voiceTranscript.textContent = '';
+    voiceHint.textContent = '';
   } else if (state === 'speaking') {
     voiceRing.textContent = '🔊';
     voiceRing.classList.add('speaking');
     voiceStateLabel.textContent = 'Speaking...';
-    voiceTranscript.textContent = '';
+    voiceHint.textContent = 'Tap circle to interrupt';
+  } else if (state === 'waiting') {
+    voiceRing.textContent = '💬';
+    voiceRing.classList.add('waiting');
+    voiceStateLabel.textContent = 'Continue?';
+    voiceHint.textContent = 'Say Yes / No  •  Ndio / Hapana';
   }
 }
 
 function startRecog() {
-  if (!voiceActive || voiceState !== 'listening') return;
-  voiceTranscript.textContent = 'Speak now...';
+  if (!voiceActive || (voiceState !== 'listening' && voiceState !== 'waiting')) return;
   voiceTranscript.dataset.final = '';
-  // always use a fresh instance to avoid InvalidStateError
   if (SRClass) recog = makeRecog();
   try { recog.start(); } catch(e) { setTimeout(startRecog, 800); }
+}
+
+// ── Interrupt: tap ring while speaking ───────────────────────────────────────
+voiceRing.addEventListener('click', () => {
+  if (!voiceActive) return;
+  if (voiceState === 'speaking') {
+    stopSpeaking();
+    setVoiceState('listening');
+    voiceTranscript.textContent = 'Go ahead, I am listening...';
+    setTimeout(startRecog, 300);
+  }
+});
+
+// ── Closing phrase + continue prompt ─────────────────────────────────────────
+const CLOSINGS = [
+  'Thank you for asking. Asante sana!',
+  'Asante sana for your question!',
+  'Thank you! Asante sana.'
+];
+const CONTINUE_PROMPT = 'Do you have another question? Say Yes to continue or No to end.';
+const YES_WORDS = ['yes','yeah','yep','sure','okay','ok','ndio','ndiyo','endelea','continue'];
+const NO_WORDS  = ['no','nope','hapana','stop','end','quit','exit','maliza','tosha'];
+
+function speakClosingThenWait() {
+  const closing = CLOSINGS[Math.floor(Math.random() * CLOSINGS.length)];
+  const full = closing + ' ' + CONTINUE_PROMPT;
+  setVoiceState('speaking');
+  voiceTranscript.textContent = '';
+
+  const sentences = full.match(/[^.!?]+[.!?]*/g) || [full];
+  let i = 0;
+  function next() {
+    if (!voiceActive) return;
+    if (i >= sentences.length) {
+      // done speaking — go to waiting state
+      setVoiceState('waiting');
+      setTimeout(startRecog, 400);
+      return;
+    }
+    const utt = new SpeechSynthesisUtterance(sentences[i++].trim());
+    utt.lang = 'en-US'; utt.rate = 0.93;
+    utt.onend = next; utt.onerror = next;
+    window.speechSynthesis.speak(utt);
+  }
+  next();
+}
+
+// ── Updated makeRecog to handle waiting state ─────────────────────────────────
+function makeRecog() {
+  const r = new SRClass();
+  r.lang = 'en-US';
+  r.continuous = false;
+  r.interimResults = true;
+  r.onresult = e => {
+    const transcript = Array.from(e.results).map(x => x[0].transcript).join('');
+    voiceTranscript.textContent = `"${transcript}"`;
+    if (!voiceActive) return;
+    if (e.results[e.results.length-1].isFinal) {
+      voiceTranscript.dataset.final = transcript;
+    }
+    // also fill text input for reference
+    if (!voiceActive) userInput.value = transcript;
+  };
+  r.onend = () => {
+    micBtn.classList.remove('recording');
+    if (!voiceActive) return;
+    const said = (voiceTranscript.dataset.final || '').trim().toLowerCase();
+    voiceTranscript.dataset.final = '';
+
+    if (voiceState === 'waiting') {
+      // check yes/no
+      const isYes = YES_WORDS.some(w => said.includes(w));
+      const isNo  = NO_WORDS.some(w => said.includes(w));
+      if (isNo) {
+        sayGoodbye();
+      } else {
+        // yes or anything else — keep going
+        setVoiceState('listening');
+        setTimeout(startRecog, 300);
+      }
+      return;
+    }
+
+    if (said && voiceState === 'listening') {
+      setVoiceState('processing');
+      sendMessage(said, null, true);
+    } else if (voiceState === 'listening') {
+      setTimeout(startRecog, 500);
+    }
+  };
+  r.onerror = e => {
+    micBtn.classList.remove('recording');
+    if (!voiceActive) return;
+    if (e.error === 'no-speech') { setTimeout(startRecog, 400); }
+    else if (e.error !== 'aborted') { setTimeout(startRecog, 1000); }
+  };
+  return r;
+}
+
+// ── Updated sendMessage speak callback ───────────────────────────────────────
+// Override speak-after-reply to use closing phrase
+function speakReplyThenClose(reply) {
+  setVoiceState('speaking');
+  const sentences = reply.match(/[^.!?]+[.!?]*/g) || [reply];
+  let i = 0;
+  function next() {
+    if (!voiceActive) return;
+    if (i >= sentences.length) {
+      speakClosingThenWait();
+      return;
+    }
+    // interrupt check — if state changed to listening, stop
+    if (voiceState === 'listening') return;
+    const utt = new SpeechSynthesisUtterance(sentences[i++].trim());
+    utt.lang = 'en-US'; utt.rate = 0.93;
+    utt.onend = next; utt.onerror = next;
+    window.speechSynthesis.speak(utt);
+  }
+  next();
+}
+
+function sayGoodbye() {
+  setVoiceState('speaking');
+  voiceTranscript.textContent = '';
+  const bye = new SpeechSynthesisUtterance(
+    'Thank you for using Fahamu Shamba. Asante sana! Goodbye and happy farming!'
+  );
+  bye.lang = 'en-US'; bye.rate = 0.93;
+  bye.onend = () => stopVoiceMode();
+  bye.onerror = () => stopVoiceMode();
+  window.speechSynthesis.speak(bye);
 }
 
 function startVoiceMode() {
@@ -464,23 +565,14 @@ function startVoiceMode() {
   voiceModeBtn.innerHTML = '<span class="vm-dot"></span> End Voice';
   voiceOverlay.classList.add('show');
   stopSpeaking();
-
-  // Greet then start listening — must happen inside user gesture
   setVoiceState('speaking');
+
   const greet = new SpeechSynthesisUtterance(
     'Hello! I am Fahamu Shamba, your farming advisor. How can I help you today?'
   );
-  greet.lang = 'en-US';
-  greet.rate = 0.93;
-  greet.onend = () => {
-    if (voiceActive) {
-      setVoiceState('listening');
-      startRecog();
-    }
-  };
-  greet.onerror = () => {
-    if (voiceActive) { setVoiceState('listening'); startRecog(); }
-  };
+  greet.lang = 'en-US'; greet.rate = 0.93;
+  greet.onend = () => { if (voiceActive) { setVoiceState('listening'); startRecog(); } };
+  greet.onerror = () => { if (voiceActive) { setVoiceState('listening'); startRecog(); } };
   window.speechSynthesis.speak(greet);
 }
 
@@ -498,7 +590,7 @@ voiceModeBtn.addEventListener('click', () => {
   if (!SRClass) return;
   voiceActive ? stopVoiceMode() : startVoiceMode();
 });
-endVoiceBtn.addEventListener('click', stopVoiceMode);
+endVoiceBtn.addEventListener('click', () => sayGoodbye());
 </script>
 </body>
 </html>
