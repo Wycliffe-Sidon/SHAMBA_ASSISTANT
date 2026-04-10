@@ -5,92 +5,120 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>Fahamu Shamba</title>
 <style>
-  *{box-sizing:border-box;margin:0;padding:0}
-  body{font-family:'Segoe UI',sans-serif;background:#f5f0e8;display:flex;flex-direction:column;height:100vh;overflow:hidden}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Segoe UI',sans-serif;background:#f5f0e8;display:flex;flex-direction:column;height:100vh;overflow:hidden}
 
-  /* Header */
-  header{background:linear-gradient(135deg,#2d6a2d,#4a8c3f);color:#fff;padding:12px 16px;display:flex;align-items:center;gap:10px;box-shadow:0 2px 8px rgba(0,0,0,.25);flex-shrink:0}
-  .logo{width:42px;height:42px;background:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0}
-  header h1{font-size:1rem;font-weight:700}
-  header p{font-size:.72rem;opacity:.85}
-  .header-right{margin-left:auto;display:flex;align-items:center;gap:10px}
-  .status-dot{width:9px;height:9px;background:#7fff7f;border-radius:50%;box-shadow:0 0 6px #7fff7f;animation:pulse 2s infinite}
+/* Header */
+header{background:linear-gradient(135deg,#2d6a2d,#4a8c3f);color:#fff;padding:12px 16px;display:flex;align-items:center;gap:10px;box-shadow:0 2px 8px rgba(0,0,0,.25);flex-shrink:0}
+.logo{width:42px;height:42px;background:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0}
+header h1{font-size:1rem;font-weight:700}
+header p{font-size:.72rem;opacity:.85}
+.header-right{margin-left:auto;display:flex;align-items:center;gap:8px}
+.status-dot{width:9px;height:9px;background:#7fff7f;border-radius:50%;box-shadow:0 0 6px #7fff7f;animation:blink 2s infinite}
 
-  /* Voice mode toggle */
-  #voice-mode-btn{background:rgba(255,255,255,.2);border:1.5px solid rgba(255,255,255,.5);color:#fff;padding:5px 11px;border-radius:20px;font-size:.72rem;cursor:pointer;display:flex;align-items:center;gap:5px;transition:all .2s}
-  #voice-mode-btn.active{background:#fff;color:#2d6a2d;font-weight:700}
-  #voice-mode-btn.active .vm-dot{background:#c0392b;animation:pulse 1s infinite}
-  .vm-dot{width:7px;height:7px;border-radius:50%;background:#7fff7f;display:inline-block}
+#voice-mode-btn{
+  background:rgba(255,255,255,.15);
+  border:1.5px solid rgba(255,255,255,.6);
+  color:#fff;padding:6px 13px;border-radius:20px;
+  font-size:.75rem;font-weight:600;cursor:pointer;
+  display:flex;align-items:center;gap:6px;transition:all .25s
+}
+#voice-mode-btn.active{background:#fff;color:#2d6a2d}
+.vm-dot{width:8px;height:8px;border-radius:50%;background:#7fff7f;transition:background .3s}
+#voice-mode-btn.active .vm-dot{background:#c0392b;animation:blink .8s infinite}
 
-  /* Quick actions */
-  .quick-actions{display:flex;gap:8px;padding:9px 14px;background:#ede8dc;overflow-x:auto;flex-shrink:0;border-bottom:1px solid #d4c9b0}
-  .quick-actions::-webkit-scrollbar{display:none}
-  .qa-btn{white-space:nowrap;background:#fff;border:1.5px solid #4a8c3f;color:#2d6a2d;padding:6px 12px;border-radius:20px;font-size:.76rem;font-weight:600;cursor:pointer;transition:all .2s;flex-shrink:0}
-  .qa-btn:hover{background:#4a8c3f;color:#fff}
+/* Quick actions */
+.quick-actions{display:flex;gap:8px;padding:9px 14px;background:#ede8dc;overflow-x:auto;flex-shrink:0;border-bottom:1px solid #d4c9b0}
+.quick-actions::-webkit-scrollbar{display:none}
+.qa-btn{white-space:nowrap;background:#fff;border:1.5px solid #4a8c3f;color:#2d6a2d;padding:6px 12px;border-radius:20px;font-size:.76rem;font-weight:600;cursor:pointer;transition:all .2s;flex-shrink:0}
+.qa-btn:hover{background:#4a8c3f;color:#fff}
 
-  /* Chat window */
-  #chat-window{flex:1;overflow-y:auto;padding:14px;display:flex;flex-direction:column;gap:10px;background:url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%234a8c3f' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")}
-  #chat-window::-webkit-scrollbar{width:5px}
-  #chat-window::-webkit-scrollbar-thumb{background:#b5a98a;border-radius:4px}
+/* Chat */
+#chat-window{flex:1;overflow-y:auto;padding:14px;display:flex;flex-direction:column;gap:10px;background:url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none'%3E%3Cg fill='%234a8c3f' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")}
+#chat-window::-webkit-scrollbar{width:5px}
+#chat-window::-webkit-scrollbar-thumb{background:#b5a98a;border-radius:4px}
 
-  /* Bubbles */
-  .bubble-row{display:flex;align-items:flex-end;gap:8px}
-  .bubble-row.user{flex-direction:row-reverse}
-  .avatar{width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0}
-  .bot .avatar{background:#2d6a2d;color:#fff}
-  .user .avatar{background:#8b6914;color:#fff}
-  .bubble{max-width:75%;padding:9px 13px;border-radius:18px;font-size:.86rem;line-height:1.55;word-break:break-word}
-  .bot .bubble{background:#fff;color:#2c2c2c;border-bottom-left-radius:4px;box-shadow:0 1px 4px rgba(0,0,0,.1)}
-  .user .bubble{background:#2d6a2d;color:#fff;border-bottom-right-radius:4px}
-  .bubble .time{font-size:.63rem;opacity:.55;margin-top:4px;text-align:right}
-  .bubble img{max-width:100%;border-radius:10px;margin-bottom:6px;display:block}
+/* Bubbles */
+.bubble-row{display:flex;align-items:flex-end;gap:8px}
+.bubble-row.user{flex-direction:row-reverse}
+.avatar{width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0}
+.bot .avatar{background:#2d6a2d;color:#fff}
+.user .avatar{background:#8b6914;color:#fff}
+.bubble{max-width:75%;padding:9px 13px;border-radius:18px;font-size:.86rem;line-height:1.55;word-break:break-word;position:relative}
+.bot .bubble{background:#fff;color:#2c2c2c;border-bottom-left-radius:4px;box-shadow:0 1px 4px rgba(0,0,0,.1)}
+.user .bubble{background:#2d6a2d;color:#fff;border-bottom-right-radius:4px}
+.bubble-text{display:block;margin-bottom:4px}
+.bubble img{max-width:100%;border-radius:10px;margin-bottom:6px;display:block}
+.meta{display:flex;align-items:center;justify-content:flex-end;gap:6px;margin-top:2px}
+.time{font-size:.63rem;opacity:.5}
+.speak-btn{
+  background:none;border:none;cursor:pointer;
+  font-size:13px;padding:2px 4px;border-radius:50%;
+  opacity:.55;transition:all .2s;line-height:1
+}
+.speak-btn:hover{opacity:1;background:rgba(0,0,0,.06)}
+.speak-btn.active{opacity:1;color:#2d6a2d;animation:blink .8s infinite}
 
-  /* Speak button on bot bubble */
-  .speak-btn{background:none;border:none;cursor:pointer;font-size:14px;opacity:.6;margin-left:4px;vertical-align:middle;transition:opacity .2s}
-  .speak-btn:hover{opacity:1}
-  .speak-btn.speaking{opacity:1;animation:pulse 1s infinite}
+/* Typing */
+.typing-dots span{display:inline-block;width:7px;height:7px;background:#4a8c3f;border-radius:50%;margin:0 2px;animation:bounce 1.2s infinite}
+.typing-dots span:nth-child(2){animation-delay:.2s}
+.typing-dots span:nth-child(3){animation-delay:.4s}
 
-  /* Typing dots */
-  .typing-dots span{display:inline-block;width:7px;height:7px;background:#4a8c3f;border-radius:50%;margin:0 2px;animation:bounce 1.2s infinite}
-  .typing-dots span:nth-child(2){animation-delay:.2s}
-  .typing-dots span:nth-child(3){animation-delay:.4s}
+/* Image preview */
+#image-preview-bar{display:none;align-items:center;gap:10px;padding:8px 14px;background:#e8e0cc;border-top:1px solid #d4c9b0;flex-shrink:0}
+#image-preview-bar img{height:50px;width:50px;object-fit:cover;border-radius:8px;border:2px solid #4a8c3f}
+#image-preview-bar span{font-size:.78rem;color:#5a4a2a;flex:1}
+#remove-image{background:none;border:none;font-size:18px;cursor:pointer;color:#c0392b}
 
-  /* Image preview */
-  #image-preview-bar{display:none;align-items:center;gap:10px;padding:8px 14px;background:#e8e0cc;border-top:1px solid #d4c9b0;flex-shrink:0}
-  #image-preview-bar img{height:52px;width:52px;object-fit:cover;border-radius:8px;border:2px solid #4a8c3f}
-  #image-preview-bar span{font-size:.78rem;color:#5a4a2a;flex:1}
-  #remove-image{background:none;border:none;font-size:18px;cursor:pointer;color:#c0392b}
+/* Voice overlay */
+#voice-overlay{
+  display:none;position:fixed;inset:0;
+  background:rgba(10,30,10,.82);z-index:200;
+  flex-direction:column;align-items:center;justify-content:center;gap:18px
+}
+#voice-overlay.show{display:flex}
+.voice-ring{
+  width:100px;height:100px;border-radius:50%;
+  background:linear-gradient(135deg,#2d6a2d,#4a8c3f);
+  display:flex;align-items:center;justify-content:center;font-size:40px;
+  transition:transform .2s
+}
+.voice-ring.listening{animation:ring 1s ease-in-out infinite}
+.voice-ring.speaking{animation:speakpulse 0.6s ease-in-out infinite}
+@keyframes ring{0%,100%{box-shadow:0 0 0 0 rgba(74,140,63,.7)}70%{box-shadow:0 0 0 28px rgba(74,140,63,0)}}
+@keyframes speakpulse{0%,100%{transform:scale(1)}50%{transform:scale(1.08)}}
+#voice-state-label{color:#fff;font-size:1.05rem;font-weight:700;letter-spacing:.5px}
+#voice-transcript-box{
+  background:rgba(255,255,255,.1);border-radius:12px;
+  padding:10px 18px;max-width:320px;text-align:center;
+  color:rgba(255,255,255,.9);font-size:.85rem;min-height:44px;
+  border:1px solid rgba(255,255,255,.15)
+}
+#end-voice-btn{
+  background:#c0392b;color:#fff;border:none;
+  padding:11px 28px;border-radius:24px;font-size:.88rem;
+  font-weight:600;cursor:pointer;margin-top:4px
+}
 
-  /* Voice listening overlay */
-  #voice-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:100;flex-direction:column;align-items:center;justify-content:center;gap:16px}
-  #voice-overlay.show{display:flex}
-  .voice-ring{width:90px;height:90px;border-radius:50%;background:#2d6a2d;display:flex;align-items:center;justify-content:center;font-size:36px;animation:ring 1.2s ease-in-out infinite}
-  @keyframes ring{0%,100%{box-shadow:0 0 0 0 rgba(45,106,45,.6)}70%{box-shadow:0 0 0 22px rgba(45,106,45,0)}}
-  #voice-overlay p{color:#fff;font-size:1rem;font-weight:600}
-  #voice-overlay small{color:rgba(255,255,255,.7);font-size:.8rem}
-  #stop-voice-btn{background:#c0392b;color:#fff;border:none;padding:10px 24px;border-radius:24px;font-size:.85rem;cursor:pointer;margin-top:8px}
+/* Input bar */
+.input-bar{display:flex;align-items:center;gap:7px;padding:9px 12px;background:#ede8dc;border-top:1px solid #d4c9b0;flex-shrink:0}
+#user-input{flex:1;border:1.5px solid #c4b896;border-radius:24px;padding:9px 15px;font-size:.86rem;background:#fff;outline:none;color:#2c2c2c;transition:border .2s}
+#user-input:focus{border-color:#4a8c3f}
+#user-input::placeholder{color:#a89870}
+.icon-btn{width:38px;height:38px;border-radius:50%;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:17px;transition:all .2s;flex-shrink:0}
+#img-btn{background:#e8e0cc;color:#5a4a2a}
+#img-btn:hover{background:#d4c9b0}
+#mic-btn{background:#e8e0cc;color:#5a4a2a}
+#mic-btn.recording{background:#c0392b;color:#fff}
+#send-btn{background:#2d6a2d;color:#fff}
+#send-btn:hover{background:#4a8c3f}
 
-  /* Input bar */
-  .input-bar{display:flex;align-items:center;gap:7px;padding:9px 12px;background:#ede8dc;border-top:1px solid #d4c9b0;flex-shrink:0}
-  #user-input{flex:1;border:1.5px solid #c4b896;border-radius:24px;padding:9px 15px;font-size:.86rem;background:#fff;outline:none;color:#2c2c2c;transition:border .2s}
-  #user-input:focus{border-color:#4a8c3f}
-  #user-input::placeholder{color:#a89870}
-  .icon-btn{width:38px;height:38px;border-radius:50%;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:17px;transition:all .2s;flex-shrink:0}
-  #img-btn{background:#e8e0cc;color:#5a4a2a}
-  #img-btn:hover{background:#d4c9b0}
-  #mic-btn{background:#e8e0cc;color:#5a4a2a}
-  #mic-btn:hover{background:#d4c9b0}
-  #mic-btn.recording{background:#c0392b;color:#fff;animation:pulse 1s infinite}
-  #send-btn{background:#2d6a2d;color:#fff}
-  #send-btn:hover{background:#4a8c3f;transform:scale(1.05)}
+.welcome-card{background:linear-gradient(135deg,#2d6a2d,#4a8c3f);color:#fff;border-radius:16px;padding:16px;text-align:center}
+.welcome-card h2{font-size:.95rem;margin-bottom:4px}
+.welcome-card p{font-size:.76rem;opacity:.9;line-height:1.5}
 
-  /* Welcome */
-  .welcome-card{background:linear-gradient(135deg,#2d6a2d,#4a8c3f);color:#fff;border-radius:16px;padding:16px;text-align:center}
-  .welcome-card h2{font-size:.95rem;margin-bottom:4px}
-  .welcome-card p{font-size:.76rem;opacity:.9}
-
-  @keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
-  @keyframes bounce{0%,80%,100%{transform:translateY(0)}40%{transform:translateY(-8px)}}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+@keyframes bounce{0%,80%,100%{transform:translateY(0)}40%{transform:translateY(-8px)}}
 </style>
 </head>
 <body>
@@ -108,181 +136,204 @@
 </header>
 
 <div class="quick-actions">
-  <button class="qa-btn" onclick="quickAsk('🌾 Best Crop to Plant in Kenya right now')">🌾 Best Crop</button>
-  <button class="qa-btn" onclick="quickAsk('☀️ Weather update and planting advice for Kenyan farmers')">☀️ Weather</button>
-  <button class="qa-btn" onclick="quickAsk('🐛 Common pest and disease tips for crops in Kenya')">🐛 Pest Tips</button>
-  <button class="qa-btn" onclick="quickAsk('📈 Current market prices for crops in Kenya')">📈 Market Prices</button>
-  <button class="qa-btn" onclick="document.getElementById('file-input').click()">📷 Upload Crop Image</button>
+  <button class="qa-btn" onclick="quickAsk('What is the best crop to plant in Kenya right now?')">🌾 Best Crop</button>
+  <button class="qa-btn" onclick="quickAsk('Give me weather update and planting advice for Kenyan farmers')">☀️ Weather</button>
+  <button class="qa-btn" onclick="quickAsk('What are common pests and diseases affecting crops in Kenya and how to treat them?')">🐛 Pest Tips</button>
+  <button class="qa-btn" onclick="quickAsk('What are current market prices for crops in Kenya?')">📈 Market Prices</button>
+  <button class="qa-btn" onclick="document.getElementById('file-input').click()">📷 Upload Crop Photo</button>
 </div>
 
 <div id="chat-window">
   <div class="welcome-card">
     <h2>🌱 Karibu! Welcome to Fahamu Shamba</h2>
-    <p>Ask me about crops, weather, pests, or markets. Upload a crop photo for pest/disease diagnosis. Enable Voice Mode to talk hands-free!</p>
+    <p>Ask me about crops, weather, pests or markets.<br>
+    📷 Upload a crop photo for pest/disease diagnosis.<br>
+    🎤 Tap <strong>Voice Mode</strong> for a hands-free conversation!</p>
   </div>
 </div>
 
-<!-- Image preview bar -->
 <div id="image-preview-bar">
   <img id="preview-thumb" src="" alt="preview"/>
   <span id="preview-name">Image ready</span>
-  <button id="remove-image" title="Remove">✕</button>
+  <button id="remove-image">✕</button>
 </div>
 
-<!-- Hidden file input -->
-<input type="file" id="file-input" accept="image/*" capture="environment" style="display:none"/>
+<input type="file" id="file-input" accept="image/*" style="display:none"/>
 
 <div class="input-bar">
   <button class="icon-btn" id="img-btn" title="Upload image">📷</button>
   <input type="text" id="user-input" placeholder="Ask about crops, weather, markets..."/>
-  <button class="icon-btn" id="mic-btn" title="Voice input">🎤</button>
-  <button class="icon-btn" id="send-btn" title="Send">➤</button>
+  <button class="icon-btn" id="mic-btn" title="Hold to speak">🎤</button>
+  <button class="icon-btn" id="send-btn">➤</button>
 </div>
 
 <!-- Voice conversation overlay -->
 <div id="voice-overlay">
-  <div class="voice-ring">🎤</div>
-  <p id="voice-status">Listening...</p>
-  <small id="voice-transcript"></small>
-  <button id="stop-voice-btn">Stop Listening</button>
+  <div class="voice-ring" id="voice-ring">🎤</div>
+  <p id="voice-state-label">Listening...</p>
+  <div id="voice-transcript-box">Speak now...</div>
+  <button id="end-voice-btn">End Conversation</button>
 </div>
 
 <script>
-const chatWindow = document.getElementById('chat-window');
-const input = document.getElementById('user-input');
-const sendBtn = document.getElementById('send-btn');
-const micBtn = document.getElementById('mic-btn');
-const imgBtn = document.getElementById('img-btn');
-const fileInput = document.getElementById('file-input');
-const previewBar = document.getElementById('image-preview-bar');
-const previewThumb = document.getElementById('preview-thumb');
-const previewName = document.getElementById('preview-name');
-const removeImageBtn = document.getElementById('remove-image');
-const voiceModeBtn = document.getElementById('voice-mode-btn');
-const voiceOverlay = document.getElementById('voice-overlay');
-const voiceStatus = document.getElementById('voice-status');
-const voiceTranscript = document.getElementById('voice-transcript');
-const stopVoiceBtn = document.getElementById('stop-voice-btn');
+// ── DOM refs ──────────────────────────────────────────────────────────────────
+const chatWindow       = document.getElementById('chat-window');
+const userInput        = document.getElementById('user-input');
+const sendBtn          = document.getElementById('send-btn');
+const micBtn           = document.getElementById('mic-btn');
+const imgBtn           = document.getElementById('img-btn');
+const fileInput        = document.getElementById('file-input');
+const previewBar       = document.getElementById('image-preview-bar');
+const previewThumb     = document.getElementById('preview-thumb');
+const previewName      = document.getElementById('preview-name');
+const removeImageBtn   = document.getElementById('remove-image');
+const voiceModeBtn     = document.getElementById('voice-mode-btn');
+const voiceOverlay     = document.getElementById('voice-overlay');
+const voiceRing        = document.getElementById('voice-ring');
+const voiceStateLabel  = document.getElementById('voice-state-label');
+const voiceTranscript  = document.getElementById('voice-transcript-box');
+const endVoiceBtn      = document.getElementById('end-voice-btn');
 
-let selectedFile = null;
-let voiceModeActive = false;
-let isSpeaking = false;
-let currentSpeech = null;
+// ── State ─────────────────────────────────────────────────────────────────────
+let selectedFile   = null;
+let voiceActive    = false;
+// States: idle | listening | processing | speaking
+let voiceState     = 'idle';
+let recog          = null;
+let activeSpeakBtn = null;
 
-// ── Helpers ──────────────────────────────────────────────────────────────────
-function getTime() {
-  return new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
-}
+// ── Utils ─────────────────────────────────────────────────────────────────────
+const now = () => new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
 
-function addBubble(html, role, imageUrl = null) {
+function addBubble(htmlText, role, imgUrl = null) {
   const row = document.createElement('div');
   row.className = `bubble-row ${role}`;
-  const avatar = role === 'bot' ? '🌾' : '👨‍🌾';
-  const imgTag = imageUrl ? `<img src="${imageUrl}" alt="uploaded crop"/>` : '';
-  const speakBtn = role === 'bot' ? `<button class="speak-btn" title="Listen" onclick="speakText(this)">🔊</button>` : '';
+  const imgTag = imgUrl ? `<img src="${imgUrl}" alt="crop"/>` : '';
+  const speakBtnHtml = role === 'bot'
+    ? `<button class="speak-btn" title="Read aloud" data-text="">🔊</button>`
+    : '';
   row.innerHTML = `
-    <div class="avatar">${avatar}</div>
-    <div class="bubble">${imgTag}${html}${speakBtn}<div class="time">${getTime()}</div></div>`;
+    <div class="avatar">${role==='bot'?'🌾':'👨🌾'}</div>
+    <div class="bubble">
+      ${imgTag}
+      <span class="bubble-text">${htmlText}</span>
+      <div class="meta">
+        ${speakBtnHtml}
+        <span class="time">${now()}</span>
+      </div>
+    </div>`;
+  // Store plain text on speak button for clean TTS
+  if (role === 'bot') {
+    const plain = htmlText.replace(/<br\s*\/?>/gi,' ').replace(/<[^>]+>/g,'');
+    row.querySelector('.speak-btn').dataset.text = plain;
+    row.querySelector('.speak-btn').addEventListener('click', function(){ onSpeakBtn(this); });
+  }
   chatWindow.appendChild(row);
   chatWindow.scrollTop = chatWindow.scrollHeight;
   return row;
 }
 
 function showTyping() {
+  removeTyping();
   const row = document.createElement('div');
+  row.id = 'typing-row';
   row.className = 'bubble-row bot';
-  row.id = 'typing-indicator';
   row.innerHTML = `<div class="avatar">🌾</div><div class="bubble"><div class="typing-dots"><span></span><span></span><span></span></div></div>`;
   chatWindow.appendChild(row);
   chatWindow.scrollTop = chatWindow.scrollHeight;
 }
-
 function removeTyping() {
-  const t = document.getElementById('typing-indicator');
+  const t = document.getElementById('typing-row');
   if (t) t.remove();
 }
 
 // ── TTS ───────────────────────────────────────────────────────────────────────
-function speakText(btn) {
+function stopSpeaking() {
   window.speechSynthesis.cancel();
-  if (btn && btn.classList.contains('speaking')) {
-    btn.classList.remove('speaking');
-    return;
-  }
-  document.querySelectorAll('.speak-btn.speaking').forEach(b => b.classList.remove('speaking'));
-  const text = btn.parentElement.innerText.replace(/\d{1,2}:\d{2}\s*(AM|PM)?/i,'').trim();
-  const utt = new SpeechSynthesisUtterance(text);
-  utt.lang = 'en-KE';
-  utt.rate = 0.92;
-  if (btn) {
-    btn.classList.add('speaking');
-    utt.onend = () => btn.classList.remove('speaking');
-  }
-  currentSpeech = utt;
-  window.speechSynthesis.speak(utt);
+  if (activeSpeakBtn) { activeSpeakBtn.classList.remove('active'); activeSpeakBtn = null; }
 }
 
-function speakReply(text) {
-  window.speechSynthesis.cancel();
-  const utt = new SpeechSynthesisUtterance(text);
-  utt.lang = 'en-KE';
-  utt.rate = 0.92;
-  utt.onend = () => {
-    isSpeaking = false;
-    if (voiceModeActive) startListening();
-  };
-  utt.onstart = () => isSpeaking = true;
-  window.speechSynthesis.speak(utt);
+function speak(text, onDone) {
+  stopSpeaking();
+  // Chrome bug: long utterances get cut — chunk by sentence
+  const sentences = text.match(/[^.!?]+[.!?]*/g) || [text];
+  let i = 0;
+  function next() {
+    if (!voiceActive && onDone) { onDone(); return; }
+    if (i >= sentences.length) { if (onDone) onDone(); return; }
+    const utt = new SpeechSynthesisUtterance(sentences[i++].trim());
+    utt.lang = 'en-US';
+    utt.rate = 0.93;
+    utt.onend = next;
+    utt.onerror = next;
+    window.speechSynthesis.speak(utt);
+  }
+  next();
+}
+
+function onSpeakBtn(btn) {
+  if (btn.classList.contains('active')) {
+    stopSpeaking();
+    return;
+  }
+  stopSpeaking();
+  activeSpeakBtn = btn;
+  btn.classList.add('active');
+  speak(btn.dataset.text, () => {
+    btn.classList.remove('active');
+    activeSpeakBtn = null;
+  });
+}
+
+// ── API calls ─────────────────────────────────────────────────────────────────
+async function fetchReply(text, file) {
+  if (file) {
+    const fd = new FormData();
+    fd.append('image', file);
+    fd.append('message', text || 'Identify any pest, disease, or crop condition in this image.');
+    const r = await fetch('/analyze-image', {method:'POST', body: fd});
+    return (await r.json()).reply;
+  }
+  const r = await fetch('/chat', {
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({message: text})
+  });
+  return (await r.json()).reply;
 }
 
 // ── Send message ──────────────────────────────────────────────────────────────
-async function sendMessage(text, autoSpeak = false) {
-  if (!text.trim() && !selectedFile) return;
+async function sendMessage(text, file = null, autoSpeak = false) {
+  text = (text || '').trim();
+  if (!text && !file) return;
 
-  if (selectedFile) {
-    const objectUrl = URL.createObjectURL(selectedFile);
-    addBubble(text || 'Analyze this crop image for pests or diseases.', 'user', objectUrl);
-  } else {
-    addBubble(text, 'user');
-  }
-
-  input.value = '';
+  const imgUrl = file ? URL.createObjectURL(file) : null;
+  addBubble(text || '📷 Analyze this crop image.', 'user', imgUrl);
+  userInput.value = '';
+  clearImagePreview();
   showTyping();
 
   try {
-    let reply;
-    if (selectedFile) {
-      const formData = new FormData();
-      formData.append('image', selectedFile);
-      formData.append('message', text || 'Identify any pest, disease, or crop condition in this image.');
-      const res = await fetch('/analyze-image', {method:'POST', body: formData});
-      const data = await res.json();
-      reply = data.reply;
-    } else {
-      const res = await fetch('/chat', {
-        method:'POST',
-        headers:{'Content-Type':'application/json'},
-        body: JSON.stringify({message: text})
-      });
-      const data = await res.json();
-      reply = data.reply;
-    }
-
+    const reply = await fetchReply(text, file);
     removeTyping();
-    clearImagePreview();
     addBubble(reply.replace(/\n/g,'<br>'), 'bot');
-    if (autoSpeak || voiceModeActive) speakReply(reply);
-
-  } catch {
+    if (autoSpeak) {
+      setVoiceState('speaking');
+      speak(reply, () => {
+        if (voiceActive) setVoiceState('listening');
+      });
+    }
+  } catch(e) {
     removeTyping();
     addBubble('Sorry, I could not connect. Please try again.', 'bot');
+    if (voiceActive) setVoiceState('listening');
   }
 }
 
-function quickAsk(text) { sendMessage(text, false); }
+function quickAsk(text) { sendMessage(text, null, false); }
 
-sendBtn.addEventListener('click', () => sendMessage(input.value));
-input.addEventListener('keydown', e => { if (e.key === 'Enter') sendMessage(input.value); });
+sendBtn.addEventListener('click', () => sendMessage(userInput.value, selectedFile));
+userInput.addEventListener('keydown', e => { if(e.key==='Enter') sendMessage(userInput.value, selectedFile); });
 
 // ── Image upload ──────────────────────────────────────────────────────────────
 function clearImagePreview() {
@@ -290,128 +341,151 @@ function clearImagePreview() {
   previewBar.style.display = 'none';
   previewThumb.src = '';
   fileInput.value = '';
+  userInput.placeholder = 'Ask about crops, weather, markets...';
 }
-
-function handleFileSelect(file) {
-  if (!file) return;
+function handleFile(file) {
+  if (!file || !file.type.startsWith('image/')) return;
   selectedFile = file;
   previewThumb.src = URL.createObjectURL(file);
   previewName.textContent = file.name;
   previewBar.style.display = 'flex';
-  input.placeholder = 'Add a question about this image (optional)...';
-  input.focus();
+  userInput.placeholder = 'Add a question about this image (optional)...';
+  userInput.focus();
 }
-
 imgBtn.addEventListener('click', () => fileInput.click());
-fileInput.addEventListener('change', e => handleFileSelect(e.target.files[0]));
-removeImageBtn.addEventListener('click', () => {
-  clearImagePreview();
-  input.placeholder = 'Ask about crops, weather, markets...';
-});
-
-// Drag & drop onto chat window
+fileInput.addEventListener('change', e => handleFile(e.target.files[0]));
+removeImageBtn.addEventListener('click', clearImagePreview);
 chatWindow.addEventListener('dragover', e => e.preventDefault());
-chatWindow.addEventListener('drop', e => {
-  e.preventDefault();
-  const file = e.dataTransfer.files[0];
-  if (file && file.type.startsWith('image/')) handleFileSelect(file);
-});
+chatWindow.addEventListener('drop', e => { e.preventDefault(); handleFile(e.dataTransfer.files[0]); });
 
-// ── Speech Recognition ────────────────────────────────────────────────────────
-const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-let recognition = null;
+// ── Speech Recognition setup ──────────────────────────────────────────────────
+const SRClass = window.SpeechRecognition || window.webkitSpeechRecognition;
 
-if (SR) {
-  recognition = new SR();
-  recognition.lang = 'en-KE';
-  recognition.interimResults = true;
-  recognition.continuous = false;
+if (SRClass) {
+  recog = new SRClass();
+  recog.lang = 'en-US';
+  recog.continuous = false;
+  recog.interimResults = true;
 
-  recognition.onresult = e => {
+  recog.onresult = e => {
     const transcript = Array.from(e.results).map(r => r[0].transcript).join('');
-    if (voiceModeActive) {
+    if (voiceActive) {
       voiceTranscript.textContent = `"${transcript}"`;
     } else {
-      input.value = transcript;
-    }
-    if (e.results[e.results.length - 1].isFinal) {
-      if (voiceModeActive) {
-        voiceStatus.textContent = 'Processing...';
-        sendMessage(transcript, true);
-      }
+      userInput.value = transcript;
     }
   };
 
-  recognition.onend = () => {
+  recog.onend = () => {
     micBtn.classList.remove('recording');
-    if (voiceModeActive && !isSpeaking) {
-      setTimeout(startListening, 800);
+    if (!voiceActive) return;
+    // Get final transcript from input box set during onresult
+    const said = voiceTranscript.textContent.replace(/^"|"$/g,'').trim();
+    if (said && voiceState === 'listening') {
+      setVoiceState('processing');
+      sendMessage(said, null, true);
+    } else if (voiceState === 'listening') {
+      // Nothing heard — listen again
+      setTimeout(startRecog, 600);
     }
   };
 
-  recognition.onerror = e => {
+  recog.onerror = e => {
     micBtn.classList.remove('recording');
-    if (voiceModeActive && e.error !== 'aborted') {
-      voiceStatus.textContent = 'Listening...';
-      setTimeout(startListening, 1000);
+    if (!voiceActive) return;
+    if (e.error === 'no-speech') {
+      setTimeout(startRecog, 500);
+    } else if (e.error !== 'aborted') {
+      setTimeout(startRecog, 1200);
     }
   };
 
-  // Single mic button (non-voice-mode)
+  // Single-query mic button
   micBtn.addEventListener('click', () => {
-    if (voiceModeActive) return;
+    if (voiceActive) return;
     if (micBtn.classList.contains('recording')) {
-      recognition.stop();
+      recog.stop();
+      micBtn.classList.remove('recording');
     } else {
       micBtn.classList.add('recording');
-      recognition.start();
+      try { recog.start(); } catch(e){}
     }
   });
 } else {
-  micBtn.style.opacity = '0.4';
-  micBtn.title = 'Voice not supported in this browser';
-  voiceModeBtn.style.opacity = '0.4';
+  micBtn.disabled = true;
+  micBtn.style.opacity = '.4';
   voiceModeBtn.disabled = true;
+  voiceModeBtn.style.opacity = '.4';
+  voiceModeBtn.title = 'Voice not supported in this browser';
 }
 
-// ── Voice Mode ────────────────────────────────────────────────────────────────
-function startListening() {
-  if (!recognition || isSpeaking) return;
-  try {
-    voiceStatus.textContent = 'Listening...';
+// ── Voice state machine ───────────────────────────────────────────────────────
+function setVoiceState(state) {
+  voiceState = state;
+  voiceRing.className = 'voice-ring';
+  if (state === 'listening') {
+    voiceRing.textContent = '🎤';
+    voiceRing.classList.add('listening');
+    voiceStateLabel.textContent = 'Listening...';
+    voiceTranscript.textContent = 'Speak now...';
+  } else if (state === 'processing') {
+    voiceRing.textContent = '⏳';
+    voiceStateLabel.textContent = 'Thinking...';
+  } else if (state === 'speaking') {
+    voiceRing.textContent = '🔊';
+    voiceRing.classList.add('speaking');
+    voiceStateLabel.textContent = 'Speaking...';
     voiceTranscript.textContent = '';
-    recognition.start();
-  } catch(e) {}
+  }
+}
+
+function startRecog() {
+  if (!voiceActive || voiceState !== 'listening') return;
+  voiceTranscript.textContent = 'Speak now...';
+  try { recog.start(); } catch(e) {}
+}
+
+function startVoiceMode() {
+  voiceActive = true;
+  voiceModeBtn.classList.add('active');
+  voiceModeBtn.innerHTML = '<span class="vm-dot"></span> End Voice';
+  voiceOverlay.classList.add('show');
+  stopSpeaking();
+
+  // Greet then start listening — must happen inside user gesture
+  setVoiceState('speaking');
+  const greet = new SpeechSynthesisUtterance(
+    'Hello! I am Fahamu Shamba, your farming advisor. How can I help you today?'
+  );
+  greet.lang = 'en-US';
+  greet.rate = 0.93;
+  greet.onend = () => {
+    if (voiceActive) {
+      setVoiceState('listening');
+      startRecog();
+    }
+  };
+  greet.onerror = () => {
+    if (voiceActive) { setVoiceState('listening'); startRecog(); }
+  };
+  window.speechSynthesis.speak(greet);
 }
 
 function stopVoiceMode() {
-  voiceModeActive = false;
+  voiceActive = false;
+  voiceState = 'idle';
   voiceModeBtn.classList.remove('active');
   voiceModeBtn.innerHTML = '<span class="vm-dot"></span> Voice Mode';
   voiceOverlay.classList.remove('show');
-  window.speechSynthesis.cancel();
-  try { recognition && recognition.stop(); } catch(e) {}
+  stopSpeaking();
+  try { recog && recog.stop(); } catch(e) {}
 }
 
 voiceModeBtn.addEventListener('click', () => {
-  if (!SR) return;
-  if (voiceModeActive) {
-    stopVoiceMode();
-  } else {
-    voiceModeActive = true;
-    voiceModeBtn.classList.add('active');
-    voiceModeBtn.innerHTML = '<span class="vm-dot"></span> Stop Voice';
-    voiceOverlay.classList.add('show');
-    // Greet farmer
-    const greet = new SpeechSynthesisUtterance('Hello! I am Fahamu Shamba, your farming advisor. How can I help you today?');
-    greet.lang = 'en-KE';
-    greet.onend = () => { isSpeaking = false; startListening(); };
-    isSpeaking = true;
-    window.speechSynthesis.speak(greet);
-  }
+  if (!SRClass) return;
+  voiceActive ? stopVoiceMode() : startVoiceMode();
 });
-
-stopVoiceBtn.addEventListener('click', stopVoiceMode);
+endVoiceBtn.addEventListener('click', stopVoiceMode);
 </script>
 </body>
 </html>
