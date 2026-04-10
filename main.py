@@ -4,6 +4,10 @@ from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 from groq import Groq
 import os
+import logging
+
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 app = FastAPI()
 app.mount("/static", StaticFiles(directory="static"), name="static")
@@ -49,10 +53,9 @@ def ask_groq(user_message: str, mode: str = "app") -> str:
             max_tokens=500 if mode == "app" else 100
         )
         return response.choices[0].message.content.strip()
-    except ValueError as e:
-        return f"Configuration error: {str(e)}"
     except Exception as e:
-        return "Sorry, I am currently unavailable. Please try again shortly."
+        logger.error(f"Groq error: {e}")
+        raise
 
 
 # ── App Chat Endpoint ──────────────────────────────────────────────────────────
@@ -64,13 +67,23 @@ async def health():
     key = os.environ.get("GROQ_API_KEY")
     return {"status": "ok", "groq_key_set": bool(key)}
 
+@app.get("/test")
+async def test_groq():
+    try:
+        reply = ask_groq("What is the best crop to plant in Kenya?", mode="app")
+        return {"status": "ok", "reply": reply}
+    except Exception as e:
+        logger.error(f"/test error: {e}")
+        return {"status": "error", "detail": str(e)}
+
 @app.post("/chat")
 async def chat(req: ChatRequest):
     try:
         reply = ask_groq(req.message, mode="app")
         return {"reply": reply}
     except Exception as e:
-        return {"reply": "Sorry, something went wrong. Please try again."}
+        logger.error(f"/chat error: {e}")
+        return {"reply": f"Error: {str(e)}"}
 
 
 # ── USSD Endpoint (Africa's Talking) ──────────────────────────────────────────
