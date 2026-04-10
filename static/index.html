@@ -2,11 +2,11 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, interactive-widget=resizes-content"/>
 <title>Fahamu Shamba</title>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
-body{font-family:'Segoe UI',sans-serif;background:#f5f0e8;display:flex;flex-direction:column;height:100vh;overflow:hidden}
+body{font-family:'Segoe UI',sans-serif;background:#f5f0e8;display:flex;flex-direction:column;height:100%;min-height:100vh;min-height:100dvh;overflow:hidden}
 
 /* Header */
 header{background:linear-gradient(135deg,#2d6a2d,#4a8c3f);color:#fff;padding:12px 16px;display:flex;align-items:center;gap:10px;box-shadow:0 2px 8px rgba(0,0,0,.25);flex-shrink:0}
@@ -101,7 +101,7 @@ header p{font-size:.72rem;opacity:.85}
 }
 
 /* Input bar */
-.input-bar{display:flex;align-items:center;gap:7px;padding:9px 12px;background:#ede8dc;border-top:1px solid #d4c9b0;flex-shrink:0}
+.input-bar{display:flex;align-items:center;gap:7px;padding:9px 12px;background:#ede8dc;border-top:1px solid #d4c9b0;flex-shrink:0;position:sticky;bottom:0;z-index:10}
 #user-input{flex:1;border:1.5px solid #c4b896;border-radius:24px;padding:9px 15px;font-size:.86rem;background:#fff;outline:none;color:#2c2c2c;transition:border .2s}
 #user-input:focus{border-color:#4a8c3f}
 #user-input::placeholder{color:#a89870}
@@ -361,44 +361,52 @@ chatWindow.addEventListener('drop', e => { e.preventDefault(); handleFile(e.data
 // ── Speech Recognition setup ──────────────────────────────────────────────────
 const SRClass = window.SpeechRecognition || window.webkitSpeechRecognition;
 
+// Laptop Chrome fix: unlock speechSynthesis on first interaction
+document.addEventListener('click', () => {
+  const u = new SpeechSynthesisUtterance('');
+  window.speechSynthesis.speak(u);
+  window.speechSynthesis.cancel();
+}, { once: true });
+
 if (SRClass) {
-  recog = new SRClass();
-  recog.lang = 'en-US';
-  recog.continuous = false;
-  recog.interimResults = true;
-
-  recog.onresult = e => {
-    const transcript = Array.from(e.results).map(r => r[0].transcript).join('');
-    if (voiceActive) {
-      voiceTranscript.textContent = `"${transcript}"`;
-    } else {
-      userInput.value = transcript;
-    }
-  };
-
-  recog.onend = () => {
-    micBtn.classList.remove('recording');
-    if (!voiceActive) return;
-    // Get final transcript from input box set during onresult
-    const said = voiceTranscript.textContent.replace(/^"|"$/g,'').trim();
-    if (said && voiceState === 'listening') {
-      setVoiceState('processing');
-      sendMessage(said, null, true);
-    } else if (voiceState === 'listening') {
-      // Nothing heard — listen again
-      setTimeout(startRecog, 600);
-    }
-  };
-
-  recog.onerror = e => {
-    micBtn.classList.remove('recording');
-    if (!voiceActive) return;
-    if (e.error === 'no-speech') {
-      setTimeout(startRecog, 500);
-    } else if (e.error !== 'aborted') {
-      setTimeout(startRecog, 1200);
-    }
-  };
+  function makeRecog() {
+    const r = new SRClass();
+    r.lang = 'en-US';
+    r.continuous = false;
+    r.interimResults = true;
+    r.onresult = e => {
+      const transcript = Array.from(e.results).map(x => x[0].transcript).join('');
+      if (voiceActive) {
+        voiceTranscript.textContent = `"${transcript}"`;
+        // store latest final result
+        if (e.results[e.results.length-1].isFinal) {
+          voiceTranscript.dataset.final = transcript;
+        }
+      } else {
+        userInput.value = transcript;
+      }
+    };
+    r.onend = () => {
+      micBtn.classList.remove('recording');
+      if (!voiceActive) return;
+      const said = (voiceTranscript.dataset.final || '').trim();
+      voiceTranscript.dataset.final = '';
+      if (said && voiceState === 'listening') {
+        setVoiceState('processing');
+        sendMessage(said, null, true);
+      } else if (voiceState === 'listening') {
+        setTimeout(startRecog, 600);
+      }
+    };
+    r.onerror = e => {
+      micBtn.classList.remove('recording');
+      if (!voiceActive) return;
+      if (e.error === 'no-speech') { setTimeout(startRecog, 400); }
+      else if (e.error !== 'aborted') { setTimeout(startRecog, 1000); }
+    };
+    return r;
+  }
+  recog = makeRecog();
 
   // Single-query mic button
   micBtn.addEventListener('click', () => {
@@ -407,8 +415,10 @@ if (SRClass) {
       recog.stop();
       micBtn.classList.remove('recording');
     } else {
+      // recreate to avoid InvalidStateError on reuse
+      recog = makeRecog();
       micBtn.classList.add('recording');
-      try { recog.start(); } catch(e){}
+      try { recog.start(); } catch(e){ micBtn.classList.remove('recording'); }
     }
   });
 } else {
@@ -442,7 +452,10 @@ function setVoiceState(state) {
 function startRecog() {
   if (!voiceActive || voiceState !== 'listening') return;
   voiceTranscript.textContent = 'Speak now...';
-  try { recog.start(); } catch(e) {}
+  voiceTranscript.dataset.final = '';
+  // always use a fresh instance to avoid InvalidStateError
+  if (SRClass) recog = makeRecog();
+  try { recog.start(); } catch(e) { setTimeout(startRecog, 800); }
 }
 
 function startVoiceMode() {
