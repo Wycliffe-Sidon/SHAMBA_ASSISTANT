@@ -23,6 +23,30 @@ header p{font-size:0.7rem;opacity:0.85}
 .qa-btn{white-space:nowrap;background:#fff;border:1.5px solid #4a8c3f;color:#2d6a2d;padding:5px 10px;border-radius:18px;font-size:0.72rem;font-weight:600;cursor:pointer;transition:all .2s;flex-shrink:0}
 .qa-btn:hover{background:#4a8c3f;color:#fff}
 
+/* Location bar */
+.location-bar{background:#fff8eb;padding:6px 12px;display:flex;align-items:center;gap:6px;border-bottom:1px solid #d4c9b0;flex-shrink:0}
+.location-icon{font-size:12px}
+.location-text{font-size:0.72rem;color:#6b5a3e;flex:1}
+.location-text span{color:#2d6a2d;font-weight:600}
+.location-edit{font-size:0.7rem;color:#2d6a2d;background:none;border:1px solid #2d6a2d;border-radius:6px;padding:3px 8px;cursor:pointer;font-family:inherit;transition:all .15s}
+.location-edit:hover{background:#2d6a2d;color:#fff}
+
+/* Location modal */
+.modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:100;align-items:center;justify-content:center;padding:20px}
+.modal.show{display:flex}
+.modal-content{background:#fff;border-radius:14px;padding:18px;width:100%;max-width:340px;box-shadow:0 8px 24px rgba(0,0,0,0.3)}
+.modal-title{font-size:0.95rem;font-weight:600;color:#2c2c2c;margin-bottom:14px}
+.form-group{margin-bottom:12px}
+.form-label{font-size:0.75rem;color:#6b5a3e;margin-bottom:5px;display:block;font-weight:500}
+.form-select{width:100%;padding:8px 11px;border:1px solid #c8b99a;border-radius:8px;font-size:0.8rem;font-family:inherit;background:#f5f0e8;color:#2c2c2c}
+.form-select:focus{outline:none;border-color:#2d6a2d}
+.modal-actions{display:flex;gap:8px;margin-top:16px}
+.btn{flex:1;padding:9px;border:none;border-radius:8px;font-size:0.8rem;font-weight:600;cursor:pointer;font-family:inherit;transition:all .15s}
+.btn-cancel{background:#d4c4a0;color:#6b5a3e}
+.btn-cancel:hover{background:#c8b99a}
+.btn-primary{background:#2d6a2d;color:#fff}
+.btn-primary:hover{background:#3d8a28}
+
 /* Chat */
 #chat-window{flex:1;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:12px;display:flex;flex-direction:column;gap:8px;background:url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none'%3E%3Cg fill='%234a8c3f' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")}
 #chat-window::-webkit-scrollbar{width:4px}
@@ -131,6 +155,12 @@ header p{font-size:0.7rem;opacity:0.85}
   <button class="qa-btn" onclick="document.getElementById('file-input').click()">📷 Upload Photo</button>
 </div>
 
+<div class="location-bar">
+  <span class="location-icon">📍</span>
+  <div class="location-text">Location: <span id="locationDisplay">Not set</span></div>
+  <button class="location-edit" onclick="openLocationModal()">Change</button>
+</div>
+
 <div id="chat-window">
   <div class="welcome-card">
     <h2>🌱 Karibu! Welcome to Fahamu Shamba</h2>
@@ -153,6 +183,43 @@ header p{font-size:0.7rem;opacity:0.85}
   <button class="icon-btn" id="send-btn">➤</button>
 </div>
 
+<div class="modal" id="locationModal">
+  <div class="modal-content">
+    <div class="modal-title">📍 Set Your Location</div>
+    <div class="form-group">
+      <label class="form-label">County</label>
+      <select class="form-select" id="countySelect">
+        <option value="">Select County</option>
+        <option value="Nairobi">Nairobi</option>
+        <option value="Kiambu">Kiambu</option>
+        <option value="Nakuru">Nakuru</option>
+        <option value="Kisumu">Kisumu</option>
+        <option value="Siaya">Siaya</option>
+        <option value="Kakamega">Kakamega</option>
+        <option value="Bungoma">Bungoma</option>
+        <option value="Meru">Meru</option>
+        <option value="Embu">Embu</option>
+        <option value="Machakos">Machakos</option>
+        <option value="Kitui">Kitui</option>
+        <option value="Nyeri">Nyeri</option>
+        <option value="Murang'a">Murang'a</option>
+        <option value="Kirinyaga">Kirinyaga</option>
+        <option value="Uasin Gishu">Uasin Gishu</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Sub-location</label>
+      <select class="form-select" id="sublocationSelect" disabled>
+        <option value="">Select county first</option>
+      </select>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-cancel" onclick="closeLocationModal()">Cancel</button>
+      <button class="btn btn-primary" onclick="saveLocation()">Save Location</button>
+    </div>
+  </div>
+</div>
+
 <script>
 const chatWindow=document.getElementById('chat-window');
 const userInput=document.getElementById('user-input');
@@ -167,6 +234,25 @@ const removeImageBtn=document.getElementById('remove-image');
 
 let selectedFile=null;
 let activeSpeakBtn=null;
+let userLocation={county:'',sublocation:''};
+
+const countySublocations={
+  'Nairobi':['Westlands','Dagoretti','Langata','Kibra','Roysambu','Kasarani','Ruaraka','Embakasi','Makadara','Kamukunji','Starehe','Mathare'],
+  'Kiambu':['Limuru','Kikuyu','Kabete','Githunguri','Kiambaa','Ruiru','Juja','Thika','Gatundu','Lari'],
+  'Nakuru':['Nakuru Town','Naivasha','Gilgil','Molo','Njoro','Rongai','Subukia','Bahati','Kuresoi'],
+  'Kisumu':['Kisumu Central','Kisumu East','Kisumu West','Seme','Nyando','Muhoroni','Nyakach'],
+  'Siaya':['Bondo','Rarieda','Ugenya','Ugunja','Gem','Alego Usonga'],
+  'Kakamega':['Kakamega Town','Mumias','Butere','Khwisero','Shinyalu','Lurambi','Ikolomani','Lugari','Malava','Matungu','Navakholo'],
+  'Bungoma':['Bungoma Town','Webuye','Kimilili','Bumula','Kanduyi','Sirisia','Kabuchai','Tongaren','Mt. Elgon'],
+  'Meru':['Meru Town','Imenti North','Imenti South','Imenti Central','Tigania East','Tigania West','Igembe North','Igembe South','Igembe Central'],
+  'Embu':['Embu Town','Manyatta','Runyenjes','Mbeere North','Mbeere South'],
+  'Machakos':['Machakos Town','Kangundo','Matungulu','Kathiani','Mavoko','Yatta','Masinga','Mwala'],
+  'Kitui':['Kitui Town','Mwingi','Kitui Central','Kitui West','Kitui East','Kitui South','Mwingi North','Mwingi Central'],
+  'Nyeri':['Nyeri Town','Othaya','Tetu','Kieni','Mathira','Mukurweini'],
+  "Murang'a":['Murang\'a Town','Kangema','Kiharu','Kigumo','Maragwa','Kandara','Gatanga'],
+  'Kirinyaga':['Kerugoya','Kutus','Gichugu','Ndia','Kirinyaga Central','Mwea'],
+  'Uasin Gishu':['Eldoret','Ainabkoi','Kapseret','Kesses','Moiben','Soy','Turbo']
+};
 
 const now=()=>new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
 
@@ -338,6 +424,65 @@ if(SRClass){
   micBtn.disabled=true;
   micBtn.style.opacity='.4';
 }
+
+function openLocationModal(){
+  document.getElementById('locationModal').classList.add('show');
+}
+
+function closeLocationModal(){
+  document.getElementById('locationModal').classList.remove('show');
+}
+
+document.getElementById('countySelect').addEventListener('change',function(){
+  const county=this.value;
+  const sublocationSelect=document.getElementById('sublocationSelect');
+  
+  if(county&&countySublocations[county]){
+    sublocationSelect.disabled=false;
+    sublocationSelect.innerHTML='<option value="">Select sub-location</option>';
+    
+    countySublocations[county].forEach(subloc=>{
+      const option=document.createElement('option');
+      option.value=subloc;
+      option.textContent=subloc;
+      sublocationSelect.appendChild(option);
+    });
+  }else{
+    sublocationSelect.disabled=true;
+    sublocationSelect.innerHTML='<option value="">Select county first</option>';
+  }
+});
+
+function saveLocation(){
+  const county=document.getElementById('countySelect').value;
+  const sublocation=document.getElementById('sublocationSelect').value;
+  
+  if(!county){
+    alert('Please select a county');
+    return;
+  }
+  
+  if(!sublocation){
+    alert('Please select a sub-location');
+    return;
+  }
+  
+  userLocation={county,sublocation};
+  const displayText=`${sublocation}, ${county}`;
+  document.getElementById('locationDisplay').textContent=displayText;
+  closeLocationModal();
+  
+  const query=`I am in ${displayText}, Kenya. What are the best crops to plant right now based on my location, soil, and current season?`;
+  setTimeout(()=>sendMessage(query),300);
+}
+
+window.addEventListener('DOMContentLoaded',()=>{
+  setTimeout(()=>{
+    if(!userLocation.county){
+      openLocationModal();
+    }
+  },1500);
+});
 </script>
 </body>
 </html>
