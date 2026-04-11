@@ -103,7 +103,7 @@ def ask_groq(user_message: str, mode: str = "app", session_id: str = "default") 
         messages.append({"role": "user", "content": user_message})
         
         response = client.chat.completions.create(
-            model="llama-3.3-70b-versatile",
+            model="llama-3.1-8b-instant",
             messages=messages,
             max_tokens=500 if mode == "app" else 100
         )
