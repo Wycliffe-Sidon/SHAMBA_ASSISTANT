@@ -35,22 +35,23 @@ body {
   font-family: var(--font);
   padding: 0;
   margin: 0;
+  width: 100%;
+  height: 100vh;
+  overflow: hidden;
 }
 
 .fs-app {
   display: flex;
   flex-direction: column;
-  height: 100vh;
-  width: 100vw;
-  max-width: 420px;
-  max-height: 900px;
+  height: 100%;
+  width: 100%;
   background: var(--beige-bg);
   border-radius: 0;
   border: none;
   overflow: hidden;
   position: relative;
   box-shadow: none;
-  margin: 0 auto;
+  margin: 0;
 }
 
 /* HEADER */
@@ -341,57 +342,92 @@ body {
   border-radius: 14px; overflow: hidden; margin-top: 4px;
   padding: 12px;
   max-width: 100%;
+  width: 100%;
 }
 .fs-chart-title {
   font-size: 13px; font-weight: 600; color: var(--brown-text);
   margin-bottom: 10px; display: flex; align-items: center; gap: 6px;
 }
+.fs-chart-wrapper {
+  position: relative;
+  width: 100%;
+  height: 250px;
+}
 .fs-chart-canvas { 
   width: 100% !important; 
-  height: 200px !important;
+  height: 100% !important;
   max-width: 100%;
 }
 
 @media (max-width: 480px) {
-  body { padding: 0; }
   .fs-app { 
-    width: 100%; 
-    height: 100vh; 
-    max-width: 100%;
-    max-height: 100vh;
+    width: 100vw;
+    height: 100vh;
     border-radius: 0; 
   }
   .fs-bubble { max-width: 85%; }
   .fs-quick-actions { grid-template-columns: 1fr 1fr; gap: 6px; }
   .fs-qa-label { font-size: 10px; }
-  .fs-chart-canvas { height: 180px !important; }
+  .fs-chart-wrapper { height: 200px; }
 }
 
 @media (min-width: 481px) and (max-width: 768px) {
-  body { padding: 10px; }
+  body { padding: 15px; }
   .fs-app { 
-    max-width: 600px;
-    max-height: 90vh;
+    width: 100%;
+    height: calc(100vh - 30px);
+    max-width: 700px;
     border-radius: 16px;
     box-shadow: 0 12px 30px rgba(45,106,31,0.15);
+    border: 0.5px solid var(--beige-border2);
   }
-  .fs-chart-canvas { height: 220px !important; }
+  .fs-chart-wrapper { height: 240px; }
 }
 
-@media (min-width: 769px) {
+@media (min-width: 769px) and (max-width: 1024px) {
   body { padding: 20px; }
   .fs-app { 
-    max-width: 420px;
-    max-height: 900px;
+    width: 100%;
+    height: calc(100vh - 40px);
+    max-width: 900px;
     border-radius: 20px;
     box-shadow: 0 24px 60px rgba(45,106,31,0.18), 0 4px 12px rgba(0,0,0,0.1);
     border: 0.5px solid var(--beige-border2);
   }
-  .fs-chart-canvas { height: 240px !important; }
+  .fs-chart-wrapper { height: 280px; }
 }
 
-@media (min-width: 1024px) {
-  .fs-chart-canvas { height: 260px !important; }
+@media (min-width: 1025px) and (max-width: 1440px) {
+  body { padding: 30px; }
+  .fs-app { 
+    width: 100%;
+    height: calc(100vh - 60px);
+    max-width: 1100px;
+    border-radius: 20px;
+    box-shadow: 0 24px 60px rgba(45,106,31,0.18), 0 4px 12px rgba(0,0,0,0.1);
+    border: 0.5px solid var(--beige-border2);
+  }
+  .fs-header-title { font-size: 17px; }
+  .fs-header-sub { font-size: 12px; }
+  .fs-bubble { font-size: 14px; }
+  .fs-chart-wrapper { height: 320px; }
+}
+
+@media (min-width: 1441px) {
+  body { padding: 40px; }
+  .fs-app { 
+    width: 100%;
+    height: calc(100vh - 80px);
+    max-width: 1400px;
+    border-radius: 24px;
+    box-shadow: 0 24px 60px rgba(45,106,31,0.18), 0 4px 12px rgba(0,0,0,0.1);
+    border: 0.5px solid var(--beige-border2);
+  }
+  .fs-header-title { font-size: 18px; }
+  .fs-header-sub { font-size: 13px; }
+  .fs-bubble { font-size: 15px; }
+  .fs-chart-wrapper { height: 360px; }
+  .fs-quick-actions { grid-template-columns: repeat(4, 1fr); }
 }
 </style>
 </head>
@@ -600,16 +636,20 @@ function addChartCard(title, data) {
     <div style="flex:1;max-width:85%;">
       <div class="fs-chart-card">
         <div class="fs-chart-title">📊 ${title}</div>
-        <canvas id="${chartId}" class="fs-chart-canvas"></canvas>
+        <div class="fs-chart-wrapper">
+          <canvas id="${chartId}" class="fs-chart-canvas"></canvas>
+        </div>
       </div>
     </div>
   `;
   chat.appendChild(row);
   chat.scrollTop = chat.scrollHeight;
   
-  // Create chart
+  // Create chart with responsive settings
   setTimeout(() => {
     const ctx = document.getElementById(chartId);
+    if (!ctx) return;
+    
     new Chart(ctx, {
       type: data.type || 'line',
       data: data.chartData,
@@ -617,10 +657,27 @@ function addChartCard(title, data) {
         responsive: true,
         maintainAspectRatio: false,
         plugins: {
-          legend: { display: data.showLegend !== false }
+          legend: { 
+            display: data.showLegend !== false,
+            position: 'top',
+            labels: {
+              boxWidth: 12,
+              font: { size: 11 },
+              padding: 8
+            }
+          }
         },
         scales: {
-          y: { beginAtZero: true }
+          y: { 
+            beginAtZero: true,
+            ticks: { font: { size: 10 } }
+          },
+          x: {
+            ticks: { font: { size: 10 } }
+          }
+        },
+        layout: {
+          padding: 5
         }
       }
     });
