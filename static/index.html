@@ -2,950 +2,342 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>Fahamu Shamba – Your Farming Advisor</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+<title>Fahamu Shamba</title>
 <style>
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{width:100%;height:100%;overflow:hidden}
+body{font-family:'Segoe UI',sans-serif;background:#f5f0e8;display:flex;flex-direction:column}
 
-:root {
-  --green-dark: #2d6a1f;
-  --green-mid: #3d8a28;
-  --green-light: #4fa832;
-  --green-pale: #e5f0dc;
-  --green-xpale: #eef7e6;
-  --beige-bg: #f5f0e8;
-  --beige-card: #f9f5ed;
-  --beige-border: #e0d2b4;
-  --beige-border2: #c8b99a;
-  --beige-bar: #d4c4a0;
-  --brown-text: #3b2d1a;
-  --brown-mid: #6b5a3e;
-  --brown-muted: #8a7455;
-  --brown-hint: #9e8c72;
-  --brown-placeholder: #b0a080;
-  --font: 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
-}
+/* Header */
+header{background:linear-gradient(135deg,#2d6a2d,#4a8c3f);color:#fff;padding:10px 14px;display:flex;align-items:center;gap:8px;flex-shrink:0}
+.logo{width:36px;height:36px;background:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+header h1{font-size:0.95rem;font-weight:700}
+header p{font-size:0.7rem;opacity:0.85}
+.header-right{margin-left:auto;display:flex;align-items:center;gap:6px}
+.status-dot{width:8px;height:8px;background:#7fff7f;border-radius:50%;animation:blink 2s infinite}
 
-body {
-  background: #e8e2d6;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  min-height: 100vh;
-  font-family: var(--font);
-  padding: 0;
-  margin: 0;
-  width: 100%;
-  height: 100vh;
-  overflow: hidden;
-}
+/* Quick actions */
+.quick-actions{display:flex;gap:6px;padding:8px 12px;background:#ede8dc;overflow-x:auto;flex-shrink:0;border-bottom:1px solid #d4c9b0}
+.quick-actions::-webkit-scrollbar{display:none}
+.qa-btn{white-space:nowrap;background:#fff;border:1.5px solid #4a8c3f;color:#2d6a2d;padding:5px 10px;border-radius:18px;font-size:0.72rem;font-weight:600;cursor:pointer;transition:all .2s;flex-shrink:0}
+.qa-btn:hover{background:#4a8c3f;color:#fff}
 
-.fs-app {
-  display: flex;
-  flex-direction: column;
-  height: 100%;
-  width: 100%;
-  background: var(--beige-bg);
-  border-radius: 0;
-  border: none;
-  overflow: hidden;
-  position: relative;
-  box-shadow: none;
-  margin: 0;
-}
+/* Chat */
+#chat-window{flex:1;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:12px;display:flex;flex-direction:column;gap:8px;background:url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none'%3E%3Cg fill='%234a8c3f' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")}
+#chat-window::-webkit-scrollbar{width:4px}
+#chat-window::-webkit-scrollbar-thumb{background:#b5a98a;border-radius:2px}
 
-/* HEADER */
-.fs-header {
-  background: linear-gradient(135deg, #2d6a1f 0%, #3d8a28 60%, #4fa832 100%);
-  padding: 14px 16px 12px;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  flex-shrink: 0;
-}
-.fs-header-top {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-.fs-logo {
-  width: 42px; height: 42px;
-  background: rgba(255,255,255,0.18);
-  border-radius: 12px;
-  display: flex; align-items: center; justify-content: center;
-  border: 1.5px solid rgba(255,255,255,0.35);
-  flex-shrink: 0;
-}
-.fs-logo svg { width: 24px; height: 24px; }
-.fs-header-text { flex: 1; }
-.fs-header-title { font-size: 15px; font-weight: 600; color: #fff; letter-spacing: 0.2px; line-height: 1.2; }
-.fs-header-sub { font-size: 11px; color: rgba(255,255,255,0.75); margin-top: 1px; }
-.fs-status { display: flex; align-items: center; gap: 5px; font-size: 11px; color: rgba(255,255,255,0.85); }
-.fs-status-dot {
-  width: 7px; height: 7px;
-  background: #7eff5e; border-radius: 50%;
-  animation: pulse 2s infinite;
-}
-@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
+/* Bubbles */
+.bubble-row{display:flex;align-items:flex-end;gap:6px}
+.bubble-row.user{flex-direction:row-reverse}
+.avatar{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0}
+.bot .avatar{background:#2d6a2d;color:#fff}
+.user .avatar{background:#8b6914;color:#fff}
+.bubble{max-width:80%;padding:8px 11px;border-radius:16px;font-size:0.82rem;line-height:1.5;word-break:break-word}
+.bot .bubble{background:#fff;color:#2c2c2c;border-bottom-left-radius:4px;box-shadow:0 1px 3px rgba(0,0,0,.08)}
+.user .bubble{background:#2d6a2d;color:#fff;border-bottom-right-radius:4px}
+.bubble-text{display:block;margin-bottom:3px}
+.bubble img{max-width:100%;border-radius:8px;margin-bottom:5px;display:block}
+.meta{display:flex;align-items:center;justify-content:flex-end;gap:5px;margin-top:2px}
+.time{font-size:0.6rem;opacity:0.5}
+.speak-btn{background:none;border:none;cursor:pointer;font-size:12px;padding:2px 3px;opacity:0.5;transition:opacity .2s}
+.speak-btn:hover{opacity:1}
+.speak-btn.active{opacity:1;animation:blink .8s infinite}
 
-.fs-quick-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 7px; padding: 0 2px; }
-.fs-qa-btn {
-  background: rgba(255,255,255,0.15);
-  border: 1px solid rgba(255,255,255,0.28);
-  border-radius: 10px;
-  padding: 7px 8px;
-  display: flex; align-items: center; gap: 7px;
-  cursor: pointer;
-  transition: background 0.15s, transform 0.1s;
-  text-align: left;
-}
-.fs-qa-btn:hover { background: rgba(255,255,255,0.28); transform: scale(1.02); }
-.fs-qa-btn:active { transform: scale(0.97); }
-.fs-qa-icon {
-  font-size: 16px;
-  width: 26px; height: 26px;
-  background: rgba(255,255,255,0.2);
-  border-radius: 7px;
-  display: flex; align-items: center; justify-content: center;
-  flex-shrink: 0;
-}
-.fs-qa-label { font-size: 11px; color: rgba(255,255,255,0.95); font-weight: 500; line-height: 1.2; }
+/* Typing */
+.typing-dots span{display:inline-block;width:6px;height:6px;background:#4a8c3f;border-radius:50%;margin:0 2px;animation:bounce 1.2s infinite}
+.typing-dots span:nth-child(2){animation-delay:.2s}
+.typing-dots span:nth-child(3){animation-delay:.4s}
 
-/* LOCATION BAR */
-.fs-location-bar {
-  background: rgba(255,248,235,0.97);
-  padding: 7px 14px;
-  display: flex; align-items: center; gap: 8px;
-  border-bottom: 1px solid var(--beige-bar);
-  flex-shrink: 0;
-}
-.fs-location-icon { font-size: 13px; }
-.fs-location-text { font-size: 12px; color: var(--brown-mid); flex: 1; }
-.fs-location-text span { color: var(--green-dark); font-weight: 600; }
-.fs-location-edit {
-  font-size: 11px; color: var(--green-dark);
-  background: none; border: 1px solid var(--green-dark);
-  border-radius: 6px; padding: 3px 8px;
-  cursor: pointer; font-family: inherit;
-  transition: background 0.15s, color 0.15s;
-}
-.fs-location-edit:hover { background: var(--green-dark); color: white; }
+/* Image preview */
+#image-preview-bar{display:none;align-items:center;gap:8px;padding:6px 12px;background:#e8e0cc;border-top:1px solid #d4c9b0;flex-shrink:0}
+#image-preview-bar.show{display:flex}
+#image-preview-bar img{height:45px;width:45px;object-fit:cover;border-radius:6px;border:2px solid #4a8c3f}
+#image-preview-bar span{font-size:0.75rem;color:#5a4a2a;flex:1}
+#remove-image{background:none;border:none;font-size:16px;cursor:pointer;color:#c0392b}
 
-/* CHAT AREA */
-.fs-chat {
-  flex: 1; overflow-y: auto;
-  padding: 14px 12px;
-  display: flex; flex-direction: column; gap: 10px;
-  background: var(--beige-bg);
-  scrollbar-width: thin;
-  scrollbar-color: var(--beige-border2) transparent;
-}
-.fs-chat::-webkit-scrollbar { width: 4px; }
-.fs-chat::-webkit-scrollbar-thumb { background: var(--beige-border2); border-radius: 2px; }
+/* Input bar */
+.input-bar{display:flex;align-items:center;gap:6px;padding:8px 10px;background:#ede8dc;border-top:1px solid #d4c9b0;flex-shrink:0}
+#user-input{flex:1;border:1.5px solid #c4b896;border-radius:20px;padding:8px 13px;font-size:0.82rem;background:#fff;outline:none;color:#2c2c2c}
+#user-input:focus{border-color:#4a8c3f}
+#user-input::placeholder{color:#a89870}
+.icon-btn{width:36px;height:36px;border-radius:50%;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:16px;transition:all .2s;flex-shrink:0}
+#img-btn{background:#e8e0cc;color:#5a4a2a}
+#img-btn:hover{background:#d4c9b0}
+#mic-btn{background:#e8e0cc;color:#5a4a2a}
+#mic-btn.recording{background:#c0392b;color:#fff}
+#send-btn{background:#2d6a2d;color:#fff}
+#send-btn:hover{background:#4a8c3f}
 
-.fs-date-divider {
-  text-align: center; font-size: 11px; color: var(--brown-hint);
-  margin: 4px 0; display: flex; align-items: center; gap: 8px;
-}
-.fs-date-divider::before, .fs-date-divider::after {
-  content: ''; flex: 1; height: 0.5px; background: var(--beige-border2);
+.welcome-card{background:linear-gradient(135deg,#2d6a2d,#4a8c3f);color:#fff;border-radius:14px;padding:14px;text-align:center}
+.welcome-card h2{font-size:0.9rem;margin-bottom:3px}
+.welcome-card p{font-size:0.72rem;opacity:0.9;line-height:1.4}
+
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+@keyframes bounce{0%,80%,100%{transform:translateY(0)}40%{transform:translateY(-7px)}}
+
+/* Tablet */
+@media (min-width:768px){
+  header{padding:12px 16px}
+  .logo{width:40px;height:40px;font-size:20px}
+  header h1{font-size:1rem}
+  header p{font-size:0.72rem}
+  .quick-actions{padding:9px 14px;gap:7px}
+  .qa-btn{padding:6px 11px;font-size:0.75rem}
+  #chat-window{padding:14px}
+  .bubble{font-size:0.85rem;padding:9px 12px}
+  .avatar{width:30px;height:30px}
+  .input-bar{padding:9px 12px;gap:7px}
+  #user-input{padding:9px 14px;font-size:0.85rem}
+  .icon-btn{width:38px;height:38px;font-size:17px}
 }
 
-.fs-bubble-row { display: flex; gap: 8px; align-items: flex-end; }
-.fs-bubble-row.bot { justify-content: flex-start; }
-.fs-bubble-row.user { justify-content: flex-end; }
-
-.fs-avatar {
-  width: 30px; height: 30px; border-radius: 50%;
-  background: var(--green-dark);
-  display: flex; align-items: center; justify-content: center;
-  flex-shrink: 0; border: 1.5px solid var(--green-light);
-}
-.fs-avatar svg { width: 16px; height: 16px; }
-
-.fs-bubble {
-  max-width: 78%; padding: 10px 13px; border-radius: 16px;
-  font-size: 13px; line-height: 1.5; position: relative;
-  word-wrap: break-word;
-  overflow-wrap: break-word;
-}
-.fs-bubble.bot {
-  background: #ffffff; color: var(--brown-text);
-  border-bottom-left-radius: 4px;
-  border: 0.5px solid #ddd3b8;
-}
-.fs-bubble.user {
-  background: var(--green-dark); color: #ffffff;
-  border-bottom-right-radius: 4px;
-}
-.fs-bubble img {
-  max-width: 100%;
-  height: auto;
-  border-radius: 8px;
-  display: block;
-}
-.fs-bubble-time { font-size: 10px; color: rgba(0,0,0,0.35); margin-top: 4px; text-align: right; }
-.fs-bubble.user .fs-bubble-time { color: rgba(255,255,255,0.6); }
-
-.fs-typing {
-  display: flex; align-items: center; gap: 4px;
-  padding: 12px 14px;
-  background: #fff; border-radius: 16px; border-bottom-left-radius: 4px;
-  border: 0.5px solid #ddd3b8; width: fit-content;
-}
-.fs-dot {
-  width: 6px; height: 6px; background: var(--green-dark); border-radius: 50%;
-  animation: bounce 1.2s infinite;
-}
-.fs-dot:nth-child(2) { animation-delay: 0.2s; }
-.fs-dot:nth-child(3) { animation-delay: 0.4s; }
-@keyframes bounce { 0%,80%,100%{transform:translateY(0)} 40%{transform:translateY(-5px)} }
-
-/* RECOMMENDATION CARD */
-.fs-rec-card {
-  background: #fff; border: 0.5px solid #ddd3b8;
-  border-radius: 14px; overflow: hidden; margin-top: 4px;
-  max-width: 100%;
-}
-.fs-rec-header {
-  background: var(--green-dark); padding: 9px 12px;
-  display: flex; align-items: center; gap: 8px;
-  flex-wrap: wrap;
-}
-.fs-rec-header-text { font-size: 12px; font-weight: 600; color: #fff; }
-.fs-rec-header-sub { font-size: 10px; color: rgba(255,255,255,0.7); margin-top: 1px; }
-.fs-rec-crops { padding: 10px 12px; display: flex; flex-direction: column; gap: 8px; }
-.fs-crop-item {
-  display: flex; align-items: center; gap: 10px;
-  padding: 8px 10px;
-  background: var(--beige-card); border-radius: 10px;
-  border: 0.5px solid var(--beige-border); cursor: pointer;
-  transition: background 0.15s;
-  flex-wrap: wrap;
-}
-.fs-crop-item:hover { background: #eee5cc; }
-.fs-crop-rank {
-  width: 22px; height: 22px; border-radius: 50%;
-  display: flex; align-items: center; justify-content: center;
-  font-size: 11px; font-weight: 600; flex-shrink: 0;
-}
-.rank-1 { background: #f5c842; color: #6b4a00; }
-.rank-2 { background: #b8b8b8; color: #3a3a3a; }
-.rank-3 { background: #c8845a; color: #4a2010; }
-.fs-crop-info { flex: 1; min-width: 0; }
-.fs-crop-name { font-size: 13px; font-weight: 600; color: #2d2010; word-wrap: break-word; }
-.fs-crop-detail { font-size: 11px; color: var(--brown-muted); margin-top: 1px; word-wrap: break-word; }
-.fs-crop-score {
-  font-size: 12px; font-weight: 600; color: var(--green-dark);
-  background: var(--green-pale); padding: 3px 8px; border-radius: 20px;
-  flex-shrink: 0;
-}
-
-/* LOCATION MODAL */
-.fs-modal {
-  display: none; position: fixed; inset: 0;
-  background: rgba(0,0,0,0.5); z-index: 100;
-  align-items: center; justify-content: center;
-  padding: 20px;
-}
-.fs-modal.show { display: flex; }
-.fs-modal-content {
-  background: #fff; border-radius: 16px;
-  padding: 20px; width: 100%; max-width: 340px;
-  box-shadow: 0 8px 24px rgba(0,0,0,0.3);
-}
-.fs-modal-title { font-size: 16px; font-weight: 600; color: var(--brown-text); margin-bottom: 16px; }
-.fs-form-group { margin-bottom: 14px; }
-.fs-form-label { font-size: 12px; color: var(--brown-mid); margin-bottom: 6px; display: block; font-weight: 500; }
-.fs-form-input, .fs-form-select {
-  width: 100%; padding: 9px 12px; border: 1px solid var(--beige-border2);
-  border-radius: 8px; font-size: 13px; font-family: inherit;
-  background: var(--beige-bg); color: var(--brown-text);
-}
-.fs-form-input:focus, .fs-form-select:focus { outline: none; border-color: var(--green-dark); }
-.fs-modal-actions { display: flex; gap: 8px; margin-top: 18px; flex-wrap: wrap; }
-.fs-btn {
-  flex: 1; padding: 10px; border: none; border-radius: 8px;
-  font-size: 13px; font-weight: 600; cursor: pointer;
-  font-family: inherit; transition: all 0.15s;
-  min-width: 120px;
-}
-.fs-btn-cancel { background: var(--beige-border); color: var(--brown-mid); }
-.fs-btn-cancel:hover { background: var(--beige-border2); }
-.fs-btn-primary { background: var(--green-dark); color: #fff; }
-.fs-btn-primary:hover { background: var(--green-mid); }
-
-/* INPUT AREA */
-.fs-input-area {
-  background: #fff; border-top: 1px solid var(--beige-bar);
-  padding: 10px 12px; flex-shrink: 0;
-}
-.fs-lang-row { display: flex; gap: 6px; margin-bottom: 8px; }
-.fs-lang-btn {
-  font-size: 11px; padding: 3px 10px; border-radius: 20px;
-  border: 1px solid var(--beige-border2); background: none;
-  color: var(--brown-muted); cursor: pointer; font-family: inherit;
-  transition: all 0.15s;
-}
-.fs-lang-btn.active { background: var(--green-dark); color: white; border-color: var(--green-dark); }
-.fs-input-row { display: flex; align-items: flex-end; gap: 8px; }
-.fs-input-wrap {
-  flex: 1; background: var(--beige-bg); border-radius: 22px;
-  border: 1px solid var(--beige-border2);
-  display: flex; align-items: flex-end; gap: 6px;
-  padding: 8px 12px; transition: border-color 0.15s;
-}
-.fs-input-wrap:focus-within { border-color: var(--green-dark); }
-.fs-textarea {
-  flex: 1; background: none; border: none; outline: none;
-  font-size: 13px; color: var(--brown-text); font-family: inherit;
-  resize: none; max-height: 80px; line-height: 1.4; min-height: 18px;
-}
-.fs-textarea::placeholder { color: var(--brown-placeholder); }
-.fs-img-btn {
-  width: 32px; height: 32px; background: none; border: none;
-  cursor: pointer; display: flex; align-items: center; justify-content: center;
-  border-radius: 50%; transition: background 0.15s; flex-shrink: 0;
-  color: var(--brown-muted); font-size: 18px;
-}
-.fs-img-btn:hover { background: var(--beige-border); }
-.fs-send-btn {
-  width: 40px; height: 40px; background: var(--green-dark);
-  border: none; border-radius: 50%; cursor: pointer;
-  display: flex; align-items: center; justify-content: center;
-  flex-shrink: 0; transition: background 0.15s, transform 0.1s;
-}
-.fs-send-btn:hover { background: var(--green-mid); }
-.fs-send-btn:active { transform: scale(0.94); }
-
-/* IMAGE PREVIEW */
-.fs-img-preview {
-  display: none; align-items: center; gap: 8px;
-  padding: 8px; background: var(--beige-card);
-  border-radius: 10px; margin-bottom: 8px;
-  border: 1px solid var(--beige-border);
-}
-.fs-img-preview.show { display: flex; }
-.fs-img-preview img {
-  width: 50px; height: 50px; object-fit: cover;
-  border-radius: 8px; border: 2px solid var(--green-dark);
-}
-.fs-img-preview-text { flex: 1; font-size: 12px; color: var(--brown-mid); }
-.fs-img-remove {
-  background: none; border: none; cursor: pointer;
-  color: #c0392b; font-size: 18px; padding: 4px;
-}
-
-/* CHART CONTAINER */
-.fs-chart-card {
-  background: #fff; border: 0.5px solid #ddd3b8;
-  border-radius: 14px; overflow: hidden; margin-top: 4px;
-  padding: 12px;
-  max-width: 100%;
-  width: 100%;
-}
-.fs-chart-title {
-  font-size: 13px; font-weight: 600; color: var(--brown-text);
-  margin-bottom: 10px; display: flex; align-items: center; gap: 6px;
-}
-.fs-chart-wrapper {
-  position: relative;
-  width: 100%;
-  height: 250px;
-}
-.fs-chart-canvas { 
-  width: 100% !important; 
-  height: 100% !important;
-  max-width: 100%;
-}
-
-@media (max-width: 480px) {
-  .fs-app { 
-    width: 100vw;
-    height: 100vh;
-    border-radius: 0; 
-  }
-  .fs-bubble { max-width: 85%; }
-  .fs-quick-actions { grid-template-columns: 1fr 1fr; gap: 6px; }
-  .fs-qa-label { font-size: 10px; }
-  .fs-chart-wrapper { height: 200px; }
-}
-
-@media (min-width: 481px) and (max-width: 768px) {
-  body { padding: 15px; }
-  .fs-app { 
-    width: 100%;
-    height: calc(100vh - 30px);
-    max-width: 700px;
-    border-radius: 16px;
-    box-shadow: 0 12px 30px rgba(45,106,31,0.15);
-    border: 0.5px solid var(--beige-border2);
-  }
-  .fs-chart-wrapper { height: 240px; }
-}
-
-@media (min-width: 769px) and (max-width: 1024px) {
-  body { padding: 20px; }
-  .fs-app { 
-    width: 100%;
-    height: calc(100vh - 40px);
-    max-width: 900px;
-    border-radius: 20px;
-    box-shadow: 0 24px 60px rgba(45,106,31,0.18), 0 4px 12px rgba(0,0,0,0.1);
-    border: 0.5px solid var(--beige-border2);
-  }
-  .fs-chart-wrapper { height: 280px; }
-}
-
-@media (min-width: 1025px) and (max-width: 1440px) {
-  body { padding: 30px; }
-  .fs-app { 
-    width: 100%;
-    height: calc(100vh - 60px);
-    max-width: 1100px;
-    border-radius: 20px;
-    box-shadow: 0 24px 60px rgba(45,106,31,0.18), 0 4px 12px rgba(0,0,0,0.1);
-    border: 0.5px solid var(--beige-border2);
-  }
-  .fs-header-title { font-size: 17px; }
-  .fs-header-sub { font-size: 12px; }
-  .fs-bubble { font-size: 14px; }
-  .fs-chart-wrapper { height: 320px; }
-}
-
-@media (min-width: 1441px) {
-  body { padding: 40px; }
-  .fs-app { 
-    width: 100%;
-    height: calc(100vh - 80px);
-    max-width: 1400px;
-    border-radius: 24px;
-    box-shadow: 0 24px 60px rgba(45,106,31,0.18), 0 4px 12px rgba(0,0,0,0.1);
-    border: 0.5px solid var(--beige-border2);
-  }
-  .fs-header-title { font-size: 18px; }
-  .fs-header-sub { font-size: 13px; }
-  .fs-bubble { font-size: 15px; }
-  .fs-chart-wrapper { height: 360px; }
-  .fs-quick-actions { grid-template-columns: repeat(4, 1fr); }
+/* Desktop */
+@media (min-width:1024px){
+  header{padding:14px 18px}
+  .logo{width:42px;height:42px;font-size:22px}
+  header h1{font-size:1.05rem}
+  header p{font-size:0.75rem}
+  .quick-actions{padding:10px 16px;gap:8px}
+  .qa-btn{padding:7px 12px;font-size:0.78rem}
+  #chat-window{padding:16px}
+  .bubble{font-size:0.88rem;padding:10px 13px}
+  .avatar{width:32px;height:32px;font-size:15px}
+  .input-bar{padding:10px 14px;gap:8px}
+  #user-input{padding:10px 15px;font-size:0.88rem}
+  .icon-btn{width:40px;height:40px;font-size:18px}
 }
 </style>
 </head>
 <body>
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 
-<div class="fs-app">
-
-  <!-- HEADER -->
-  <div class="fs-header">
-    <div class="fs-header-top">
-      <div class="fs-logo">
-        <svg viewBox="0 0 24 24" fill="none">
-          <path d="M12 2C9 2 6 4.5 6 8c0 2.5 1.5 4.5 3.5 5.5L9 20h6l-.5-6.5C16.5 12.5 18 10.5 18 8c0-3.5-3-6-6-6z" fill="rgba(255,255,255,0.9)"/>
-          <path d="M12 2 Q14 5 12 8 Q10 5 12 2Z" fill="#7eff5e" opacity="0.8"/>
-          <rect x="11" y="20" width="2" height="2" rx="1" fill="rgba(255,255,255,0.6)"/>
-        </svg>
-      </div>
-      <div class="fs-header-text">
-        <div class="fs-header-title">Fahamu Shamba</div>
-        <div class="fs-header-sub">Your Farming Advisor – Mshauri Wako wa Kilimo</div>
-      </div>
-      <div class="fs-status">
-        <div class="fs-status-dot"></div>
-        <span>Online</span>
-      </div>
-    </div>
-
-    <div class="fs-quick-actions">
-      <button class="fs-qa-btn" onclick="quickAction('What is the best crop to plant in my area right now?')">
-        <div class="fs-qa-icon">🌾</div>
-        <div class="fs-qa-label">Best Crop<br>to Plant</div>
-      </button>
-      <button class="fs-qa-btn" onclick="quickAction('Give me the current weather update and farming advice for my area')">
-        <div class="fs-qa-icon">☀️</div>
-        <div class="fs-qa-label">Weather<br>Update</div>
-      </button>
-      <button class="fs-qa-btn" onclick="quickAction('What pests and diseases should I watch out for this season?')">
-        <div class="fs-qa-icon">🐛</div>
-        <div class="fs-qa-label">Pest & Disease<br>Tips</div>
-      </button>
-      <button class="fs-qa-btn" onclick="quickAction('What are the current market prices for crops in Kenya?')">
-        <div class="fs-qa-icon">📈</div>
-        <div class="fs-qa-label">Market<br>Prices</div>
-      </button>
-    </div>
+<header>
+  <div class="logo">🌾</div>
+  <div>
+    <h1>Fahamu Shamba</h1>
+    <p>Your Farming Advisor</p>
   </div>
-
-  <!-- LOCATION BAR -->
-  <div class="fs-location-bar">
-    <span class="fs-location-icon">📍</span>
-    <div class="fs-location-text">Location: <span id="locationDisplay">Not set</span></div>
-    <button class="fs-location-edit" onclick="openLocationModal()">Change</button>
+  <div class="header-right">
+    <div class="status-dot"></div>
   </div>
+</header>
 
-  <!-- CHAT AREA -->
-  <div class="fs-chat" id="chatArea">
-    <div class="fs-date-divider">Today</div>
-  </div>
-
-  <!-- INPUT AREA -->
-  <div class="fs-input-area">
-    <div class="fs-img-preview" id="imgPreview">
-      <img id="previewThumb" src="" alt="preview">
-      <span class="fs-img-preview-text" id="previewName">Image ready</span>
-      <button class="fs-img-remove" onclick="clearImage()">✕</button>
-    </div>
-    <div class="fs-lang-row">
-      <button class="fs-lang-btn active" id="engBtn" onclick="setLang('en')">English</button>
-      <button class="fs-lang-btn" id="swBtn" onclick="setLang('sw')">Kiswahili</button>
-    </div>
-    <div class="fs-input-row">
-      <div class="fs-input-wrap">
-        <button class="fs-img-btn" onclick="document.getElementById('fileInput').click()" title="Upload image">📷</button>
-        <textarea class="fs-textarea" id="msgInput" placeholder="Ask about your farm..." rows="1"
-          oninput="autoResize(this)"
-          onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendMsg();}"></textarea>
-      </div>
-      <button class="fs-send-btn" onclick="sendMsg()">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-          <line x1="22" y1="2" x2="11" y2="13"/>
-          <polygon points="22 2 15 22 11 13 2 9 22 2"/>
-        </svg>
-      </button>
-    </div>
-  </div>
-
+<div class="quick-actions">
+  <button class="qa-btn" onclick="quickAsk('What is the best crop to plant in Kenya right now?')">🌾 Best Crop</button>
+  <button class="qa-btn" onclick="quickAsk('Give me weather update for Kenyan farmers')">☀️ Weather</button>
+  <button class="qa-btn" onclick="quickAsk('Common pests and diseases in Kenya')">🐛 Pest Tips</button>
+  <button class="qa-btn" onclick="quickAsk('Current market prices for crops in Kenya')">📈 Market Prices</button>
+  <button class="qa-btn" onclick="document.getElementById('file-input').click()">📷 Upload Photo</button>
 </div>
 
-<input type="file" id="fileInput" accept="image/*" style="display:none" onchange="handleImageSelect(event)">
-
-<!-- LOCATION MODAL -->
-<div class="fs-modal" id="locationModal">
-  <div class="fs-modal-content">
-    <div class="fs-modal-title">📍 Set Your Location</div>
-    <div class="fs-form-group">
-      <label class="fs-form-label">County</label>
-      <select class="fs-form-select" id="countySelect">
-        <option value="">Select County</option>
-        <option value="Nairobi">Nairobi</option>
-        <option value="Kiambu">Kiambu</option>
-        <option value="Nakuru">Nakuru</option>
-        <option value="Kisumu">Kisumu</option>
-        <option value="Siaya">Siaya</option>
-        <option value="Kakamega">Kakamega</option>
-        <option value="Bungoma">Bungoma</option>
-        <option value="Meru">Meru</option>
-        <option value="Embu">Embu</option>
-        <option value="Machakos">Machakos</option>
-        <option value="Kitui">Kitui</option>
-        <option value="Nyeri">Nyeri</option>
-        <option value="Murang'a">Murang'a</option>
-        <option value="Kirinyaga">Kirinyaga</option>
-        <option value="Uasin Gishu">Uasin Gishu</option>
-      </select>
-    </div>
-    <div class="fs-form-group">
-      <label class="fs-form-label">Sub-location</label>
-      <select class="fs-form-select" id="sublocationSelect" disabled>
-        <option value="">Select county first</option>
-      </select>
-    </div>
-    <div class="fs-modal-actions">
-      <button class="fs-btn fs-btn-cancel" onclick="closeLocationModal()">Cancel</button>
-      <button class="fs-btn fs-btn-primary" onclick="saveLocation()">Save Location</button>
-    </div>
+<div id="chat-window">
+  <div class="welcome-card">
+    <h2>🌱 Karibu! Welcome to Fahamu Shamba</h2>
+    <p>Ask me about crops, weather, pests or markets. Upload a crop photo for pest/disease diagnosis.</p>
   </div>
+</div>
+
+<div id="image-preview-bar">
+  <img id="preview-thumb" src="" alt="preview"/>
+  <span id="preview-name">Image ready</span>
+  <button id="remove-image">✕</button>
+</div>
+
+<input type="file" id="file-input" accept="image/*" style="display:none"/>
+
+<div class="input-bar">
+  <button class="icon-btn" id="img-btn" title="Upload image">📷</button>
+  <input type="text" id="user-input" placeholder="Ask about crops, weather, markets..."/>
+  <button class="icon-btn" id="mic-btn" title="Voice input">🎤</button>
+  <button class="icon-btn" id="send-btn">➤</button>
 </div>
 
 <script>
-// ── State ─────────────────────────────────────────────────────────────────────
-let userLocation = { county: '', village: '' };
-let currentLang = 'en';
-let sessionId = 'session_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
-let selectedImage = null;
+const chatWindow=document.getElementById('chat-window');
+const userInput=document.getElementById('user-input');
+const sendBtn=document.getElementById('send-btn');
+const micBtn=document.getElementById('mic-btn');
+const imgBtn=document.getElementById('img-btn');
+const fileInput=document.getElementById('file-input');
+const previewBar=document.getElementById('image-preview-bar');
+const previewThumb=document.getElementById('preview-thumb');
+const previewName=document.getElementById('preview-name');
+const removeImageBtn=document.getElementById('remove-image');
 
-// ── Utils ─────────────────────────────────────────────────────────────────────
-const now = () => new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
+let selectedFile=null;
+let activeSpeakBtn=null;
 
-function autoResize(el) {
-  el.style.height = 'auto';
-  el.style.height = Math.min(el.scrollHeight, 80) + 'px';
-}
+const now=()=>new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
 
-function setLang(lang) {
-  currentLang = lang;
-  document.getElementById('engBtn').classList.toggle('active', lang === 'en');
-  document.getElementById('swBtn').classList.toggle('active', lang === 'sw');
-  document.getElementById('msgInput').placeholder = lang === 'sw' ? 'Uliza kuhusu shamba lako...' : 'Ask about your farm...';
-}
-
-// ── County Sub-locations Data ────────────────────────────────────────────────
-const countySublocations = {
-  'Nairobi': ['Westlands', 'Dagoretti', 'Langata', 'Kibra', 'Roysambu', 'Kasarani', 'Ruaraka', 'Embakasi', 'Makadara', 'Kamukunji', 'Starehe', 'Mathare'],
-  'Kiambu': ['Limuru', 'Kikuyu', 'Kabete', 'Githunguri', 'Kiambaa', 'Ruiru', 'Juja', 'Thika', 'Gatundu', 'Lari'],
-  'Nakuru': ['Nakuru Town', 'Naivasha', 'Gilgil', 'Molo', 'Njoro', 'Rongai', 'Subukia', 'Bahati', 'Kuresoi'],
-  'Kisumu': ['Kisumu Central', 'Kisumu East', 'Kisumu West', 'Seme', 'Nyando', 'Muhoroni', 'Nyakach'],
-  'Siaya': ['Bondo', 'Rarieda', 'Ugenya', 'Ugunja', 'Gem', 'Alego Usonga'],
-  'Kakamega': ['Kakamega Town', 'Mumias', 'Butere', 'Khwisero', 'Shinyalu', 'Lurambi', 'Ikolomani', 'Lugari', 'Malava', 'Matungu', 'Navakholo'],
-  'Bungoma': ['Bungoma Town', 'Webuye', 'Kimilili', 'Bumula', 'Kanduyi', 'Sirisia', 'Kabuchai', 'Tongaren', 'Mt. Elgon'],
-  'Meru': ['Meru Town', 'Imenti North', 'Imenti South', 'Imenti Central', 'Tigania East', 'Tigania West', 'Igembe North', 'Igembe South', 'Igembe Central'],
-  'Embu': ['Embu Town', 'Manyatta', 'Runyenjes', 'Mbeere North', 'Mbeere South'],
-  'Machakos': ['Machakos Town', 'Kangundo', 'Matungulu', 'Kathiani', 'Mavoko', 'Yatta', 'Masinga', 'Mwala'],
-  'Kitui': ['Kitui Town', 'Mwingi', 'Kitui Central', 'Kitui West', 'Kitui East', 'Kitui South', 'Mwingi North', 'Mwingi Central'],
-  'Nyeri': ['Nyeri Town', 'Othaya', 'Tetu', 'Kieni', 'Mathira', 'Mukurweini'],
-  "Murang'a": ['Murang\'a Town', 'Kangema', 'Kiharu', 'Kigumo', 'Maragwa', 'Kandara', 'Gatanga'],
-  'Kirinyaga': ['Kerugoya', 'Kutus', 'Gichugu', 'Ndia', 'Kirinyaga Central', 'Mwea'],
-  'Uasin Gishu': ['Eldoret', 'Ainabkoi', 'Kapseret', 'Kesses', 'Moiben', 'Soy', 'Turbo']
-};
-
-// ── Image Upload ─────────────────────────────────────────────────────────────
-function handleImageSelect(event) {
-  const file = event.target.files[0];
-  if (!file || !file.type.startsWith('image/')) return;
-  
-  selectedImage = file;
-  const preview = document.getElementById('imgPreview');
-  const thumb = document.getElementById('previewThumb');
-  const name = document.getElementById('previewName');
-  
-  thumb.src = URL.createObjectURL(file);
-  name.textContent = file.name;
-  preview.classList.add('show');
-  
-  document.getElementById('msgInput').placeholder = 'Ask about this image...';
-}
-
-function clearImage() {
-  selectedImage = null;
-  document.getElementById('imgPreview').classList.remove('show');
-  document.getElementById('fileInput').value = '';
-  document.getElementById('msgInput').placeholder = 'Ask about your farm...';
-}
-
-// ── Chart Generation ──────────────────────────────────────────────────────────
-function addChartCard(title, data) {
-  const chat = document.getElementById('chatArea');
-  const chartId = 'chart_' + Date.now();
-  
-  const row = document.createElement('div');
-  row.className = 'fs-bubble-row bot';
-  row.innerHTML = `
-    <div class="fs-avatar">
-      <svg viewBox="0 0 24 24" fill="none"><path d="M12 3C9.5 3 7.5 5 7.5 8c0 1.8 1 3.4 2.5 4.3L9.5 18h5l-.5-5.7C15.5 11.4 16.5 9.8 16.5 8c0-3-2-5-4.5-5z" fill="rgba(255,255,255,0.9)"/></svg>
-    </div>
-    <div style="flex:1;max-width:85%;">
-      <div class="fs-chart-card">
-        <div class="fs-chart-title">📊 ${title}</div>
-        <div class="fs-chart-wrapper">
-          <canvas id="${chartId}" class="fs-chart-canvas"></canvas>
-        </div>
+function addBubble(htmlText,role,imgUrl=null){
+  const row=document.createElement('div');
+  row.className=`bubble-row ${role}`;
+  const imgTag=imgUrl?`<img src="${imgUrl}" alt="crop"/>`:'';
+  const speakBtnHtml=role==='bot'?`<button class="speak-btn" title="Read aloud" data-text="">🔊</button>`:'';
+  row.innerHTML=`
+    <div class="avatar">${role==='bot'?'🌾':'👨🌾'}</div>
+    <div class="bubble">
+      ${imgTag}
+      <span class="bubble-text">${htmlText}</span>
+      <div class="meta">
+        ${speakBtnHtml}
+        <span class="time">${now()}</span>
       </div>
-    </div>
-  `;
-  chat.appendChild(row);
-  chat.scrollTop = chat.scrollHeight;
-  
-  // Create chart with responsive settings
-  setTimeout(() => {
-    const ctx = document.getElementById(chartId);
-    if (!ctx) return;
-    
-    new Chart(ctx, {
-      type: data.type || 'line',
-      data: data.chartData,
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: {
-          legend: { 
-            display: data.showLegend !== false,
-            position: 'top',
-            labels: {
-              boxWidth: 12,
-              font: { size: 11 },
-              padding: 8
-            }
-          }
-        },
-        scales: {
-          y: { 
-            beginAtZero: true,
-            ticks: { font: { size: 10 } }
-          },
-          x: {
-            ticks: { font: { size: 10 } }
-          }
-        },
-        layout: {
-          padding: 5
-        }
-      }
-    });
-  }, 100);
-}
-
-// ── Location Modal ────────────────────────────────────────────────────────────
-function openLocationModal() {
-  document.getElementById('locationModal').classList.add('show');
-}
-
-function closeLocationModal() {
-  document.getElementById('locationModal').classList.remove('show');
-}
-
-// Update sub-locations when county changes
-document.getElementById('countySelect').addEventListener('change', function() {
-  const county = this.value;
-  const sublocationSelect = document.getElementById('sublocationSelect');
-  
-  if (county && countySublocations[county]) {
-    sublocationSelect.disabled = false;
-    sublocationSelect.innerHTML = '<option value="">Select sub-location</option>';
-    
-    countySublocations[county].forEach(subloc => {
-      const option = document.createElement('option');
-      option.value = subloc;
-      option.textContent = subloc;
-      sublocationSelect.appendChild(option);
-    });
-  } else {
-    sublocationSelect.disabled = true;
-    sublocationSelect.innerHTML = '<option value="">Select county first</option>';
+    </div>`;
+  if(role==='bot'){
+    const plain=htmlText.replace(/<br\s*\/?>/gi,' ').replace(/<[^>]+>/g,'');
+    row.querySelector('.speak-btn').dataset.text=plain;
+    row.querySelector('.speak-btn').addEventListener('click',function(){onSpeakBtn(this);});
   }
-});
-
-function saveLocation() {
-  const county = document.getElementById('countySelect').value;
-  const sublocation = document.getElementById('sublocationSelect').value;
-  
-  if (!county) {
-    alert('Please select a county');
-    return;
-  }
-  
-  if (!sublocation) {
-    alert('Please select a sub-location');
-    return;
-  }
-  
-  userLocation = { county, village: sublocation };
-  const displayText = `${sublocation}, ${county}`;
-  document.getElementById('locationDisplay').textContent = displayText;
-  closeLocationModal();
-  
-  // Auto-trigger crop recommendation
-  const query = `I am in ${displayText}, Kenya. What are the best crops to plant right now based on my location, soil, and current season?`;
-  setTimeout(() => sendMsg(query), 300);
+  chatWindow.appendChild(row);
+  chatWindow.scrollTop=chatWindow.scrollHeight;
+  return row;
 }
 
-// ── Chat Functions ────────────────────────────────────────────────────────────
-function addBotBubble(htmlText) {
-  const chat = document.getElementById('chatArea');
-  const row = document.createElement('div');
-  row.className = 'fs-bubble-row bot';
-  row.innerHTML = `
-    <div class="fs-avatar">
-      <svg viewBox="0 0 24 24" fill="none"><path d="M12 3C9.5 3 7.5 5 7.5 8c0 1.8 1 3.4 2.5 4.3L9.5 18h5l-.5-5.7C15.5 11.4 16.5 9.8 16.5 8c0-3-2-5-4.5-5z" fill="rgba(255,255,255,0.9)"/></svg>
-    </div>
-    <div style="flex:1;max-width:85%;">
-      <div class="fs-bubble bot" style="max-width:100%;">
-        ${htmlText}
-        <div class="fs-bubble-time">${now()} ✓✓</div>
-      </div>
-    </div>
-  `;
-  chat.appendChild(row);
-  chat.scrollTop = chat.scrollHeight;
-}
-
-function addUserBubble(text) {
-  const chat = document.getElementById('chatArea');
-  const row = document.createElement('div');
-  row.className = 'fs-bubble-row user';
-  row.innerHTML = `
-    <div class="fs-bubble user">
-      ${text}
-      <div class="fs-bubble-time">${now()} ✓</div>
-    </div>
-  `;
-  chat.appendChild(row);
-  chat.scrollTop = chat.scrollHeight;
-}
-
-function showTyping() {
+function showTyping(){
   removeTyping();
-  const chat = document.getElementById('chatArea');
-  const row = document.createElement('div');
-  row.id = 'typingRow';
-  row.className = 'fs-bubble-row bot';
-  row.innerHTML = `
-    <div class="fs-avatar">
-      <svg viewBox="0 0 24 24" fill="none"><path d="M12 3C9.5 3 7.5 5 7.5 8c0 1.8 1 3.4 2.5 4.3L9.5 18h5l-.5-5.7C15.5 11.4 16.5 9.8 16.5 8c0-3-2-5-4.5-5z" fill="rgba(255,255,255,0.9)"/></svg>
-    </div>
-    <div class="fs-typing">
-      <div class="fs-dot"></div>
-      <div class="fs-dot"></div>
-      <div class="fs-dot"></div>
-    </div>
-  `;
-  chat.appendChild(row);
-  chat.scrollTop = chat.scrollHeight;
+  const row=document.createElement('div');
+  row.id='typing-row';
+  row.className='bubble-row bot';
+  row.innerHTML=`<div class="avatar">🌾</div><div class="bubble"><div class="typing-dots"><span></span><span></span><span></span></div></div>`;
+  chatWindow.appendChild(row);
+  chatWindow.scrollTop=chatWindow.scrollHeight;
+}
+function removeTyping(){
+  const t=document.getElementById('typing-row');
+  if(t)t.remove();
 }
 
-function removeTyping() {
-  const t = document.getElementById('typingRow');
-  if (t) t.remove();
+function stopSpeaking(){
+  window.speechSynthesis.cancel();
+  if(activeSpeakBtn){activeSpeakBtn.classList.remove('active');activeSpeakBtn=null;}
 }
 
-function addRecommendationCard(crops, location) {
-  const html = `
-    <div class="fs-rec-card">
-      <div class="fs-rec-header">
-        <div>
-          <div class="fs-rec-header-text">Top Crop Recommendations</div>
-          <div class="fs-rec-header-sub">${location}</div>
-        </div>
-      </div>
-      <div class="fs-rec-crops">
-        ${crops.map((crop, i) => `
-          <div class="fs-crop-item">
-            <div class="fs-crop-rank rank-${i+1}">${i+1}</div>
-            <div class="fs-crop-info">
-              <div class="fs-crop-name">${crop.name}</div>
-              <div class="fs-crop-detail">${crop.detail}</div>
-            </div>
-            <div class="fs-crop-score">${crop.score}%</div>
-          </div>
-        `).join('')}
-      </div>
-    </div>
-  `;
-  addBotBubble(html);
-}
-
-// ── API Call ──────────────────────────────────────────────────────────────────
-async function fetchReply(text, imageFile = null) {
-  if (imageFile) {
-    const formData = new FormData();
-    formData.append('image', imageFile);
-    formData.append('message', text || 'What do you see in this image? Provide agricultural advice.');
-    formData.append('session_id', sessionId);
-    
-    const r = await fetch('/analyze-image', {
-      method: 'POST',
-      body: formData
-    });
-    return (await r.json()).reply;
+function speak(text,onDone){
+  stopSpeaking();
+  const sentences=text.match(/[^.!?]+[.!?]*/g)||[text];
+  let i=0;
+  function next(){
+    if(i>=sentences.length){if(onDone)onDone();return;}
+    const utt=new SpeechSynthesisUtterance(sentences[i++].trim());
+    utt.lang='en-US';
+    utt.rate=0.93;
+    utt.onend=next;
+    utt.onerror=next;
+    window.speechSynthesis.speak(utt);
   }
-  
-  const r = await fetch('/chat', {
-    method: 'POST',
-    headers: {'Content-Type': 'application/json'},
-    body: JSON.stringify({message: text, session_id: sessionId})
+  next();
+}
+
+function onSpeakBtn(btn){
+  if(btn.classList.contains('active')){
+    stopSpeaking();
+    return;
+  }
+  stopSpeaking();
+  activeSpeakBtn=btn;
+  btn.classList.add('active');
+  speak(btn.dataset.text,()=>{
+    btn.classList.remove('active');
+    activeSpeakBtn=null;
   });
-  return (await r.json()).reply;
 }
 
-// ── Send Message ──────────────────────────────────────────────────────────────
-async function sendMsg(customText) {
-  const inp = document.getElementById('msgInput');
-  const val = customText || inp.value.trim();
-  const imgFile = selectedImage;
-  
-  if (!val && !imgFile) return;
-  
-  // Show user message with image if present
-  if (imgFile) {
-    const imgUrl = URL.createObjectURL(imgFile);
-    const chat = document.getElementById('chatArea');
-    const row = document.createElement('div');
-    row.className = 'fs-bubble-row user';
-    row.innerHTML = `
-      <div class="fs-bubble user">
-        <img src="${imgUrl}" style="max-width:100%;border-radius:8px;margin-bottom:6px;">
-        ${val || 'What do you see in this image?'}
-        <div class="fs-bubble-time">${now()} ✓</div>
-      </div>
-    `;
-    chat.appendChild(row);
-    chat.scrollTop = chat.scrollHeight;
-  } else {
-    addUserBubble(val);
+async function fetchReply(text,file){
+  if(file){
+    const fd=new FormData();
+    fd.append('image',file);
+    fd.append('message',text||'Identify any pest, disease, or crop condition in this image.');
+    const r=await fetch('/analyze-image',{method:'POST',body:fd});
+    return(await r.json()).reply;
   }
-  
-  inp.value = '';
-  inp.style.height = 'auto';
-  clearImage();
+  const r=await fetch('/chat',{
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({message:text})
+  });
+  return(await r.json()).reply;
+}
+
+async function sendMessage(text,file=null){
+  text=(text||'').trim();
+  if(!text&&!file)return;
+
+  const imgUrl=file?URL.createObjectURL(file):null;
+  addBubble(text||'📷 Analyze this crop image.','user',imgUrl);
+  userInput.value='';
+  clearImagePreview();
   showTyping();
-  
-  try {
-    const reply = await fetchReply(val, imgFile);
+
+  try{
+    const reply=await fetchReply(text,file);
     removeTyping();
-    
-    // Check for chart data in response
-    const chartMatch = reply.match(/CHART_DATA:\s*({[\s\S]*?})\s*END_CHART/i);
-    if (chartMatch) {
-      try {
-        const chartData = JSON.parse(chartMatch[1]);
-        const textBefore = reply.substring(0, chartMatch.index).trim();
-        if (textBefore) addBotBubble(textBefore);
-        addChartCard(chartData.title, chartData);
-        const textAfter = reply.substring(chartMatch.index + chartMatch[0].length).trim();
-        if (textAfter) addBotBubble(textAfter);
-        return;
-      } catch(e) {
-        console.error('Chart parse error:', e);
-      }
-    }
-    
-    // Check if this is a crop recommendation query
-    if (val.toLowerCase().includes('best crop') || val.toLowerCase().includes('what to plant') || val.toLowerCase().includes('recommend')) {
-      const cropPattern = /CROP:\s*(.+?)\nDETAILS:\s*(.+?)\nSCORE:\s*(\d+)/g;
-      const crops = [];
-      let match;
-      
-      while ((match = cropPattern.exec(reply)) !== null) {
-        crops.push({
-          name: match[1].trim(),
-          detail: match[2].trim(),
-          score: parseInt(match[3])
-        });
-      }
-      
-      if (crops.length >= 3) {
-        const introEnd = reply.indexOf('CROP:');
-        const intro = introEnd > 0 ? reply.substring(0, introEnd).trim() : 'Here are my recommendations:';
-        addBotBubble(intro);
-        
-        const loc = userLocation.county ? `${userLocation.village || ''}, ${userLocation.county}`.trim() : 'Your Area';
-        addRecommendationCard(crops.slice(0, 3), loc);
-      } else {
-        addBotBubble(reply.replace(/\n/g, '<br>'));
-      }
-    } else {
-      addBotBubble(reply.replace(/\n/g, '<br>'));
-    }
-  } catch(e) {
+    addBubble(reply.replace(/\n/g,'<br>'),'bot');
+  }catch(e){
     removeTyping();
-    addBotBubble('Sorry, I could not connect. Please try again.');
+    addBubble('Sorry, I could not connect. Please try again.','bot');
   }
 }
 
-function quickAction(text) {
-  sendMsg(text);
-}
+function quickAsk(text){sendMessage(text,null);}
 
-// ── Initialize ────────────────────────────────────────────────────────────────
-window.addEventListener('DOMContentLoaded', () => {
-  addBotBubble(`Habari! I am <strong>Fahamu Shamba</strong>, your personal farm advisor. 🌱<br><br>To get started, please set your location by clicking <strong>Change</strong> above. I can then help you choose the right crops, monitor weather, manage pests, and track market prices.`);
-  
-  // Auto-open location modal after 1 second
-  setTimeout(() => {
-    if (!userLocation.county) {
-      openLocationModal();
+sendBtn.addEventListener('click',()=>sendMessage(userInput.value,selectedFile));
+userInput.addEventListener('keydown',e=>{if(e.key==='Enter')sendMessage(userInput.value,selectedFile);});
+
+function clearImagePreview(){
+  selectedFile=null;
+  previewBar.classList.remove('show');
+  previewThumb.src='';
+  fileInput.value='';
+  userInput.placeholder='Ask about crops, weather, markets...';
+}
+function handleFile(file){
+  if(!file||!file.type.startsWith('image/'))return;
+  selectedFile=file;
+  previewThumb.src=URL.createObjectURL(file);
+  previewName.textContent=file.name;
+  previewBar.classList.add('show');
+  userInput.placeholder='Add a question about this image (optional)...';
+  userInput.focus();
+}
+imgBtn.addEventListener('click',()=>fileInput.click());
+fileInput.addEventListener('change',e=>handleFile(e.target.files[0]));
+removeImageBtn.addEventListener('click',clearImagePreview);
+chatWindow.addEventListener('dragover',e=>e.preventDefault());
+chatWindow.addEventListener('drop',e=>{e.preventDefault();handleFile(e.dataTransfer.files[0]);});
+
+const SRClass=window.SpeechRecognition||window.webkitSpeechRecognition;
+document.addEventListener('click',()=>{
+  const u=new SpeechSynthesisUtterance('');
+  window.speechSynthesis.speak(u);
+  window.speechSynthesis.cancel();
+},{once:true});
+
+if(SRClass){
+  let recog=null;
+  micBtn.addEventListener('click',()=>{
+    if(micBtn.classList.contains('recording')){
+      if(recog)recog.stop();
+      micBtn.classList.remove('recording');
+    }else{
+      recog=new SRClass();
+      recog.lang='en-US';
+      recog.continuous=false;
+      recog.interimResults=true;
+      recog.onresult=e=>{
+        userInput.value=Array.from(e.results).map(r=>r[0].transcript).join('');
+      };
+      recog.onend=()=>micBtn.classList.remove('recording');
+      recog.onerror=()=>micBtn.classList.remove('recording');
+      micBtn.classList.add('recording');
+      try{recog.start();}catch(e){micBtn.classList.remove('recording');}
     }
-  }, 1500);
-});
+  });
+}else{
+  micBtn.disabled=true;
+  micBtn.style.opacity='.4';
+}
 </script>
 </body>
 </html>
