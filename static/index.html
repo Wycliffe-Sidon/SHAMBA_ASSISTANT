@@ -3,33 +3,33 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
-<title>Fahamu Shamba</title>
+<title>Fahamu Shamba - AI Farming Assistant</title>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 html,body{width:100%;height:100%;overflow:hidden}
-body{font-family:'Segoe UI',sans-serif;background:#f5f0e8;display:flex;flex-direction:column}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;background:#f7f7f8;display:flex;flex-direction:column}
 
 /* Header */
-header{background:linear-gradient(135deg,#2d6a2d,#4a8c3f);color:#fff;padding:10px 14px;display:flex;align-items:center;gap:8px;flex-shrink:0}
-.logo{width:36px;height:36px;background:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
-header h1{font-size:0.95rem;font-weight:700}
-header p{font-size:0.7rem;opacity:0.85}
-.header-right{margin-left:auto;display:flex;align-items:center;gap:6px}
-.status-dot{width:8px;height:8px;background:#7fff7f;border-radius:50%;animation:blink 2s infinite}
+header{background:#fff;color:#2c2c2c;padding:12px 16px;display:flex;align-items:center;gap:10px;flex-shrink:0;border-bottom:1px solid #e5e5e5;box-shadow:0 1px 2px rgba(0,0,0,0.04)}
+.logo{width:32px;height:32px;background:linear-gradient(135deg,#2d6a2d,#4a8c3f);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;color:#fff}
+header h1{font-size:0.95rem;font-weight:600;color:#2c2c2c}
+header p{font-size:0.7rem;color:#6b6b6b}
+.header-right{margin-left:auto;display:flex;align-items:center;gap:8px}
+.status-dot{width:8px;height:8px;background:#10a37f;border-radius:50%;animation:pulse 2s infinite}
 
 /* Quick actions */
-.quick-actions{display:flex;gap:6px;padding:8px 12px;background:#ede8dc;overflow-x:auto;flex-shrink:0;border-bottom:1px solid #d4c9b0}
+.quick-actions{display:flex;gap:6px;padding:10px 16px;background:#fff;overflow-x:auto;flex-shrink:0;border-bottom:1px solid #e5e5e5}
 .quick-actions::-webkit-scrollbar{display:none}
-.qa-btn{white-space:nowrap;background:#fff;border:1.5px solid #4a8c3f;color:#2d6a2d;padding:5px 10px;border-radius:18px;font-size:0.72rem;font-weight:600;cursor:pointer;transition:all .2s;flex-shrink:0}
-.qa-btn:hover{background:#4a8c3f;color:#fff}
+.qa-btn{white-space:nowrap;background:#f7f7f8;border:1px solid #d9d9d9;color:#2c2c2c;padding:6px 12px;border-radius:6px;font-size:0.75rem;font-weight:500;cursor:pointer;transition:all .15s;flex-shrink:0}
+.qa-btn:hover{background:#ececec;border-color:#b3b3b3}
 
 /* Location bar */
-.location-bar{background:#fff8eb;padding:6px 12px;display:flex;align-items:center;gap:6px;border-bottom:1px solid #d4c9b0;flex-shrink:0}
-.location-icon{font-size:12px}
-.location-text{font-size:0.72rem;color:#6b5a3e;flex:1}
-.location-text span{color:#2d6a2d;font-weight:600}
-.location-edit{font-size:0.7rem;color:#2d6a2d;background:none;border:1px solid #2d6a2d;border-radius:6px;padding:3px 8px;cursor:pointer;font-family:inherit;transition:all .15s}
-.location-edit:hover{background:#2d6a2d;color:#fff}
+.location-bar{background:#f9f9f9;padding:8px 16px;display:flex;align-items:center;gap:8px;border-bottom:1px solid #e5e5e5;flex-shrink:0}
+.location-icon{font-size:13px}
+.location-text{font-size:0.75rem;color:#6b6b6b;flex:1}
+.location-text span{color:#2c2c2c;font-weight:600}
+.location-edit{font-size:0.72rem;color:#10a37f;background:none;border:1px solid #10a37f;border-radius:5px;padding:4px 10px;cursor:pointer;font-family:inherit;transition:all .15s}
+.location-edit:hover{background:#10a37f;color:#fff}
 
 /* Location modal */
 .modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:100;align-items:center;justify-content:center;padding:20px}
@@ -48,26 +48,36 @@ header p{font-size:0.7rem;opacity:0.85}
 .btn-primary:hover{background:#3d8a28}
 
 /* Chat */
-#chat-window{flex:1;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:12px;display:flex;flex-direction:column;gap:8px;background:url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none'%3E%3Cg fill='%234a8c3f' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")}
-#chat-window::-webkit-scrollbar{width:4px}
-#chat-window::-webkit-scrollbar-thumb{background:#b5a98a;border-radius:2px}
+#chat-window{flex:1;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:16px;display:flex;flex-direction:column;gap:12px;background:#fff}
+#chat-window::-webkit-scrollbar{width:6px}
+#chat-window::-webkit-scrollbar-thumb{background:#d9d9d9;border-radius:3px}
+#chat-window::-webkit-scrollbar-thumb:hover{background:#b3b3b3}
 
 /* Bubbles */
-.bubble-row{display:flex;align-items:flex-end;gap:6px}
+.bubble-row{display:flex;align-items:flex-start;gap:10px;max-width:100%}
 .bubble-row.user{flex-direction:row-reverse}
-.avatar{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0}
-.bot .avatar{background:#2d6a2d;color:#fff}
-.user .avatar{background:#8b6914;color:#fff}
-.bubble{max-width:80%;padding:8px 11px;border-radius:16px;font-size:0.82rem;line-height:1.5;word-break:break-word}
-.bot .bubble{background:#fff;color:#2c2c2c;border-bottom-left-radius:4px;box-shadow:0 1px 3px rgba(0,0,0,.08)}
-.user .bubble{background:#2d6a2d;color:#fff;border-bottom-right-radius:4px}
-.bubble-text{display:block;margin-bottom:3px}
-.bubble img{max-width:100%;border-radius:8px;margin-bottom:5px;display:block}
-.meta{display:flex;align-items:center;justify-content:flex-end;gap:5px;margin-top:2px}
-.time{font-size:0.6rem;opacity:0.5}
-.speak-btn{background:none;border:none;cursor:pointer;font-size:12px;padding:2px 3px;opacity:0.5;transition:opacity .2s}
+.avatar{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0}
+.bot .avatar{background:linear-gradient(135deg,#2d6a2d,#4a8c3f);color:#fff}
+.user .avatar{background:#5436da;color:#fff}
+.bubble{max-width:85%;padding:10px 14px;border-radius:18px;font-size:0.9rem;line-height:1.6;word-break:break-word}
+.bot .bubble{background:#f7f7f8;color:#2c2c2c;border-bottom-left-radius:4px}
+.user .bubble{background:#5436da;color:#fff;border-bottom-right-radius:4px}
+.bubble-text{display:block}
+.bubble img{max-width:100%;border-radius:10px;margin-bottom:8px;display:block}
+.meta{display:flex;align-items:center;justify-content:flex-end;gap:6px;margin-top:4px}
+.time{font-size:0.65rem;opacity:0.6}
+.speak-btn{background:none;border:none;cursor:pointer;font-size:13px;padding:3px 4px;opacity:0.5;transition:opacity .2s}
 .speak-btn:hover{opacity:1}
 .speak-btn.active{opacity:1;animation:blink .8s infinite}
+
+/* Crop recommendation cards */
+.crop-card{background:#fff;border:1px solid #e5e5e5;border-radius:10px;padding:12px;margin:6px 0;transition:all .2s}
+.crop-card:hover{box-shadow:0 2px 8px rgba(0,0,0,0.08);border-color:#10a37f}
+.crop-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px}
+.crop-name{font-size:0.95rem;font-weight:600;color:#2c2c2c}
+.crop-score{background:#10a37f;color:#fff;padding:3px 8px;border-radius:12px;font-size:0.7rem;font-weight:600}
+.crop-details{font-size:0.8rem;color:#6b6b6b;line-height:1.5}
+.crop-icon{font-size:20px;margin-right:6px}
 
 /* Typing */
 .typing-dots span{display:inline-block;width:6px;height:6px;background:#4a8c3f;border-radius:50%;margin:0 2px;animation:bounce 1.2s infinite}
@@ -82,24 +92,26 @@ header p{font-size:0.7rem;opacity:0.85}
 #remove-image{background:none;border:none;font-size:16px;cursor:pointer;color:#c0392b}
 
 /* Input bar */
-.input-bar{display:flex;align-items:center;gap:6px;padding:8px 10px;background:#ede8dc;border-top:1px solid #d4c9b0;flex-shrink:0}
-#user-input{flex:1;border:1.5px solid #c4b896;border-radius:20px;padding:8px 13px;font-size:0.82rem;background:#fff;outline:none;color:#2c2c2c}
-#user-input:focus{border-color:#4a8c3f}
-#user-input::placeholder{color:#a89870}
-.icon-btn{width:36px;height:36px;border-radius:50%;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:16px;transition:all .2s;flex-shrink:0}
-#img-btn{background:#e8e0cc;color:#5a4a2a}
-#img-btn:hover{background:#d4c9b0}
-#mic-btn{background:#e8e0cc;color:#5a4a2a}
-#mic-btn.recording{background:#c0392b;color:#fff}
-#send-btn{background:#2d6a2d;color:#fff}
-#send-btn:hover{background:#4a8c3f}
+.input-bar{display:flex;align-items:center;gap:8px;padding:12px 16px;background:#fff;border-top:1px solid #e5e5e5;flex-shrink:0}
+#user-input{flex:1;border:1px solid #d9d9d9;border-radius:8px;padding:10px 14px;font-size:0.9rem;background:#fff;outline:none;color:#2c2c2c;transition:border-color .15s}
+#user-input:focus{border-color:#10a37f;box-shadow:0 0 0 3px rgba(16,163,127,0.1)}
+#user-input::placeholder{color:#999}
+.icon-btn{width:38px;height:38px;border-radius:8px;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:18px;transition:all .15s;flex-shrink:0}
+#img-btn{background:#f7f7f8;color:#6b6b6b}
+#img-btn:hover{background:#ececec}
+#mic-btn{background:#f7f7f8;color:#6b6b6b}
+#mic-btn.recording{background:#ef4444;color:#fff}
+#send-btn{background:#10a37f;color:#fff}
+#send-btn:hover{background:#0d8c6c}
+#send-btn:disabled{background:#d9d9d9;cursor:not-allowed}
 
-.welcome-card{background:linear-gradient(135deg,#2d6a2d,#4a8c3f);color:#fff;border-radius:14px;padding:14px;text-align:center}
-.welcome-card h2{font-size:0.9rem;margin-bottom:3px}
-.welcome-card p{font-size:0.72rem;opacity:0.9;line-height:1.4}
+.welcome-card{background:linear-gradient(135deg,#2d6a2d,#4a8c3f);color:#fff;border-radius:12px;padding:20px;text-align:center;box-shadow:0 2px 8px rgba(0,0,0,0.1)}
+.welcome-card h2{font-size:1.1rem;margin-bottom:8px;font-weight:600}
+.welcome-card p{font-size:0.85rem;opacity:0.95;line-height:1.6}
 
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
 @keyframes bounce{0%,80%,100%{transform:translateY(0)}40%{transform:translateY(-7px)}}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}
 
 /* Tablet */
 @media (min-width:768px){
@@ -139,8 +151,8 @@ header p{font-size:0.7rem;opacity:0.85}
 <header>
   <div class="logo">🌾</div>
   <div>
-    <h1>Fahamu Shamba</h1>
-    <p>Your Farming Advisor</p>
+    <h1>Fahamu Shamba AI</h1>
+    <p>Intelligent Farming Assistant</p>
   </div>
   <div class="header-right">
     <div class="status-dot"></div>
@@ -163,8 +175,8 @@ header p{font-size:0.7rem;opacity:0.85}
 
 <div id="chat-window">
   <div class="welcome-card">
-    <h2>🌱 Karibu! Welcome to Fahamu Shamba</h2>
-    <p>Ask me about crops, weather, pests or markets. Upload a crop photo for pest/disease diagnosis.</p>
+    <h2>🌱 Welcome to Fahamu Shamba AI</h2>
+    <p>I'm your intelligent farming assistant. I'll analyze your location, soil type, weather patterns, and market data to recommend the top 3 best crops for your farm. Let's get started!</p>
   </div>
 </div>
 
@@ -349,7 +361,8 @@ async function fetchReply(text,file){
       sublocation:userLocation.sublocation
     })
   });
-  return(await r.json()).reply;
+  const data=await r.json();
+  return data;
 }
 
 async function sendMessage(text,file=null){
@@ -363,9 +376,34 @@ async function sendMessage(text,file=null){
   showTyping();
 
   try{
-    const reply=await fetchReply(text,file);
+    const data=await fetchReply(text,file);
     removeTyping();
-    addBubble(reply.replace(/\n/g,'<br>'),'bot');
+    
+    if(data.recommendations){
+      // Display conversational response with crop cards
+      let responseHtml=data.reply.replace(/\n/g,'<br>');
+      addBubble(responseHtml,'bot');
+      
+      // Add crop recommendation cards
+      const cardsHtml=data.recommendations.map((crop,idx)=>{
+        const icons=['🥇','🥈','🥉'];
+        return `
+          <div class="crop-card">
+            <div class="crop-header">
+              <div><span class="crop-icon">${icons[idx]}</span><span class="crop-name">${crop.name}</span></div>
+              <div class="crop-score">Score: ${crop.score}</div>
+            </div>
+            <div class="crop-details">${crop.detail}</div>
+          </div>
+        `;
+      }).join('');
+      
+      addBubble(cardsHtml,'bot');
+    }else{
+      // Regular text response
+      const reply=typeof data==='string'?data:data.reply;
+      addBubble(reply.replace(/\n/g,'<br>'),'bot');
+    }
   }catch(e){
     removeTyping();
     addBubble('Sorry, I could not connect. Please try again.','bot');
@@ -478,7 +516,7 @@ function saveLocation(){
   document.getElementById('locationDisplay').textContent=displayText;
   closeLocationModal();
   
-  const query=`I am in ${displayText}, Kenya. What are the best crops to plant right now based on my location, soil, and current season?`;
+  const query=`Hello! I'm a farmer in ${displayText}, Kenya. Can you recommend the top 3 best crops I should plant right now based on my location, soil conditions, current weather season, and market prices?`;
   setTimeout(()=>sendMessage(query),300);
 }
 

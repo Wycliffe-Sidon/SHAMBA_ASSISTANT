@@ -182,36 +182,43 @@ def get_crop_recommendations(county, sublocation):
     return recommendations[:3], soil_info, season, season_desc
 
 # ── ENHANCED SYSTEM PROMPT ───────────────────────────────────────────────────
-SYSTEM_PROMPT = """You are "Fahamu Shamba," an AI-powered agricultural assistant for Kenyan farmers.
+SYSTEM_PROMPT = """You are "Fahamu Shamba AI," an intelligent agricultural assistant for Kenyan farmers.
 
-CRITICAL RULES:
-1. ALWAYS provide crop recommendations in this EXACT format when asked about crops to plant:
+Your personality:
+- Friendly, conversational, and encouraging
+- Expert in Kenyan agriculture, soil types, weather patterns, and market trends
+- You analyze multiple variables: soil type, pH, fertility, drainage, current season, rainfall patterns, and market prices
+- You provide data-driven recommendations with confidence
 
-CROP: [Crop Name (Variety)]
-DETAILS: [Planting info]
-SCORE: [Number]
+When providing crop recommendations:
+1. Start with a warm, conversational greeting
+2. Acknowledge the farmer's location and current conditions
+3. Explain your analysis briefly (soil type, season, market trends)
+4. Present the top 3 crops with enthusiasm
+5. Provide actionable advice for each crop
+6. End with encouragement and offer to answer questions
 
-2. Use the soil data, weather, and market information provided in the context
-3. Be conversational and friendly, use farmer's name if known
-4. Respond in Swahili or English based on user preference
-5. For non-agricultural questions, politely decline
+IMPORTANT: When crop recommendations are provided in the context, structure your response as:
+- Opening: Greet and acknowledge location
+- Analysis: Briefly mention soil type, season, and market conditions
+- Recommendations: Introduce the top 3 crops naturally
+- Closing: Encourage the farmer and offer further help
 
-Core Functions:
-- Crop Recommendations (use provided soil/weather/market data)
+For other questions:
 - Pest & Disease Management
-- Weather & Climate Updates
+- Weather & Climate Updates  
 - Market Insights
+- Farming best practices
 - Image Analysis (identify crops, pests, diseases)
 
-For USSD/SMS: Max 160 characters
-For IVR: Short conversational sentences
-For App: Full detailed responses"""
+Always be conversational, supportive, and provide practical advice.
+"""
 
 def ask_groq(user_message: str, mode: str = "app", session_id: str = "default", context_data: dict = None) -> str:
     mode_instruction = {
         "ussd": "Respond in under 160 characters. Plain text only.",
         "ivr": "Short conversational sentences for text-to-speech.",
-        "app": "Full detailed response with structured format."
+        "app": "Full conversational response. Be warm, friendly, and encouraging. Explain your reasoning."
     }.get(mode, "")
 
     try:
@@ -224,7 +231,7 @@ def ask_groq(user_message: str, mode: str = "app", session_id: str = "default", 
         
         # Add context data if provided
         if context_data:
-            context_str = f"\n\nCONTEXT DATA:\n{json.dumps(context_data, indent=2)}"
+            context_str = f"\n\nCONTEXT DATA (Use this to provide informed recommendations):\n{json.dumps(context_data, indent=2)}"
             messages[0]["content"] += context_str
         
         messages.extend(conversation_memory[session_id][-10:])
@@ -233,8 +240,8 @@ def ask_groq(user_message: str, mode: str = "app", session_id: str = "default", 
         response = client.chat.completions.create(
             model="llama-3.1-8b-instant",
             messages=messages,
-            max_tokens=600 if mode == "app" else 100,
-            temperature=0.7
+            max_tokens=800 if mode == "app" else 100,
+            temperature=0.8
         )
         
         assistant_reply = response.choices[0].message.content.strip()
@@ -289,22 +296,41 @@ async def health():
 async def chat(req: ChatRequest):
     try:
         context_data = None
+        recommendations = None
         
         # Check if this is a crop recommendation request
         msg_lower = req.message.lower()
-        if any(keyword in msg_lower for keyword in ["best crop", "what to plant", "recommend", "should i plant"]):
+        if any(keyword in msg_lower for keyword in ["best crop", "what to plant", "recommend", "should i plant", "top 3", "top three"]):
             if req.county:
                 recs, soil, season, season_desc = get_crop_recommendations(req.county, req.sublocation)
+                recommendations = recs
                 context_data = {
                     "location": f"{req.sublocation}, {req.county}",
-                    "soil": soil,
-                    "season": season,
+                    "soil_type": soil["type"],
+                    "soil_ph": soil["ph"],
+                    "soil_fertility": soil["fertility"],
+                    "soil_drainage": soil["drainage"],
+                    "current_season": season,
                     "season_description": season_desc,
-                    "recommendations": recs
+                    "top_3_crops": [
+                        {
+                            "rank": i+1,
+                            "name": rec["name"],
+                            "score": rec["score"],
+                            "details": rec["detail"]
+                        } for i, rec in enumerate(recs)
+                    ]
                 }
         
         reply = ask_groq(req.message, mode="app", session_id=req.session_id, context_data=context_data)
-        return {"reply": reply}
+        
+        if recommendations:
+            return {
+                "reply": reply,
+                "recommendations": recommendations
+            }
+        else:
+            return {"reply": reply}
     except Exception as e:
         logger.error(f"/chat error: {e}")
         return {"reply": f"Error: {str(e)}"}
