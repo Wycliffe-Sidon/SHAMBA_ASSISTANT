@@ -283,6 +283,13 @@ body {
   resize: none; max-height: 80px; line-height: 1.4; min-height: 18px;
 }
 .fs-textarea::placeholder { color: var(--brown-placeholder); }
+.fs-img-btn {
+  width: 32px; height: 32px; background: none; border: none;
+  cursor: pointer; display: flex; align-items: center; justify-content: center;
+  border-radius: 50%; transition: background 0.15s; flex-shrink: 0;
+  color: var(--brown-muted); font-size: 18px;
+}
+.fs-img-btn:hover { background: var(--beige-border); }
 .fs-send-btn {
   width: 40px; height: 40px; background: var(--green-dark);
   border: none; border-radius: 50%; cursor: pointer;
@@ -292,6 +299,36 @@ body {
 .fs-send-btn:hover { background: var(--green-mid); }
 .fs-send-btn:active { transform: scale(0.94); }
 
+/* IMAGE PREVIEW */
+.fs-img-preview {
+  display: none; align-items: center; gap: 8px;
+  padding: 8px; background: var(--beige-card);
+  border-radius: 10px; margin-bottom: 8px;
+  border: 1px solid var(--beige-border);
+}
+.fs-img-preview.show { display: flex; }
+.fs-img-preview img {
+  width: 50px; height: 50px; object-fit: cover;
+  border-radius: 8px; border: 2px solid var(--green-dark);
+}
+.fs-img-preview-text { flex: 1; font-size: 12px; color: var(--brown-mid); }
+.fs-img-remove {
+  background: none; border: none; cursor: pointer;
+  color: #c0392b; font-size: 18px; padding: 4px;
+}
+
+/* CHART CONTAINER */
+.fs-chart-card {
+  background: #fff; border: 0.5px solid #ddd3b8;
+  border-radius: 14px; overflow: hidden; margin-top: 4px;
+  padding: 12px;
+}
+.fs-chart-title {
+  font-size: 13px; font-weight: 600; color: var(--brown-text);
+  margin-bottom: 10px; display: flex; align-items: center; gap: 6px;
+}
+.fs-chart-canvas { width: 100%; height: 200px; }
+
 @media (max-width: 480px) {
   body { padding: 0; }
   .fs-app { width: 100%; height: 100vh; border-radius: 0; }
@@ -299,6 +336,7 @@ body {
 </style>
 </head>
 <body>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 
 <div class="fs-app">
 
@@ -356,12 +394,18 @@ body {
 
   <!-- INPUT AREA -->
   <div class="fs-input-area">
+    <div class="fs-img-preview" id="imgPreview">
+      <img id="previewThumb" src="" alt="preview">
+      <span class="fs-img-preview-text" id="previewName">Image ready</span>
+      <button class="fs-img-remove" onclick="clearImage()">✕</button>
+    </div>
     <div class="fs-lang-row">
       <button class="fs-lang-btn active" id="engBtn" onclick="setLang('en')">English</button>
       <button class="fs-lang-btn" id="swBtn" onclick="setLang('sw')">Kiswahili</button>
     </div>
     <div class="fs-input-row">
       <div class="fs-input-wrap">
+        <button class="fs-img-btn" onclick="document.getElementById('fileInput').click()" title="Upload image">📷</button>
         <textarea class="fs-textarea" id="msgInput" placeholder="Ask about your farm..." rows="1"
           oninput="autoResize(this)"
           onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendMsg();}"></textarea>
@@ -376,6 +420,8 @@ body {
   </div>
 
 </div>
+
+<input type="file" id="fileInput" accept="image/*" style="display:none" onchange="handleImageSelect(event)">
 
 <!-- LOCATION MODAL -->
 <div class="fs-modal" id="locationModal">
@@ -420,6 +466,7 @@ body {
 let userLocation = { county: '', village: '' };
 let currentLang = 'en';
 let sessionId = 'session_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+let selectedImage = null;
 
 // ── Utils ─────────────────────────────────────────────────────────────────────
 const now = () => new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
@@ -454,6 +501,71 @@ const countySublocations = {
   'Kirinyaga': ['Kerugoya', 'Kutus', 'Gichugu', 'Ndia', 'Kirinyaga Central', 'Mwea'],
   'Uasin Gishu': ['Eldoret', 'Ainabkoi', 'Kapseret', 'Kesses', 'Moiben', 'Soy', 'Turbo']
 };
+
+// ── Image Upload ─────────────────────────────────────────────────────────────
+function handleImageSelect(event) {
+  const file = event.target.files[0];
+  if (!file || !file.type.startsWith('image/')) return;
+  
+  selectedImage = file;
+  const preview = document.getElementById('imgPreview');
+  const thumb = document.getElementById('previewThumb');
+  const name = document.getElementById('previewName');
+  
+  thumb.src = URL.createObjectURL(file);
+  name.textContent = file.name;
+  preview.classList.add('show');
+  
+  document.getElementById('msgInput').placeholder = 'Ask about this image...';
+}
+
+function clearImage() {
+  selectedImage = null;
+  document.getElementById('imgPreview').classList.remove('show');
+  document.getElementById('fileInput').value = '';
+  document.getElementById('msgInput').placeholder = 'Ask about your farm...';
+}
+
+// ── Chart Generation ──────────────────────────────────────────────────────────
+function addChartCard(title, data) {
+  const chat = document.getElementById('chatArea');
+  const chartId = 'chart_' + Date.now();
+  
+  const row = document.createElement('div');
+  row.className = 'fs-bubble-row bot';
+  row.innerHTML = `
+    <div class="fs-avatar">
+      <svg viewBox="0 0 24 24" fill="none"><path d="M12 3C9.5 3 7.5 5 7.5 8c0 1.8 1 3.4 2.5 4.3L9.5 18h5l-.5-5.7C15.5 11.4 16.5 9.8 16.5 8c0-3-2-5-4.5-5z" fill="rgba(255,255,255,0.9)"/></svg>
+    </div>
+    <div style="flex:1;max-width:85%;">
+      <div class="fs-chart-card">
+        <div class="fs-chart-title">📊 ${title}</div>
+        <canvas id="${chartId}" class="fs-chart-canvas"></canvas>
+      </div>
+    </div>
+  `;
+  chat.appendChild(row);
+  chat.scrollTop = chat.scrollHeight;
+  
+  // Create chart
+  setTimeout(() => {
+    const ctx = document.getElementById(chartId);
+    new Chart(ctx, {
+      type: data.type || 'line',
+      data: data.chartData,
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { display: data.showLegend !== false }
+        },
+        scales: {
+          y: { beginAtZero: true }
+        }
+      }
+    });
+  }, 100);
+}
 
 // ── Location Modal ────────────────────────────────────────────────────────────
 function openLocationModal() {
@@ -595,7 +707,20 @@ function addRecommendationCard(crops, location) {
 }
 
 // ── API Call ──────────────────────────────────────────────────────────────────
-async function fetchReply(text) {
+async function fetchReply(text, imageFile = null) {
+  if (imageFile) {
+    const formData = new FormData();
+    formData.append('image', imageFile);
+    formData.append('message', text || 'What do you see in this image? Provide agricultural advice.');
+    formData.append('session_id', sessionId);
+    
+    const r = await fetch('/analyze-image', {
+      method: 'POST',
+      body: formData
+    });
+    return (await r.json()).reply;
+  }
+  
   const r = await fetch('/chat', {
     method: 'POST',
     headers: {'Content-Type': 'application/json'},
@@ -608,20 +733,56 @@ async function fetchReply(text) {
 async function sendMsg(customText) {
   const inp = document.getElementById('msgInput');
   const val = customText || inp.value.trim();
-  if (!val) return;
+  const imgFile = selectedImage;
   
-  addUserBubble(val);
+  if (!val && !imgFile) return;
+  
+  // Show user message with image if present
+  if (imgFile) {
+    const imgUrl = URL.createObjectURL(imgFile);
+    const chat = document.getElementById('chatArea');
+    const row = document.createElement('div');
+    row.className = 'fs-bubble-row user';
+    row.innerHTML = `
+      <div class="fs-bubble user">
+        <img src="${imgUrl}" style="max-width:100%;border-radius:8px;margin-bottom:6px;">
+        ${val || 'What do you see in this image?'}
+        <div class="fs-bubble-time">${now()} ✓</div>
+      </div>
+    `;
+    chat.appendChild(row);
+    chat.scrollTop = chat.scrollHeight;
+  } else {
+    addUserBubble(val);
+  }
+  
   inp.value = '';
   inp.style.height = 'auto';
+  clearImage();
   showTyping();
   
   try {
-    const reply = await fetchReply(val);
+    const reply = await fetchReply(val, imgFile);
     removeTyping();
+    
+    // Check for chart data in response
+    const chartMatch = reply.match(/CHART_DATA:\s*({[\s\S]*?})\s*END_CHART/i);
+    if (chartMatch) {
+      try {
+        const chartData = JSON.parse(chartMatch[1]);
+        const textBefore = reply.substring(0, chartMatch.index).trim();
+        if (textBefore) addBotBubble(textBefore);
+        addChartCard(chartData.title, chartData);
+        const textAfter = reply.substring(chartMatch.index + chartMatch[0].length).trim();
+        if (textAfter) addBotBubble(textAfter);
+        return;
+      } catch(e) {
+        console.error('Chart parse error:', e);
+      }
+    }
     
     // Check if this is a crop recommendation query
     if (val.toLowerCase().includes('best crop') || val.toLowerCase().includes('what to plant') || val.toLowerCase().includes('recommend')) {
-      // Parse structured crop recommendations
       const cropPattern = /CROP:\s*(.+?)\nDETAILS:\s*(.+?)\nSCORE:\s*(\d+)/g;
       const crops = [];
       let match;
@@ -635,16 +796,13 @@ async function sendMsg(customText) {
       }
       
       if (crops.length >= 3) {
-        // Extract intro text (everything before first CROP:)
         const introEnd = reply.indexOf('CROP:');
         const intro = introEnd > 0 ? reply.substring(0, introEnd).trim() : 'Here are my recommendations:';
         addBotBubble(intro);
         
-        // Show recommendation card
         const loc = userLocation.county ? `${userLocation.village || ''}, ${userLocation.county}`.trim() : 'Your Area';
         addRecommendationCard(crops.slice(0, 3), loc);
       } else {
-        // Fallback to regular display
         addBotBubble(reply.replace(/\n/g, '<br>'));
       }
     } else {

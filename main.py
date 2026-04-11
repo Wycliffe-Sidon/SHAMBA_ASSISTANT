@@ -35,12 +35,20 @@ Memory Rules:
 - Use farmer-friendly language, avoid technical jargon.
 - Provide step-by-step guidance when necessary.
 
+Chart Generation:
+- When asked about market prices, price trends, or comparisons, generate a chart using this format:
+  CHART_DATA: {"title": "Market Prices", "type": "line", "chartData": {"labels": ["Jan", "Feb", "Mar"], "datasets": [{"label": "Maize", "data": [45, 52, 48], "borderColor": "#2d6a1f", "tension": 0.3}]}} END_CHART
+- Supported chart types: line, bar, pie
+- Always include title, labels, and data
+- Use green colors (#2d6a1f, #4fa832) for charts
+
 Core Functions:
 1. Crop Recommendations - advise on best crops based on soil, weather, season, location, market demand.
 2. Pest & Disease Management - preventive measures and treatments.
 3. Weather & Climate Updates - interpret rainfall, drought risk, temperature for planting/harvesting.
-4. Market Insights - current prices and best time to sell.
+4. Market Insights - current prices and best time to sell (generate charts when appropriate).
 5. Farmer Interaction - respond in Swahili or English based on farmer preference.
+6. Image Analysis - when an image is provided, identify crops, pests, diseases, or conditions and provide advice.
 
 When providing crop recommendations, structure your response as follows:
 - Start with a brief personalized introduction using remembered farmer details
@@ -68,7 +76,7 @@ If asked non-agricultural questions, respond: "I am your agricultural assistant.
 
 For USSD/SMS: Keep responses under 160 characters, plain text only.
 For IVR: Use conversational sentences suitable for text-to-speech.
-For App: Full detailed responses with structured crop recommendations and personalized advice."""
+For App: Full detailed responses with structured crop recommendations, charts, and personalized advice."""
 
 
 def ask_groq(user_message: str, mode: str = "app", session_id: str = "default") -> str:
@@ -112,19 +120,25 @@ def ask_groq(user_message: str, mode: str = "app", session_id: str = "default") 
         raise
 
 
-def ask_groq_vision(image_bytes: bytes, mime_type: str, user_message: str) -> str:
+def ask_groq_vision(image_bytes: bytes, mime_type: str, user_message: str, context_messages: list = None) -> str:
     try:
         client = get_client()
         b64 = base64.standard_b64encode(image_bytes).decode("utf-8")
+        
+        # Use context if provided, otherwise use default system prompt
+        messages = context_messages if context_messages else [{"role": "system", "content": SYSTEM_PROMPT}]
+        
+        messages.append({
+            "role": "user", 
+            "content": [
+                {"type": "text", "text": user_message or "Identify any pest, disease, or crop condition visible in this image. Provide agricultural advice."},
+                {"type": "image_url", "image_url": {"url": f"data:{mime_type};base64,{b64}"}}
+            ]
+        })
+        
         response = client.chat.completions.create(
             model="meta-llama/llama-4-scout-17b-16e-instruct",
-            messages=[
-                {"role": "system", "content": SYSTEM_PROMPT},
-                {"role": "user", "content": [
-                    {"type": "text", "text": user_message or "Identify any pest, disease, or crop condition visible in this image. Provide agricultural advice."},
-                    {"type": "image_url", "image_url": {"url": f"data:{mime_type};base64,{b64}"}}
-                ]}
-            ],
+            messages=messages,
             max_tokens=600
         )
         return response.choices[0].message.content.strip()
@@ -163,11 +177,25 @@ async def chat(req: ChatRequest):
 
 
 @app.post("/analyze-image")
-async def analyze_image(image: UploadFile = File(...), message: str = Form(default="")):
+async def analyze_image(image: UploadFile = File(...), message: str = Form(default=""), session_id: str = Form(default="default")):
     try:
         image_bytes = await image.read()
         mime_type = image.content_type or "image/jpeg"
-        reply = ask_groq_vision(image_bytes, mime_type, message)
+        
+        # Get conversation context
+        if session_id not in conversation_memory:
+            conversation_memory[session_id] = []
+        
+        # Build context-aware prompt
+        context_messages = [{"role": "system", "content": SYSTEM_PROMPT}]
+        context_messages.extend(conversation_memory[session_id][-10:])
+        
+        reply = ask_groq_vision(image_bytes, mime_type, message, context_messages)
+        
+        # Store in memory
+        conversation_memory[session_id].append({"role": "user", "content": f"[Image uploaded] {message}"})
+        conversation_memory[session_id].append({"role": "assistant", "content": reply})
+        
         return {"reply": reply}
     except Exception as e:
         logger.error(f"/analyze-image error: {e}")
