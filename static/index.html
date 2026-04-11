@@ -403,8 +403,10 @@ body {
       </select>
     </div>
     <div class="fs-form-group">
-      <label class="fs-form-label">Village / Sub-location</label>
-      <input type="text" class="fs-form-input" id="villageInput" placeholder="e.g. Nyakach, Limuru, etc.">
+      <label class="fs-form-label">Sub-location</label>
+      <select class="fs-form-select" id="sublocationSelect" disabled>
+        <option value="">Select county first</option>
+      </select>
     </div>
     <div class="fs-modal-actions">
       <button class="fs-btn fs-btn-cancel" onclick="closeLocationModal()">Cancel</button>
@@ -433,6 +435,25 @@ function setLang(lang) {
   document.getElementById('msgInput').placeholder = lang === 'sw' ? 'Uliza kuhusu shamba lako...' : 'Ask about your farm...';
 }
 
+// ── County Sub-locations Data ────────────────────────────────────────────────
+const countySublocations = {
+  'Nairobi': ['Westlands', 'Dagoretti', 'Langata', 'Kibra', 'Roysambu', 'Kasarani', 'Ruaraka', 'Embakasi', 'Makadara', 'Kamukunji', 'Starehe', 'Mathare'],
+  'Kiambu': ['Limuru', 'Kikuyu', 'Kabete', 'Githunguri', 'Kiambaa', 'Ruiru', 'Juja', 'Thika', 'Gatundu', 'Lari'],
+  'Nakuru': ['Nakuru Town', 'Naivasha', 'Gilgil', 'Molo', 'Njoro', 'Rongai', 'Subukia', 'Bahati', 'Kuresoi'],
+  'Kisumu': ['Kisumu Central', 'Kisumu East', 'Kisumu West', 'Seme', 'Nyando', 'Muhoroni', 'Nyakach'],
+  'Siaya': ['Bondo', 'Rarieda', 'Ugenya', 'Ugunja', 'Gem', 'Alego Usonga'],
+  'Kakamega': ['Kakamega Town', 'Mumias', 'Butere', 'Khwisero', 'Shinyalu', 'Lurambi', 'Ikolomani', 'Lugari', 'Malava', 'Matungu', 'Navakholo'],
+  'Bungoma': ['Bungoma Town', 'Webuye', 'Kimilili', 'Bumula', 'Kanduyi', 'Sirisia', 'Kabuchai', 'Tongaren', 'Mt. Elgon'],
+  'Meru': ['Meru Town', 'Imenti North', 'Imenti South', 'Imenti Central', 'Tigania East', 'Tigania West', 'Igembe North', 'Igembe South', 'Igembe Central'],
+  'Embu': ['Embu Town', 'Manyatta', 'Runyenjes', 'Mbeere North', 'Mbeere South'],
+  'Machakos': ['Machakos Town', 'Kangundo', 'Matungulu', 'Kathiani', 'Mavoko', 'Yatta', 'Masinga', 'Mwala'],
+  'Kitui': ['Kitui Town', 'Mwingi', 'Kitui Central', 'Kitui West', 'Kitui East', 'Kitui South', 'Mwingi North', 'Mwingi Central'],
+  'Nyeri': ['Nyeri Town', 'Othaya', 'Tetu', 'Kieni', 'Mathira', 'Mukurweini'],
+  "Murang'a": ['Murang\'a Town', 'Kangema', 'Kiharu', 'Kigumo', 'Maragwa', 'Kandara', 'Gatanga'],
+  'Kirinyaga': ['Kerugoya', 'Kutus', 'Gichugu', 'Ndia', 'Kirinyaga Central', 'Mwea'],
+  'Uasin Gishu': ['Eldoret', 'Ainabkoi', 'Kapseret', 'Kesses', 'Moiben', 'Soy', 'Turbo']
+};
+
 // ── Location Modal ────────────────────────────────────────────────────────────
 function openLocationModal() {
   document.getElementById('locationModal').classList.add('show');
@@ -442,17 +463,43 @@ function closeLocationModal() {
   document.getElementById('locationModal').classList.remove('show');
 }
 
+// Update sub-locations when county changes
+document.getElementById('countySelect').addEventListener('change', function() {
+  const county = this.value;
+  const sublocationSelect = document.getElementById('sublocationSelect');
+  
+  if (county && countySublocations[county]) {
+    sublocationSelect.disabled = false;
+    sublocationSelect.innerHTML = '<option value="">Select sub-location</option>';
+    
+    countySublocations[county].forEach(subloc => {
+      const option = document.createElement('option');
+      option.value = subloc;
+      option.textContent = subloc;
+      sublocationSelect.appendChild(option);
+    });
+  } else {
+    sublocationSelect.disabled = true;
+    sublocationSelect.innerHTML = '<option value="">Select county first</option>';
+  }
+});
+
 function saveLocation() {
   const county = document.getElementById('countySelect').value;
-  const village = document.getElementById('villageInput').value.trim();
+  const sublocation = document.getElementById('sublocationSelect').value;
   
   if (!county) {
     alert('Please select a county');
     return;
   }
   
-  userLocation = { county, village };
-  const displayText = village ? `${village}, ${county}` : county;
+  if (!sublocation) {
+    alert('Please select a sub-location');
+    return;
+  }
+  
+  userLocation = { county, village: sublocation };
+  const displayText = `${sublocation}, ${county}`;
   document.getElementById('locationDisplay').textContent = displayText;
   closeLocationModal();
   
@@ -572,23 +619,31 @@ async function sendMsg(customText) {
     removeTyping();
     
     // Check if this is a crop recommendation query
-    if (val.toLowerCase().includes('best crop') || val.toLowerCase().includes('what to plant')) {
-      // Try to parse structured recommendation
-      const lines = reply.split('\n').filter(l => l.trim());
-      if (lines.length >= 3) {
-        // Extract intro text
-        const intro = lines.slice(0, Math.max(1, lines.length - 3)).join('<br>');
+    if (val.toLowerCase().includes('best crop') || val.toLowerCase().includes('what to plant') || val.toLowerCase().includes('recommend')) {
+      // Parse structured crop recommendations
+      const cropPattern = /CROP:\s*(.+?)\nDETAILS:\s*(.+?)\nSCORE:\s*(\d+)/g;
+      const crops = [];
+      let match;
+      
+      while ((match = cropPattern.exec(reply)) !== null) {
+        crops.push({
+          name: match[1].trim(),
+          detail: match[2].trim(),
+          score: parseInt(match[3])
+        });
+      }
+      
+      if (crops.length >= 3) {
+        // Extract intro text (everything before first CROP:)
+        const introEnd = reply.indexOf('CROP:');
+        const intro = introEnd > 0 ? reply.substring(0, introEnd).trim() : 'Here are my recommendations:';
         addBotBubble(intro);
         
-        // Mock crop data (in production, parse from AI response)
-        const crops = [
-          { name: 'Maize', detail: 'Plant now · Harvest in 90 days · High demand', score: 94 },
-          { name: 'Beans', detail: 'Intercrop with maize · 75 days · Good price', score: 87 },
-          { name: 'Sorghum', detail: 'Drought-tolerant · 120 days · Stable price', score: 79 }
-        ];
-        const loc = userLocation.county ? `${userLocation.village || ''} ${userLocation.county}`.trim() : 'Your Area';
-        addRecommendationCard(crops, loc);
+        // Show recommendation card
+        const loc = userLocation.county ? `${userLocation.village || ''}, ${userLocation.county}`.trim() : 'Your Area';
+        addRecommendationCard(crops.slice(0, 3), loc);
       } else {
+        // Fallback to regular display
         addBotBubble(reply.replace(/\n/g, '<br>'));
       }
     } else {
