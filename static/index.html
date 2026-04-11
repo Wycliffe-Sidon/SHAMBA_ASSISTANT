@@ -419,6 +419,7 @@ body {
 // ── State ─────────────────────────────────────────────────────────────────────
 let userLocation = { county: '', village: '' };
 let currentLang = 'en';
+let sessionId = 'session_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
 
 // ── Utils ─────────────────────────────────────────────────────────────────────
 const now = () => new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
@@ -598,7 +599,7 @@ async function fetchReply(text) {
   const r = await fetch('/chat', {
     method: 'POST',
     headers: {'Content-Type': 'application/json'},
-    body: JSON.stringify({message: text})
+    body: JSON.stringify({message: text, session_id: sessionId})
   });
   return (await r.json()).reply;
 }

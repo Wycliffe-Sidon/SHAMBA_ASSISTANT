@@ -13,6 +13,9 @@ logger = logging.getLogger(__name__)
 app = FastAPI()
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
+# Conversation memory storage (in production, use Redis or database)
+conversation_memory = {}
+
 def get_client():
     key = os.environ.get("GROQ_API_KEY")
     if not key:
@@ -22,6 +25,16 @@ def get_client():
 SYSTEM_PROMPT = """You are "Fahamu Shamba," an AI-powered agricultural assistant built for farmers in Kenya.
 Your role is to provide ONLY agricultural guidance and ignore or politely decline non-agricultural queries.
 
+Memory Rules:
+- Always remember facts provided by the farmer during the conversation (e.g., "My name is Wycliff," "I have 2 acres of land," "My soil is sandy").
+- Store these facts in memory and use them in future responses.
+- If the farmer repeats or updates information, overwrite the old memory with the new one.
+- When responding, personalize advice using remembered facts (e.g., "Wycliff, since you have 2 acres of sandy soil, maize is recommended this season").
+- If asked to recall, retrieve stored facts and confirm them back to the farmer.
+- If asked to forget, remove the fact from memory and confirm deletion.
+- Use farmer-friendly language, avoid technical jargon.
+- Provide step-by-step guidance when necessary.
+
 Core Functions:
 1. Crop Recommendations - advise on best crops based on soil, weather, season, location, market demand.
 2. Pest & Disease Management - preventive measures and treatments.
@@ -30,7 +43,7 @@ Core Functions:
 5. Farmer Interaction - respond in Swahili or English based on farmer preference.
 
 When providing crop recommendations, structure your response as follows:
-- Start with a brief introduction about the location and season
+- Start with a brief personalized introduction using remembered farmer details
 - Then list 3 recommended crops in this EXACT format:
   CROP: [Crop Name]
   DETAILS: [Brief planting info]
@@ -55,10 +68,10 @@ If asked non-agricultural questions, respond: "I am your agricultural assistant.
 
 For USSD/SMS: Keep responses under 160 characters, plain text only.
 For IVR: Use conversational sentences suitable for text-to-speech.
-For App: Full detailed responses with structured crop recommendations."""
+For App: Full detailed responses with structured crop recommendations and personalized advice."""
 
 
-def ask_groq(user_message: str, mode: str = "app") -> str:
+def ask_groq(user_message: str, mode: str = "app", session_id: str = "default") -> str:
     mode_instruction = {
         "ussd": "Respond in under 160 characters. Plain text only. No emojis.",
         "ivr": "Respond in short conversational sentences suitable for text-to-speech. No special characters.",
@@ -67,15 +80,33 @@ def ask_groq(user_message: str, mode: str = "app") -> str:
 
     try:
         client = get_client()
+        
+        # Initialize conversation history for this session
+        if session_id not in conversation_memory:
+            conversation_memory[session_id] = []
+        
+        # Build messages with conversation history
+        messages = [{"role": "system", "content": SYSTEM_PROMPT + f"\n\nMode: {mode_instruction}"}]
+        
+        # Add conversation history (last 10 messages to keep context manageable)
+        messages.extend(conversation_memory[session_id][-10:])
+        
+        # Add current user message
+        messages.append({"role": "user", "content": user_message})
+        
         response = client.chat.completions.create(
             model="llama-3.3-70b-versatile",
-            messages=[
-                {"role": "system", "content": SYSTEM_PROMPT + f"\n\nMode: {mode_instruction}"},
-                {"role": "user", "content": user_message}
-            ],
+            messages=messages,
             max_tokens=500 if mode == "app" else 100
         )
-        return response.choices[0].message.content.strip()
+        
+        assistant_reply = response.choices[0].message.content.strip()
+        
+        # Store conversation in memory
+        conversation_memory[session_id].append({"role": "user", "content": user_message})
+        conversation_memory[session_id].append({"role": "assistant", "content": assistant_reply})
+        
+        return assistant_reply
     except Exception as e:
         logger.error(f"Groq error: {e}")
         raise
@@ -105,6 +136,7 @@ def ask_groq_vision(image_bytes: bytes, mime_type: str, user_message: str) -> st
 # ── App Chat Endpoint ──────────────────────────────────────────────────────────
 class ChatRequest(BaseModel):
     message: str
+    session_id: str = "default"
 
 @app.get("/health")
 async def health():
@@ -123,7 +155,7 @@ async def test_groq():
 @app.post("/chat")
 async def chat(req: ChatRequest):
     try:
-        reply = ask_groq(req.message, mode="app")
+        reply = ask_groq(req.message, mode="app", session_id=req.session_id)
         return {"reply": reply}
     except Exception as e:
         logger.error(f"/chat error: {e}")
@@ -140,6 +172,15 @@ async def analyze_image(image: UploadFile = File(...), message: str = Form(defau
     except Exception as e:
         logger.error(f"/analyze-image error: {e}")
         return {"reply": f"Error analyzing image: {str(e)}"}
+
+
+@app.post("/clear-memory")
+async def clear_memory(session_id: str = "default"):
+    """Clear conversation memory for a session"""
+    if session_id in conversation_memory:
+        conversation_memory[session_id] = []
+        return {"status": "success", "message": "Memory cleared"}
+    return {"status": "success", "message": "No memory to clear"}
 
 
 # ── USSD Endpoint (Africa's Talking) ──────────────────────────────────────────
