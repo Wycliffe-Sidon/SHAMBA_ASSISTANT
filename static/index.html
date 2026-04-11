@@ -160,10 +160,10 @@ header p{font-size:0.7rem;color:#6b6b6b}
 </header>
 
 <div class="quick-actions">
-  <button class="qa-btn" onclick="quickAsk('What is the best crop to plant in Kenya right now?')">🌾 Best Crop</button>
-  <button class="qa-btn" onclick="quickAsk('Give me weather update for Kenyan farmers')">☀️ Weather</button>
-  <button class="qa-btn" onclick="quickAsk('Common pests and diseases in Kenya')">🐛 Pest Tips</button>
-  <button class="qa-btn" onclick="quickAsk('Current market prices for crops in Kenya')">📈 Market Prices</button>
+  <button class="qa-btn" onclick="quickAsk('What is the best crop to plant in Kenya right now?')">🌾 Best Crop / Zao Bora</button>
+  <button class="qa-btn" onclick="quickAsk('Give me weather update for Kenyan farmers')">☀️ Weather / Hali ya Hewa</button>
+  <button class="qa-btn" onclick="quickAsk('Common pests and diseases in Kenya')">🐛 Pests / Wadudu</button>
+  <button class="qa-btn" onclick="quickAsk('Current market prices for crops in Kenya')">📈 Market / Bei za Soko</button>
   <button class="qa-btn" onclick="document.getElementById('file-input').click()">📷 Upload Photo</button>
 </div>
 
@@ -175,8 +175,9 @@ header p{font-size:0.7rem;color:#6b6b6b}
 
 <div id="chat-window">
   <div class="welcome-card">
-    <h2>🌱 Welcome to Fahamu Shamba AI</h2>
-    <p>I'm your intelligent farming assistant. I'll analyze your location, soil type, weather patterns, and market data to recommend the top 3 best crops for your farm. Let's get started!</p>
+    <h2>🌱 Welcome to Fahamu Shamba AI / Karibu Fahamu Shamba AI</h2>
+    <p>I'm your intelligent farming assistant. I speak both English and Kiswahili! I'll analyze your location, soil type, weather patterns, and market data to recommend the top 3 best crops for your farm. Let's get started!</p>
+    <p style="margin-top:8px;font-size:0.8rem;">Mimi ni msaidizi wako wa kilimo. Ninazungumza Kiingereza na Kiswahili! Nitachanganua eneo lako, aina ya udongo, hali ya hewa, na bei za soko kukupendekezea mazao 3 bora kwa shamba lako.</p>
   </div>
 </div>
 
@@ -190,7 +191,7 @@ header p{font-size:0.7rem;color:#6b6b6b}
 
 <div class="input-bar">
   <button class="icon-btn" id="img-btn" title="Upload image">📷</button>
-  <input type="text" id="user-input" placeholder="Ask about crops, weather, markets..."/>
+  <input type="text" id="user-input" placeholder="Ask in English or Kiswahili... / Uliza kwa Kiingereza au Kiswahili..."/>
   <button class="icon-btn" id="mic-btn" title="Voice input">🎤</button>
   <button class="icon-btn" id="send-btn">➤</button>
 </div>
@@ -247,6 +248,9 @@ const removeImageBtn=document.getElementById('remove-image');
 let selectedFile=null;
 let activeSpeakBtn=null;
 let userLocation={county:'',sublocation:''};
+let currentSessionId='session_'+Date.now();
+let isSpeaking=false;
+let currentUtterance=null;
 
 const countySublocations={
   'Nairobi':['Westlands','Dagoretti','Langata','Kibra','Roysambu','Kasarani','Ruaraka','Embakasi','Makadara','Kamukunji','Starehe','Mathare'],
@@ -268,11 +272,11 @@ const countySublocations={
 
 const now=()=>new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
 
-function addBubble(htmlText,role,imgUrl=null){
+function addBubble(htmlText,role,imgUrl=null,lang='en'){
   const row=document.createElement('div');
   row.className=`bubble-row ${role}`;
   const imgTag=imgUrl?`<img src="${imgUrl}" alt="crop"/>`:'';
-  const speakBtnHtml=role==='bot'?`<button class="speak-btn" title="Read aloud" data-text="">🔊</button>`:'';
+  const speakBtnHtml=role==='bot'?`<button class="speak-btn" title="Read aloud" data-text="" data-lang="${lang}">🔊</button>`:'';
   row.innerHTML=`
     <div class="avatar">${role==='bot'?'🌾':'👨🌾'}</div>
     <div class="bubble">
@@ -285,8 +289,9 @@ function addBubble(htmlText,role,imgUrl=null){
     </div>`;
   if(role==='bot'){
     const plain=htmlText.replace(/<br\s*\/?>/gi,' ').replace(/<[^>]+>/g,'');
-    row.querySelector('.speak-btn').dataset.text=plain;
-    row.querySelector('.speak-btn').addEventListener('click',function(){onSpeakBtn(this);});
+    const speakBtn=row.querySelector('.speak-btn');
+    speakBtn.dataset.text=plain;
+    speakBtn.addEventListener('click',function(){onSpeakBtn(this);});
   }
   chatWindow.appendChild(row);
   chatWindow.scrollTop=chatWindow.scrollHeight;
@@ -309,21 +314,28 @@ function removeTyping(){
 
 function stopSpeaking(){
   window.speechSynthesis.cancel();
+  isSpeaking=false;
+  currentUtterance=null;
   if(activeSpeakBtn){activeSpeakBtn.classList.remove('active');activeSpeakBtn=null;}
 }
 
-function speak(text,onDone){
+function speak(text,onDone,lang='en-US'){
   stopSpeaking();
+  isSpeaking=true;
   const sentences=text.match(/[^.!?]+[.!?]*/g)||[text];
   let i=0;
   function next(){
-    if(i>=sentences.length){if(onDone)onDone();return;}
-    const utt=new SpeechSynthesisUtterance(sentences[i++].trim());
-    utt.lang='en-US';
-    utt.rate=0.93;
-    utt.onend=next;
-    utt.onerror=next;
-    window.speechSynthesis.speak(utt);
+    if(i>=sentences.length||!isSpeaking){
+      isSpeaking=false;
+      if(onDone)onDone();
+      return;
+    }
+    currentUtterance=new SpeechSynthesisUtterance(sentences[i++].trim());
+    currentUtterance.lang=lang;
+    currentUtterance.rate=0.93;
+    currentUtterance.onend=next;
+    currentUtterance.onerror=next;
+    window.speechSynthesis.speak(currentUtterance);
   }
   next();
 }
@@ -336,18 +348,25 @@ function onSpeakBtn(btn){
   stopSpeaking();
   activeSpeakBtn=btn;
   btn.classList.add('active');
+  const lang=btn.dataset.lang==='sw'?'sw-KE':'en-US';
   speak(btn.dataset.text,()=>{
     btn.classList.remove('active');
     activeSpeakBtn=null;
-  });
+  },lang);
 }
 
 async function fetchReply(text,file){
+  // Stop any ongoing speech when new message is sent (interruption)
+  const wasInterrupted=isSpeaking;
+  if(isSpeaking){
+    stopSpeaking();
+  }
+  
   if(file){
     const fd=new FormData();
     fd.append('image',file);
     fd.append('message',text||'Identify any pest, disease, or crop condition in this image.');
-    fd.append('session_id','session_'+Date.now());
+    fd.append('session_id',currentSessionId);
     const r=await fetch('/analyze-image',{method:'POST',body:fd});
     return(await r.json()).reply;
   }
@@ -356,9 +375,10 @@ async function fetchReply(text,file){
     headers:{'Content-Type':'application/json'},
     body:JSON.stringify({
       message:text,
-      session_id:'session_'+Date.now(),
+      session_id:currentSessionId,
       county:userLocation.county,
-      sublocation:userLocation.sublocation
+      sublocation:userLocation.sublocation,
+      interrupted:wasInterrupted
     })
   });
   const data=await r.json();
@@ -379,10 +399,12 @@ async function sendMessage(text,file=null){
     const data=await fetchReply(text,file);
     removeTyping();
     
+    const detectedLang=data.language||'en';
+    
     if(data.recommendations){
       // Display conversational response with crop cards
       let responseHtml=data.reply.replace(/\n/g,'<br>');
-      addBubble(responseHtml,'bot');
+      addBubble(responseHtml,'bot',null,detectedLang);
       
       // Add crop recommendation cards
       const cardsHtml=data.recommendations.map((crop,idx)=>{
@@ -398,15 +420,15 @@ async function sendMessage(text,file=null){
         `;
       }).join('');
       
-      addBubble(cardsHtml,'bot');
+      addBubble(cardsHtml,'bot',null,detectedLang);
     }else{
       // Regular text response
       const reply=typeof data==='string'?data:data.reply;
-      addBubble(reply.replace(/\n/g,'<br>'),'bot');
+      addBubble(reply.replace(/\n/g,'<br>'),'bot',null,detectedLang);
     }
   }catch(e){
     removeTyping();
-    addBubble('Sorry, I could not connect. Please try again.','bot');
+    addBubble('Sorry, I could not connect. Please try again.<br>Samahani, sikuweza kuunganisha. Tafadhali jaribu tena.','bot');
   }
 }
 
@@ -502,12 +524,12 @@ function saveLocation(){
   const sublocation=document.getElementById('sublocationSelect').value;
   
   if(!county){
-    alert('Please select a county');
+    alert('Please select a county / Chagua kaunti');
     return;
   }
   
   if(!sublocation){
-    alert('Please select a sub-location');
+    alert('Please select a sub-location / Chagua eneo');
     return;
   }
   

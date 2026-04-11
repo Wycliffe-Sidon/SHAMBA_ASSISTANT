@@ -16,6 +16,31 @@ app = FastAPI()
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
 conversation_memory = {}
+user_profiles = {}  # Store farmer names and preferences
+
+def detect_language(text: str) -> str:
+    """Detect if text is in Kiswahili or English"""
+    swahili_keywords = ['habari', 'shamba', 'mazao', 'mbolea', 'mvua', 'bei', 'soko', 'wakulima', 'kilimo', 'nafaka', 'mbegu', 'ardhi', 'msimu', 'panda', 'vuna', 'uza', 'nunua', 'nini', 'vipi', 'wapi', 'lini', 'ndiyo', 'hapana', 'asante', 'tafadhali', 'saidia', 'nataka', 'nina', 'ninataka']
+    text_lower = text.lower()
+    swahili_count = sum(1 for word in swahili_keywords if word in text_lower)
+    return 'sw' if swahili_count >= 2 else 'en'
+
+def extract_farmer_name(text: str) -> str:
+    """Extract farmer name from introduction"""
+    import re
+    patterns = [
+        r'my name is ([A-Za-z]+)',
+        r'i am ([A-Za-z]+)',
+        r"i'm ([A-Za-z]+)",
+        r'jina langu ni ([A-Za-z]+)',
+        r'mimi ni ([A-Za-z]+)',
+        r'naitwa ([A-Za-z]+)'
+    ]
+    for pattern in patterns:
+        match = re.search(pattern, text, re.IGNORECASE)
+        if match:
+            return match.group(1).capitalize()
+    return None
 
 def get_client():
     key = os.environ.get("GROQ_API_KEY")
@@ -182,43 +207,56 @@ def get_crop_recommendations(county, sublocation):
     return recommendations[:3], soil_info, season, season_desc
 
 # ── ENHANCED SYSTEM PROMPT ───────────────────────────────────────────────────
-SYSTEM_PROMPT = """You are "Fahamu Shamba AI," an intelligent agricultural assistant for Kenyan farmers.
+SYSTEM_PROMPT = """You are "Fahamu Shamba," an AI-powered agricultural assistant for Kenyan farmers.
+Your role is to provide ONLY agricultural guidance and ignore or politely decline non-agricultural queries.
 
-Your personality:
-- Friendly, conversational, and encouraging
-- Expert in Kenyan agriculture, soil types, weather patterns, and market trends
-- You analyze multiple variables: soil type, pH, fertility, drainage, current season, rainfall patterns, and market prices
-- You provide data-driven recommendations with confidence
+Voice & Conversation Rules:
+- Speak fluently in both English and Kiswahili.
+- Detect the farmer's preferred language automatically from their input and respond accordingly.
+- Deliver answers in a natural, conversational tone suitable for Text-to-Speech (TTS).
+- Keep responses short and clear for IVR/voice channels, but detailed for app/web channels.
+- Always personalize advice using remembered facts from conversation history.
+- If asked non-agricultural questions, respond: "I am your agricultural assistant. Please ask me about farming, crops, weather, or markets."
+- For Kiswahili responses, use natural, everyday language that farmers understand.
 
-When providing crop recommendations:
-1. Start with a warm, conversational greeting
-2. Acknowledge the farmer's location and current conditions
-3. Explain your analysis briefly (soil type, season, market trends)
-4. Present the top 3 crops with enthusiasm
-5. Provide actionable advice for each crop
-6. End with encouragement and offer to answer questions
+Core Agricultural Functions:
+1. Crop Recommendations
+   - Advise farmers on what to plant, when to plant, how to protect crops, and when to sell for maximum profit.
+   - Consider soil type, fertility, pH, moisture, weather patterns, rainfall, temperature, and market demand.
+   - When recommendations are provided in context, present them conversationally with enthusiasm.
 
-IMPORTANT: When crop recommendations are provided in the context, structure your response as:
-- Opening: Greet and acknowledge location
-- Analysis: Briefly mention soil type, season, and market conditions
-- Recommendations: Introduce the top 3 crops naturally
-- Closing: Encourage the farmer and offer further help
+2. Pest & Disease Management
+   - Suggest preventive measures and treatments for common crop pests and diseases.
+   - Provide simple, actionable steps farmers can follow.
 
-For other questions:
-- Pest & Disease Management
-- Weather & Climate Updates  
-- Market Insights
-- Farming best practices
-- Image Analysis (identify crops, pests, diseases)
+3. Weather & Climate Updates
+   - Interpret weather data (rainfall, drought risk, temperature ranges).
+   - Advise farmers on how to adjust planting or harvesting schedules.
 
-Always be conversational, supportive, and provide practical advice.
+4. Market Insights
+   - Share current market prices and demand trends.
+   - Help farmers decide the best time to sell their produce.
+
+Response Structure for Crop Recommendations:
+- Opening: Warm greeting in detected language, acknowledge location
+- Analysis: Briefly explain soil type, season, and market conditions
+- Recommendations: Present top 3 crops naturally with confidence
+- Closing: Encourage farmer and offer further help
+
+Interaction Guidelines:
+- For IVR: Use short sentences with natural pauses
+- For USSD/SMS: Keep answers ≤160 characters
+- For App/Web: Provide full conversational responses with context and detail
+- Always remain interactive, farmer-friendly, and bilingual
+
+Goal: Empower farmers with personalized, actionable agricultural advice in a conversational, voice-friendly manner.
 """
 
 def ask_groq(user_message: str, mode: str = "app", session_id: str = "default", context_data: dict = None) -> str:
     mode_instruction = {
-        "ussd": "Respond in under 160 characters. Plain text only.",
-        "ivr": "Short conversational sentences for text-to-speech.",
-        "app": "Full conversational response. Be warm, friendly, and encouraging. Explain your reasoning."
+        "ussd": "Respond in under 160 characters. Plain text only. Be direct and concise.",
+        "ivr": "Use short sentences with natural pauses. Speak clearly for Text-to-Speech. Keep it conversational and easy to understand.",
+        "app": "Full conversational response. Be warm, friendly, and encouraging. Explain your reasoning. Use natural language suitable for both reading and voice output."
     }.get(mode, "")
 
     try:
@@ -226,8 +264,24 @@ def ask_groq(user_message: str, mode: str = "app", session_id: str = "default", 
         
         if session_id not in conversation_memory:
             conversation_memory[session_id] = []
+            user_profiles[session_id] = {'language': 'en', 'name': None}
         
-        messages = [{"role": "system", "content": SYSTEM_PROMPT + f"\n\nMode: {mode_instruction}"}]
+        # Detect language and extract name
+        detected_lang = detect_language(user_message)
+        user_profiles[session_id]['language'] = detected_lang
+        
+        farmer_name = extract_farmer_name(user_message)
+        if farmer_name:
+            user_profiles[session_id]['name'] = farmer_name
+        
+        # Build system message with language and personalization
+        lang_instruction = f"\n\nDETECTED LANGUAGE: {'Kiswahili' if detected_lang == 'sw' else 'English'}. Respond in the same language."
+        
+        profile = user_profiles[session_id]
+        if profile['name']:
+            lang_instruction += f"\n\nFARMER NAME: {profile['name']}. Use their name naturally in conversation to personalize advice."
+        
+        messages = [{"role": "system", "content": SYSTEM_PROMPT + f"\n\nMode: {mode_instruction}" + lang_instruction}]
         
         # Add context data if provided
         if context_data:
@@ -240,7 +294,7 @@ def ask_groq(user_message: str, mode: str = "app", session_id: str = "default", 
         response = client.chat.completions.create(
             model="llama-3.1-8b-instant",
             messages=messages,
-            max_tokens=800 if mode == "app" else 100,
+            max_tokens=800 if mode == "app" else (100 if mode == "ussd" else 400),
             temperature=0.8
         )
         
@@ -287,6 +341,7 @@ class ChatRequest(BaseModel):
     session_id: str = "default"
     county: str = None
     sublocation: str = None
+    interrupted: bool = False  # Flag to handle interruptions
 
 @app.get("/health")
 async def health():
@@ -295,12 +350,16 @@ async def health():
 @app.post("/chat")
 async def chat(req: ChatRequest):
     try:
+        # Handle interruption - clear any ongoing speech
+        if req.interrupted:
+            logger.info(f"Interruption detected for session {req.session_id}")
+        
         context_data = None
         recommendations = None
         
         # Check if this is a crop recommendation request
         msg_lower = req.message.lower()
-        if any(keyword in msg_lower for keyword in ["best crop", "what to plant", "recommend", "should i plant", "top 3", "top three"]):
+        if any(keyword in msg_lower for keyword in ["best crop", "what to plant", "recommend", "should i plant", "top 3", "top three", "mazao", "panda", "kilimo"]):
             if req.county:
                 recs, soil, season, season_desc = get_crop_recommendations(req.county, req.sublocation)
                 recommendations = recs
@@ -327,10 +386,14 @@ async def chat(req: ChatRequest):
         if recommendations:
             return {
                 "reply": reply,
-                "recommendations": recommendations
+                "recommendations": recommendations,
+                "language": user_profiles.get(req.session_id, {}).get('language', 'en')
             }
         else:
-            return {"reply": reply}
+            return {
+                "reply": reply,
+                "language": user_profiles.get(req.session_id, {}).get('language', 'en')
+            }
     except Exception as e:
         logger.error(f"/chat error: {e}")
         return {"reply": f"Error: {str(e)}"}
@@ -374,15 +437,15 @@ async def get_recommendations(county: str = Form(...), sublocation: str = Form(.
 @app.post("/ussd", response_class=PlainTextResponse)
 async def ussd(sessionId: str = Form(...), serviceCode: str = Form(...), phoneNumber: str = Form(...), text: str = Form("")):
     if text == "":
-        return "CON Welcome to Fahamu Shamba\n1. Best Crop to Plant\n2. Pest & Disease Tips\n3. Weather Update\n4. Market Prices"
+        return "CON Karibu Fahamu Shamba\nWelcome to Fahamu Shamba\n1. Mazao Bora/Best Crops\n2. Wadudu/Pests\n3. Hali ya Hewa/Weather\n4. Bei za Soko/Market Prices"
     elif text == "1":
-        return "CON Enter your county (e.g. Nakuru):"
+        return "CON Andika jina la kaunti yako\nEnter your county (e.g. Nakuru):"
     elif text == "2":
-        return "CON Enter your crop name (e.g. maize):"
+        return "CON Andika jina la zao\nEnter crop name (e.g. maize):"
     elif text == "3":
-        return "CON Enter your county:"
+        return "CON Andika jina la kaunti yako\nEnter your county:"
     elif text == "4":
-        return "CON Enter crop name:"
+        return "CON Andika jina la zao\nEnter crop name:"
     else:
         parts = text.split("*")
         menu = parts[0]
@@ -393,8 +456,8 @@ async def ussd(sessionId: str = Form(...), serviceCode: str = Form(...), phoneNu
             if county in SOIL_DATA:
                 recs, _, _, _ = get_crop_recommendations(county, "")
                 top = recs[0]
-                return f"END Top crop: {top['name']}\n{top['detail']}"
-            return f"END Plant maize, beans or sorghum in {user_input}"
+                return f"END Zao bora/Top crop: {top['name']}\n{top['detail']}"
+            return f"END Panda mahindi, maharagwe au mtama\nPlant maize, beans or sorghum"
         
         queries = {
             "2": f"Pest management for {user_input}",
@@ -402,7 +465,7 @@ async def ussd(sessionId: str = Form(...), serviceCode: str = Form(...), phoneNu
             "4": f"Market price for {user_input}"
         }
         query = queries.get(menu, user_input)
-        advice = ask_groq(query, mode="ussd")
+        advice = ask_groq(query, mode="ussd", session_id=sessionId)
         return f"END {advice}"
 
 @app.get("/", response_class=HTMLResponse)
