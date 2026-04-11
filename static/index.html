@@ -335,13 +335,19 @@ async function fetchReply(text,file){
     const fd=new FormData();
     fd.append('image',file);
     fd.append('message',text||'Identify any pest, disease, or crop condition in this image.');
+    fd.append('session_id','session_'+Date.now());
     const r=await fetch('/analyze-image',{method:'POST',body:fd});
     return(await r.json()).reply;
   }
   const r=await fetch('/chat',{
     method:'POST',
     headers:{'Content-Type':'application/json'},
-    body:JSON.stringify({message:text})
+    body:JSON.stringify({
+      message:text,
+      session_id:'session_'+Date.now(),
+      county:userLocation.county,
+      sublocation:userLocation.sublocation
+    })
   });
   return(await r.json()).reply;
 }
