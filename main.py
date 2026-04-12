@@ -214,50 +214,66 @@ Voice & Conversation Rules:
 - Speak fluently in both English and Kiswahili.
 - Detect the farmer's preferred language automatically from their input and respond accordingly.
 - Deliver answers in a natural, conversational tone suitable for Text-to-Speech (TTS).
-- Keep responses short and clear for IVR/voice channels, but detailed for app/web channels.
+- Keep responses clear, concise, and actionable.
 - Always personalize advice using remembered facts from conversation history.
 - If asked non-agricultural questions, respond: "I am your agricultural assistant. Please ask me about farming, crops, weather, or markets."
 - For Kiswahili responses, use natural, everyday language that farmers understand.
 
 Core Agricultural Functions:
-1. Crop Recommendations
-   - Advise farmers on what to plant, when to plant, how to protect crops, and when to sell for maximum profit.
-   - Consider soil type, fertility, pH, moisture, weather patterns, rainfall, temperature, and market demand.
-   - When recommendations are provided in context, present them conversationally with enthusiasm.
+1. Crop Recommendations (context: crops)
+   - Provide top 3 crops with percentage ratings based on suitability
+   - Consider soil type, fertility, pH, weather patterns, season, and market demand
+   - When recommendations are provided in context, present them conversationally with enthusiasm
+   - Explain WHY each crop is suitable
 
-2. Pest & Disease Management
-   - Suggest preventive measures and treatments for common crop pests and diseases.
-   - Provide simple, actionable steps farmers can follow.
+2. Weather Information (context: weather)
+   - ONLY provide weather-related information: current season, rainfall patterns, temperature
+   - Give farming advice based on weather conditions
+   - Suggest what farmers should do now based on the season
+   - DO NOT discuss crops, pests, or market prices unless directly related to weather impact
 
-3. Weather & Climate Updates
-   - Interpret weather data (rainfall, drought risk, temperature ranges).
-   - Advise farmers on how to adjust planting or harvesting schedules.
+3. Pest & Disease Management (context: pests)
+   - ONLY discuss pests and diseases affecting crops
+   - Provide identification, prevention, and treatment methods
+   - Suggest organic and chemical control options
+   - DO NOT discuss weather, market prices, or crop recommendations unless related to pest management
 
-4. Market Insights
-   - Share current market prices and demand trends.
-   - Help farmers decide the best time to sell their produce.
+4. Market Insights (context: market)
+   - ONLY provide market prices, trends, and demand information
+   - Help farmers decide when to sell for maximum profit
+   - Discuss price trends (rising, falling, stable)
+   - DO NOT discuss weather, pests, or planting advice unless related to market timing
 
-Response Structure for Crop Recommendations:
-- Opening: Warm greeting in detected language, acknowledge location
-- Analysis: Briefly explain soil type, season, and market conditions
-- Recommendations: Present top 3 crops naturally with confidence
+5. General Questions (context: general)
+   - Answer any agricultural question: soil prep, fertilizers, irrigation, storage, etc.
+   - Provide comprehensive farming knowledge
+   - Be educational and helpful
+
+Response Structure:
+- Opening: Warm greeting in detected language
+- Content: Focus ONLY on the current context/section
 - Closing: Encourage farmer and offer further help
 
-Interaction Guidelines:
-- For IVR: Use short sentences with natural pauses
-- For USSD/SMS: Keep answers ≤160 characters
-- For App/Web: Provide full conversational responses with context and detail
-- Always remain interactive, farmer-friendly, and bilingual
-
-Goal: Empower farmers with personalized, actionable agricultural advice in a conversational, voice-friendly manner.
+Goal: Empower farmers with focused, section-specific agricultural advice in a conversational manner.
 """
 
-def ask_groq(user_message: str, mode: str = "app", session_id: str = "default", context_data: dict = None) -> str:
+def ask_groq(user_message: str, mode: str = "app", session_id: str = "default", context_data: dict = None, tab_context: str = None) -> str:
     mode_instruction = {
         "ussd": "Respond in under 160 characters. Plain text only. Be direct and concise.",
         "ivr": "Use short sentences with natural pauses. Speak clearly for Text-to-Speech. Keep it conversational and easy to understand.",
         "app": "Full conversational response. Be warm, friendly, and encouraging. Explain your reasoning. Use natural language suitable for both reading and voice output."
     }.get(mode, "")
+    
+    # Add context-specific instructions
+    context_instructions = {
+        "crops": "\n\nCONTEXT: User is in the CROP RECOMMENDATIONS section. Focus ONLY on crop recommendations, planting advice, and suitability analysis. Present information enthusiastically.",
+        "weather": "\n\nCONTEXT: User is in the WEATHER section. Focus ONLY on weather information, seasonal patterns, rainfall, temperature, and weather-based farming advice. Do NOT discuss crop recommendations, pests, or market prices unless directly related to weather.",
+        "pests": "\n\nCONTEXT: User is in the PEST & DISEASES section. Focus ONLY on pest identification, disease management, prevention, and treatment methods. Do NOT discuss weather, market prices, or crop recommendations unless related to pest control.",
+        "market": "\n\nCONTEXT: User is in the MARKET PRICES section. Focus ONLY on market prices, price trends, demand levels, and selling advice. Do NOT discuss weather, pests, or planting advice unless related to market timing.",
+        "general": "\n\nCONTEXT: User is in the GENERAL QUESTIONS section. Answer any agricultural question comprehensively. Cover topics like soil preparation, fertilizers, irrigation, crop rotation, storage, organic farming, etc."
+    }
+    
+    context_instruction = context_instructions.get(tab_context, "") if tab_context else ""
 
     try:
         client = get_client()
@@ -281,7 +297,7 @@ def ask_groq(user_message: str, mode: str = "app", session_id: str = "default", 
         if profile['name']:
             lang_instruction += f"\n\nFARMER NAME: {profile['name']}. Use their name naturally in conversation to personalize advice."
         
-        messages = [{"role": "system", "content": SYSTEM_PROMPT + f"\n\nMode: {mode_instruction}" + lang_instruction}]
+        messages = [{"role": "system", "content": SYSTEM_PROMPT + f"\n\nMode: {mode_instruction}" + lang_instruction + context_instruction}]
         
         # Add context data if provided
         if context_data:
@@ -341,7 +357,8 @@ class ChatRequest(BaseModel):
     session_id: str = "default"
     county: str = None
     sublocation: str = None
-    interrupted: bool = False  # Flag to handle interruptions
+    interrupted: bool = False
+    context: str = None  # Tab context: crops, weather, pests, market, general
 
 @app.get("/health")
 async def health():
@@ -359,7 +376,7 @@ async def chat(req: ChatRequest):
         
         # Check if this is a crop recommendation request
         msg_lower = req.message.lower()
-        if any(keyword in msg_lower for keyword in ["best crop", "what to plant", "recommend", "should i plant", "top 3", "top three", "mazao", "panda", "kilimo"]):
+        if any(keyword in msg_lower for keyword in ["best crop", "what to plant", "recommend", "should i plant", "top 3", "top three", "mazao", "panda", "kilimo", "crop"]):
             if req.county:
                 recs, soil, season, season_desc = get_crop_recommendations(req.county, req.sublocation)
                 recommendations = recs
@@ -381,7 +398,7 @@ async def chat(req: ChatRequest):
                     ]
                 }
         
-        reply = ask_groq(req.message, mode="app", session_id=req.session_id, context_data=context_data)
+        reply = ask_groq(req.message, mode="app", session_id=req.session_id, context_data=context_data, tab_context=req.context)
         
         if recommendations:
             return {

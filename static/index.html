@@ -17,11 +17,12 @@ header p{font-size:0.7rem;color:#6b6b6b}
 .header-right{margin-left:auto;display:flex;align-items:center;gap:8px}
 .status-dot{width:8px;height:8px;background:#10a37f;border-radius:50%;animation:pulse 2s infinite}
 
-/* Quick actions */
-.quick-actions{display:flex;gap:6px;padding:10px 16px;background:#fff;overflow-x:auto;flex-shrink:0;border-bottom:1px solid #e5e5e5}
-.quick-actions::-webkit-scrollbar{display:none}
-.qa-btn{white-space:nowrap;background:#f7f7f8;border:1px solid #d9d9d9;color:#2c2c2c;padding:6px 12px;border-radius:6px;font-size:0.75rem;font-weight:500;cursor:pointer;transition:all .15s;flex-shrink:0}
-.qa-btn:hover{background:#ececec;border-color:#b3b3b3}
+/* Tab Navigation */
+.tab-nav{display:flex;gap:0;padding:0;background:#fff;overflow-x:auto;flex-shrink:0;border-bottom:2px solid #e5e5e5}
+.tab-nav::-webkit-scrollbar{display:none}
+.tab-btn{white-space:nowrap;background:transparent;border:none;border-bottom:3px solid transparent;color:#6b6b6b;padding:12px 16px;font-size:0.8rem;font-weight:600;cursor:pointer;transition:all .2s;flex-shrink:0;display:flex;align-items:center;gap:6px}
+.tab-btn:hover{color:#2c2c2c;background:#f7f7f8}
+.tab-btn.active{color:#2d6a2d;border-bottom-color:#2d6a2d;background:#f0f8f0}
 
 /* Location bar */
 .location-bar{background:#f9f9f9;padding:8px 16px;display:flex;align-items:center;gap:8px;border-bottom:1px solid #e5e5e5;flex-shrink:0}
@@ -71,25 +72,21 @@ header p{font-size:0.7rem;color:#6b6b6b}
 .speak-btn.active{opacity:1;animation:blink .8s infinite}
 
 /* Crop recommendation cards */
-.crop-card{background:#fff;border:1px solid #e5e5e5;border-radius:10px;padding:12px;margin:6px 0;transition:all .2s}
-.crop-card:hover{box-shadow:0 2px 8px rgba(0,0,0,0.08);border-color:#10a37f}
-.crop-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px}
-.crop-name{font-size:0.95rem;font-weight:600;color:#2c2c2c}
-.crop-score{background:#10a37f;color:#fff;padding:3px 8px;border-radius:12px;font-size:0.7rem;font-weight:600}
-.crop-details{font-size:0.8rem;color:#6b6b6b;line-height:1.5}
-.crop-icon{font-size:20px;margin-right:6px}
+.crop-card{background:#fff;border:2px solid #e5e5e5;border-radius:12px;padding:16px;margin:10px 0;transition:all .3s;position:relative;overflow:hidden}
+.crop-card:hover{box-shadow:0 4px 12px rgba(45,106,45,0.15);border-color:#2d6a2d;transform:translateY(-2px)}
+.crop-card::before{content:'';position:absolute;top:0;left:0;width:5px;height:100%;background:linear-gradient(180deg,#2d6a2d,#4a8c3f)}
+.crop-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.crop-name{font-size:1rem;font-weight:700;color:#2c2c2c;display:flex;align-items:center;gap:8px}
+.crop-score{background:linear-gradient(135deg,#2d6a2d,#4a8c3f);color:#fff;padding:6px 14px;border-radius:20px;font-size:0.85rem;font-weight:700;box-shadow:0 2px 6px rgba(45,106,45,0.3)}
+.crop-details{font-size:0.85rem;color:#6b6b6b;line-height:1.6;margin-top:8px}
+.crop-icon{font-size:28px}
+.progress-bar{width:100%;height:8px;background:#e5e5e5;border-radius:10px;margin-top:10px;overflow:hidden}
+.progress-fill{height:100%;background:linear-gradient(90deg,#2d6a2d,#4a8c3f);border-radius:10px;transition:width .5s ease}
 
 /* Typing */
 .typing-dots span{display:inline-block;width:6px;height:6px;background:#4a8c3f;border-radius:50%;margin:0 2px;animation:bounce 1.2s infinite}
 .typing-dots span:nth-child(2){animation-delay:.2s}
 .typing-dots span:nth-child(3){animation-delay:.4s}
-
-/* Image preview */
-#image-preview-bar{display:none;align-items:center;gap:8px;padding:6px 12px;background:#e8e0cc;border-top:1px solid #d4c9b0;flex-shrink:0}
-#image-preview-bar.show{display:flex}
-#image-preview-bar img{height:45px;width:45px;object-fit:cover;border-radius:6px;border:2px solid #4a8c3f}
-#image-preview-bar span{font-size:0.75rem;color:#5a4a2a;flex:1}
-#remove-image{background:none;border:none;font-size:16px;cursor:pointer;color:#c0392b}
 
 /* Input bar */
 .input-bar{display:flex;align-items:center;gap:8px;padding:12px 16px;background:#fff;border-top:1px solid #e5e5e5;flex-shrink:0}
@@ -109,24 +106,38 @@ header p{font-size:0.7rem;color:#6b6b6b}
 .welcome-card h2{font-size:1.1rem;margin-bottom:8px;font-weight:600}
 .welcome-card p{font-size:0.85rem;opacity:0.95;line-height:1.6}
 
+/* Section-specific styles */
+.section-header{background:linear-gradient(135deg,#f0f8f0,#e8f5e8);padding:16px;border-radius:10px;margin-bottom:16px;border-left:4px solid #2d6a2d}
+.section-header h3{font-size:1.05rem;font-weight:700;color:#2d6a2d;margin-bottom:4px}
+.section-header p{font-size:0.8rem;color:#6b6b6b;line-height:1.5}
+.info-card{background:#f9f9f9;border:1px solid #e5e5e5;border-radius:10px;padding:14px;margin:8px 0}
+.info-card-title{font-size:0.9rem;font-weight:600;color:#2c2c2c;margin-bottom:6px;display:flex;align-items:center;gap:6px}
+.info-card-content{font-size:0.85rem;color:#6b6b6b;line-height:1.6}
+.price-tag{background:#2d6a2d;color:#fff;padding:4px 10px;border-radius:6px;font-weight:600;font-size:0.85rem;display:inline-block}
+.trend-up{color:#10a37f;font-weight:600}
+.trend-down{color:#ef4444;font-weight:600}
+.trend-stable{color:#6b6b6b;font-weight:600}
+
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
 @keyframes bounce{0%,80%,100%{transform:translateY(0)}40%{transform:translateY(-7px)}}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}
 
-/* Tablet */
+  /* Tablet */
 @media (min-width:768px){
   header{padding:12px 16px}
   .logo{width:40px;height:40px;font-size:20px}
   header h1{font-size:1rem}
   header p{font-size:0.72rem}
-  .quick-actions{padding:9px 14px;gap:7px}
-  .qa-btn{padding:6px 11px;font-size:0.75rem}
+  .tab-nav{padding:0}
+  .tab-btn{padding:12px 18px;font-size:0.82rem}
   #chat-window{padding:14px}
   .bubble{font-size:0.85rem;padding:9px 12px}
   .avatar{width:30px;height:30px}
   .input-bar{padding:9px 12px;gap:7px}
   #user-input{padding:9px 14px;font-size:0.85rem}
   .icon-btn{width:38px;height:38px;font-size:17px}
+  .crop-card{padding:18px}
+  .section-header{padding:18px}
 }
 
 /* Desktop */
@@ -135,14 +146,16 @@ header p{font-size:0.7rem;color:#6b6b6b}
   .logo{width:42px;height:42px;font-size:22px}
   header h1{font-size:1.05rem}
   header p{font-size:0.75rem}
-  .quick-actions{padding:10px 16px;gap:8px}
-  .qa-btn{padding:7px 12px;font-size:0.78rem}
+  .tab-nav{padding:0}
+  .tab-btn{padding:14px 20px;font-size:0.85rem}
   #chat-window{padding:16px}
   .bubble{font-size:0.88rem;padding:10px 13px}
   .avatar{width:32px;height:32px;font-size:15px}
   .input-bar{padding:10px 14px;gap:8px}
   #user-input{padding:10px 15px;font-size:0.88rem}
   .icon-btn{width:40px;height:40px;font-size:18px}
+  .crop-card{padding:20px}
+  .section-header{padding:20px}
 }
 </style>
 </head>
@@ -159,12 +172,12 @@ header p{font-size:0.7rem;color:#6b6b6b}
   </div>
 </header>
 
-<div class="quick-actions">
-  <button class="qa-btn" onclick="quickAsk('What is the best crop to plant in Kenya right now?')">🌾 Best Crop / Zao Bora</button>
-  <button class="qa-btn" onclick="quickAsk('Give me weather update for Kenyan farmers')">☀️ Weather / Hali ya Hewa</button>
-  <button class="qa-btn" onclick="quickAsk('Common pests and diseases in Kenya')">🐛 Pests / Wadudu</button>
-  <button class="qa-btn" onclick="quickAsk('Current market prices for crops in Kenya')">📈 Market / Bei za Soko</button>
-  <button class="qa-btn" onclick="document.getElementById('file-input').click()">📷 Upload Photo</button>
+<div class="tab-nav">
+  <button class="tab-btn active" data-tab="crops" onclick="switchTab('crops')">🌾 Crop Recommendations</button>
+  <button class="tab-btn" data-tab="weather" onclick="switchTab('weather')">☀️ Weather</button>
+  <button class="tab-btn" data-tab="pests" onclick="switchTab('pests')">🐛 Pest & Diseases</button>
+  <button class="tab-btn" data-tab="market" onclick="switchTab('market')">📈 Market Prices</button>
+  <button class="tab-btn" data-tab="general" onclick="switchTab('general')">💬 General Questions</button>
 </div>
 
 <div class="location-bar">
@@ -174,24 +187,11 @@ header p{font-size:0.7rem;color:#6b6b6b}
 </div>
 
 <div id="chat-window">
-  <div class="welcome-card">
-    <h2>🌱 Welcome to Fahamu Shamba AI / Karibu Fahamu Shamba AI</h2>
-    <p>I'm your intelligent farming assistant. I speak both English and Kiswahili! I'll analyze your location, soil type, weather patterns, and market data to recommend the top 3 best crops for your farm. Let's get started!</p>
-    <p style="margin-top:8px;font-size:0.8rem;">Mimi ni msaidizi wako wa kilimo. Ninazungumza Kiingereza na Kiswahili! Nitachanganua eneo lako, aina ya udongo, hali ya hewa, na bei za soko kukupendekezea mazao 3 bora kwa shamba lako.</p>
-  </div>
+  <!-- Content will be dynamically loaded based on active tab -->
 </div>
-
-<div id="image-preview-bar">
-  <img id="preview-thumb" src="" alt="preview"/>
-  <span id="preview-name">Image ready</span>
-  <button id="remove-image">✕</button>
-</div>
-
-<input type="file" id="file-input" accept="image/*" style="display:none"/>
 
 <div class="input-bar">
-  <button class="icon-btn" id="img-btn" title="Upload image">📷</button>
-  <input type="text" id="user-input" placeholder="Ask in English or Kiswahili... / Uliza kwa Kiingereza au Kiswahili..."/>
+  <input type="text" id="user-input" placeholder="Ask me anything about farming... / Uliza kuhusu kilimo..."/>
   <button class="icon-btn" id="mic-btn" title="Voice input">🎤</button>
   <button class="icon-btn" id="send-btn">➤</button>
 </div>
@@ -238,19 +238,13 @@ const chatWindow=document.getElementById('chat-window');
 const userInput=document.getElementById('user-input');
 const sendBtn=document.getElementById('send-btn');
 const micBtn=document.getElementById('mic-btn');
-const imgBtn=document.getElementById('img-btn');
-const fileInput=document.getElementById('file-input');
-const previewBar=document.getElementById('image-preview-bar');
-const previewThumb=document.getElementById('preview-thumb');
-const previewName=document.getElementById('preview-name');
-const removeImageBtn=document.getElementById('remove-image');
 
-let selectedFile=null;
 let activeSpeakBtn=null;
 let userLocation={county:'',sublocation:''};
 let currentSessionId='session_'+Date.now();
 let isSpeaking=false;
 let currentUtterance=null;
+let currentTab='crops';
 
 const countySublocations={
   'Nairobi':['Westlands','Dagoretti','Langata','Kibra','Roysambu','Kasarani','Ruaraka','Embakasi','Makadara','Kamukunji','Starehe','Mathare'],
@@ -272,15 +266,13 @@ const countySublocations={
 
 const now=()=>new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
 
-function addBubble(htmlText,role,imgUrl=null,lang='en'){
+function addBubble(htmlText,role,lang='en'){
   const row=document.createElement('div');
   row.className=`bubble-row ${role}`;
-  const imgTag=imgUrl?`<img src="${imgUrl}" alt="crop"/>`:'';
   const speakBtnHtml=role==='bot'?`<button class="speak-btn" title="Read aloud" data-text="" data-lang="${lang}">🔊</button>`:'';
   row.innerHTML=`
     <div class="avatar">${role==='bot'?'🌾':'👨🌾'}</div>
     <div class="bubble">
-      ${imgTag}
       <span class="bubble-text">${htmlText}</span>
       <div class="meta">
         ${speakBtnHtml}
@@ -355,21 +347,12 @@ function onSpeakBtn(btn){
   },lang);
 }
 
-async function fetchReply(text,file){
-  // Stop any ongoing speech when new message is sent (interruption)
+async function fetchReply(text){
   const wasInterrupted=isSpeaking;
   if(isSpeaking){
     stopSpeaking();
   }
   
-  if(file){
-    const fd=new FormData();
-    fd.append('image',file);
-    fd.append('message',text||'Identify any pest, disease, or crop condition in this image.');
-    fd.append('session_id',currentSessionId);
-    const r=await fetch('/analyze-image',{method:'POST',body:fd});
-    return(await r.json()).reply;
-  }
   const r=await fetch('/chat',{
     method:'POST',
     headers:{'Content-Type':'application/json'},
@@ -378,25 +361,24 @@ async function fetchReply(text,file){
       session_id:currentSessionId,
       county:userLocation.county,
       sublocation:userLocation.sublocation,
-      interrupted:wasInterrupted
+      interrupted:wasInterrupted,
+      context:currentTab
     })
   });
   const data=await r.json();
   return data;
 }
 
-async function sendMessage(text,file=null){
+async function sendMessage(text){
   text=(text||'').trim();
-  if(!text&&!file)return;
+  if(!text)return;
 
-  const imgUrl=file?URL.createObjectURL(file):null;
-  addBubble(text||'📷 Analyze this crop image.','user',imgUrl);
+  addBubble(text,'user');
   userInput.value='';
-  clearImagePreview();
   showTyping();
 
   try{
-    const data=await fetchReply(text,file);
+    const data=await fetchReply(text);
     removeTyping();
     
     const detectedLang=data.language||'en';
@@ -404,27 +386,31 @@ async function sendMessage(text,file=null){
     if(data.recommendations){
       // Display conversational response with crop cards
       let responseHtml=data.reply.replace(/\n/g,'<br>');
-      addBubble(responseHtml,'bot',null,detectedLang);
+      addBubble(responseHtml,'bot',detectedLang);
       
-      // Add crop recommendation cards
+      // Add crop recommendation cards with percentage
       const cardsHtml=data.recommendations.map((crop,idx)=>{
         const icons=['🥇','🥈','🥉'];
+        const percentage=crop.score;
         return `
           <div class="crop-card">
             <div class="crop-header">
-              <div><span class="crop-icon">${icons[idx]}</span><span class="crop-name">${crop.name}</span></div>
-              <div class="crop-score">Score: ${crop.score}</div>
+              <div class="crop-name">${icons[idx]} ${crop.name}</div>
+              <div class="crop-score">${percentage}%</div>
+            </div>
+            <div class="progress-bar">
+              <div class="progress-fill" style="width:${percentage}%"></div>
             </div>
             <div class="crop-details">${crop.detail}</div>
           </div>
         `;
       }).join('');
       
-      addBubble(cardsHtml,'bot',null,detectedLang);
+      addBubble(cardsHtml,'bot',detectedLang);
     }else{
       // Regular text response
       const reply=typeof data==='string'?data:data.reply;
-      addBubble(reply.replace(/\n/g,'<br>'),'bot',null,detectedLang);
+      addBubble(reply.replace(/\n/g,'<br>'),'bot',detectedLang);
     }
   }catch(e){
     removeTyping();
@@ -432,32 +418,10 @@ async function sendMessage(text,file=null){
   }
 }
 
-function quickAsk(text){sendMessage(text,null);}
+sendBtn.addEventListener('click',()=>sendMessage(userInput.value));
+userInput.addEventListener('keydown',e=>{if(e.key==='Enter')sendMessage(userInput.value);});
 
-sendBtn.addEventListener('click',()=>sendMessage(userInput.value,selectedFile));
-userInput.addEventListener('keydown',e=>{if(e.key==='Enter')sendMessage(userInput.value,selectedFile);});
 
-function clearImagePreview(){
-  selectedFile=null;
-  previewBar.classList.remove('show');
-  previewThumb.src='';
-  fileInput.value='';
-  userInput.placeholder='Ask about crops, weather, markets...';
-}
-function handleFile(file){
-  if(!file||!file.type.startsWith('image/'))return;
-  selectedFile=file;
-  previewThumb.src=URL.createObjectURL(file);
-  previewName.textContent=file.name;
-  previewBar.classList.add('show');
-  userInput.placeholder='Add a question about this image (optional)...';
-  userInput.focus();
-}
-imgBtn.addEventListener('click',()=>fileInput.click());
-fileInput.addEventListener('change',e=>handleFile(e.target.files[0]));
-removeImageBtn.addEventListener('click',clearImagePreview);
-chatWindow.addEventListener('dragover',e=>e.preventDefault());
-chatWindow.addEventListener('drop',e=>{e.preventDefault();handleFile(e.dataTransfer.files[0]);});
 
 const SRClass=window.SpeechRecognition||window.webkitSpeechRecognition;
 document.addEventListener('click',()=>{
@@ -538,16 +502,206 @@ function saveLocation(){
   document.getElementById('locationDisplay').textContent=displayText;
   closeLocationModal();
   
-  const query=`Hello! I'm a farmer in ${displayText}, Kenya. Can you recommend the top 3 best crops I should plant right now based on my location, soil conditions, current weather season, and market prices?`;
-  setTimeout(()=>sendMessage(query),300);
+  // Load the current tab content
+  loadTabContent(currentTab);
+}
+
+// Tab switching functionality
+function switchTab(tabName){
+  currentTab=tabName;
+  
+  // Update active tab button
+  document.querySelectorAll('.tab-btn').forEach(btn=>{
+    btn.classList.remove('active');
+    if(btn.dataset.tab===tabName){
+      btn.classList.add('active');
+    }
+  });
+  
+  // Load tab content
+  loadTabContent(tabName);
+}
+
+function loadTabContent(tabName){
+  chatWindow.innerHTML='';
+  
+  if(!userLocation.county){
+    chatWindow.innerHTML=`
+      <div class="welcome-card">
+        <h2>🌱 Welcome to Fahamu Shamba AI</h2>
+        <p>Please set your location first to get personalized farming advice!</p>
+        <p style="margin-top:8px;font-size:0.8rem;">Tafadhali weka eneo lako kwanza kupata ushauri wa kilimo!</p>
+      </div>
+    `;
+    return;
+  }
+  
+  switch(tabName){
+    case 'crops':
+      loadCropRecommendations();
+      break;
+    case 'weather':
+      loadWeatherInfo();
+      break;
+    case 'pests':
+      loadPestInfo();
+      break;
+    case 'market':
+      loadMarketPrices();
+      break;
+    case 'general':
+      loadGeneralQuestions();
+      break;
+  }
+}
+
+async function loadCropRecommendations(){
+  chatWindow.innerHTML=`
+    <div class="section-header">
+      <h3>🌾 Top 3 Crop Recommendations for ${userLocation.sublocation}, ${userLocation.county}</h3>
+      <p>Based on your soil type, current season, weather patterns, and market demand</p>
+    </div>
+  `;
+  
+  showTyping();
+  
+  const query=`I'm a farmer in ${userLocation.sublocation}, ${userLocation.county}. Give me the top 3 best crops to plant right now with detailed recommendations.`;
+  
+  try{
+    const data=await fetchReply(query);
+    removeTyping();
+    
+    if(data.recommendations){
+      let responseHtml=data.reply.replace(/\n/g,'<br>');
+      addBubble(responseHtml,'bot',data.language||'en');
+      
+      const cardsHtml=data.recommendations.map((crop,idx)=>{
+        const icons=['🥇','🥈','🥉'];
+        const percentage=crop.score;
+        return `
+          <div class="crop-card">
+            <div class="crop-header">
+              <div class="crop-name">${icons[idx]} ${crop.name}</div>
+              <div class="crop-score">${percentage}%</div>
+            </div>
+            <div class="progress-bar">
+              <div class="progress-fill" style="width:${percentage}%"></div>
+            </div>
+            <div class="crop-details">${crop.detail}</div>
+          </div>
+        `;
+      }).join('');
+      
+      addBubble(cardsHtml,'bot',data.language||'en');
+    }
+  }catch(e){
+    removeTyping();
+    addBubble('Error loading recommendations. Please try again.','bot');
+  }
+}
+
+async function loadWeatherInfo(){
+  chatWindow.innerHTML=`
+    <div class="section-header">
+      <h3>☀️ Weather Information for ${userLocation.sublocation}, ${userLocation.county}</h3>
+      <p>Current season, rainfall patterns, and farming advice</p>
+    </div>
+  `;
+  
+  showTyping();
+  
+  const query=`Give me detailed weather information and seasonal advice for farming in ${userLocation.sublocation}, ${userLocation.county}. Include current season, expected rainfall, temperature, and what farmers should do now.`;
+  
+  try{
+    const data=await fetchReply(query);
+    removeTyping();
+    const reply=typeof data==='string'?data:data.reply;
+    addBubble(reply.replace(/\n/g,'<br>'),'bot',data.language||'en');
+  }catch(e){
+    removeTyping();
+    addBubble('Error loading weather information. Please try again.','bot');
+  }
+}
+
+async function loadPestInfo(){
+  chatWindow.innerHTML=`
+    <div class="section-header">
+      <h3>🐛 Pest & Disease Management</h3>
+      <p>Common pests, diseases, and prevention methods for ${userLocation.county}</p>
+    </div>
+  `;
+  
+  showTyping();
+  
+  const query=`What are the most common pests and diseases affecting crops in ${userLocation.county}, Kenya right now? Provide prevention and treatment methods.`;
+  
+  try{
+    const data=await fetchReply(query);
+    removeTyping();
+    const reply=typeof data==='string'?data:data.reply;
+    addBubble(reply.replace(/\n/g,'<br>'),'bot',data.language||'en');
+  }catch(e){
+    removeTyping();
+    addBubble('Error loading pest information. Please try again.','bot');
+  }
+}
+
+async function loadMarketPrices(){
+  chatWindow.innerHTML=`
+    <div class="section-header">
+      <h3>📈 Current Market Prices</h3>
+      <p>Latest crop prices and market trends in Kenya</p>
+    </div>
+  `;
+  
+  showTyping();
+  
+  const query=`Give me current market prices for major crops in Kenya, including price trends (rising, falling, stable) and demand levels. Format it clearly for farmers.`;
+  
+  try{
+    const data=await fetchReply(query);
+    removeTyping();
+    const reply=typeof data==='string'?data:data.reply;
+    addBubble(reply.replace(/\n/g,'<br>'),'bot',data.language||'en');
+  }catch(e){
+    removeTyping();
+    addBubble('Error loading market prices. Please try again.','bot');
+  }
+}
+
+function loadGeneralQuestions(){
+  chatWindow.innerHTML=`
+    <div class="section-header">
+      <h3>💬 General Agricultural Questions</h3>
+      <p>Ask me anything about farming, crops, soil, irrigation, fertilizers, and more!</p>
+    </div>
+    <div class="welcome-card">
+      <h2>🌱 How can I help you today?</h2>
+      <p>Ask me questions about:</p>
+      <p style="margin-top:12px;text-align:left;">
+        • Soil preparation and management<br>
+        • Fertilizer recommendations<br>
+        • Irrigation techniques<br>
+        • Crop rotation strategies<br>
+        • Harvesting and storage tips<br>
+        • Organic farming methods<br>
+        • And much more!
+      </p>
+    </div>
+  `;
+  
+  userInput.placeholder='Ask me anything about farming...';
+  userInput.focus();
 }
 
 window.addEventListener('DOMContentLoaded',()=>{
   setTimeout(()=>{
     if(!userLocation.county){
       openLocationModal();
+    }else{
+      loadTabContent(currentTab);
     }
-  },1500);
+  },500);
 });
 </script>
 </body>
