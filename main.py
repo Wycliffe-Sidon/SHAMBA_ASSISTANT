@@ -1,13 +1,21 @@
-from fastapi import FastAPI, Request, Form, File, UploadFile
-from fastapi.responses import HTMLResponse, PlainTextResponse
-from fastapi.staticfiles import StaticFiles
-from pydantic import BaseModel
-from groq import Groq
-import os
-import base64
-import logging
+import re
+import html
 import json
-from datetime import datetime
+import logging
+import os
+import time
+from collections import namedtuple
+from datetime import datetime, timezone
+
+from fastapi import FastAPI, Form, Request
+from fastapi.responses import HTMLResponse, JSONResponse, PlainTextResponse
+from fastapi.staticfiles import StaticFiles
+from groq import Groq
+from pydantic import BaseModel, field_validator
+
+# ── STARTUP VALIDATION ────────────────────────────────────────────────────────
+if not os.environ.get("GROQ_API_KEY"):
+    raise RuntimeError("GROQ_API_KEY is not set. App cannot start.")
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -15,477 +23,334 @@ logger = logging.getLogger(__name__)
 app = FastAPI()
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
-conversation_memory = {}
-user_profiles = {}  # Store farmer names and preferences
+# ── IN-MEMORY STORES ──────────────────────────────────────────────────────────
+conversation_memory: dict = {}
+user_profiles: dict = {}
+rate_limit_store: dict = {}   # {ip: [timestamps]}
+
+ALLOWED_COUNTIES = {
+    "Nairobi","Kiambu","Nakuru","Kisumu","Siaya","Kakamega","Bungoma",
+    "Meru","Embu","Machakos","Kitui","Nyeri","Murang'a","Kirinyaga","Uasin Gishu"
+}
+ALLOWED_CONTEXTS = {"crops","weather","pests","market","general"}
+MAX_MESSAGE_LEN  = 1000
+RATE_LIMIT       = 20          # requests per minute per IP
+API_TIMEOUT      = 30          # seconds
+
+# ── HELPERS ───────────────────────────────────────────────────────────────────
+def sanitize(text: str) -> str:
+    """Strip newlines/CR and HTML-escape to prevent log/XSS injection."""
+    return html.escape(text.replace("\n", " ").replace("\r", " ").strip())
+
+def is_rate_limited(ip: str) -> bool:
+    now = time.time()
+    window = rate_limit_store.setdefault(ip, [])
+    rate_limit_store[ip] = [t for t in window if now - t < 60]
+    if len(rate_limit_store[ip]) >= RATE_LIMIT:
+        return True
+    rate_limit_store[ip].append(now)
+    return False
 
 def detect_language(text: str) -> str:
-    """Detect if text is in Kiswahili or English"""
-    swahili_keywords = ['habari', 'shamba', 'mazao', 'mbolea', 'mvua', 'bei', 'soko', 'wakulima', 'kilimo', 'nafaka', 'mbegu', 'ardhi', 'msimu', 'panda', 'vuna', 'uza', 'nunua', 'nini', 'vipi', 'wapi', 'lini', 'ndiyo', 'hapana', 'asante', 'tafadhali', 'saidia', 'nataka', 'nina', 'ninataka']
-    text_lower = text.lower()
-    swahili_count = sum(1 for word in swahili_keywords if word in text_lower)
-    return 'sw' if swahili_count >= 2 else 'en'
+    sw_words = {
+        'habari','shamba','mazao','mbolea','mvua','bei','soko','wakulima',
+        'kilimo','nafaka','mbegu','ardhi','msimu','panda','vuna','uza',
+        'nunua','nini','vipi','wapi','lini','ndiyo','hapana','asante',
+        'tafadhali','saidia','nataka','nina','ninataka'
+    }
+    count = sum(1 for w in sw_words if w in text.lower())
+    return 'sw' if count >= 2 else 'en'
 
-def extract_farmer_name(text: str) -> str:
-    """Extract farmer name from introduction"""
-    import re
+def extract_farmer_name(text: str):
     patterns = [
-        r'my name is ([A-Za-z]+)',
-        r'i am ([A-Za-z]+)',
-        r"i'm ([A-Za-z]+)",
-        r'jina langu ni ([A-Za-z]+)',
-        r'mimi ni ([A-Za-z]+)',
-        r'naitwa ([A-Za-z]+)'
+        r'my name is ([A-Za-z]+)', r'i am ([A-Za-z]+)', r"i'm ([A-Za-z]+)",
+        r'jina langu ni ([A-Za-z]+)', r'mimi ni ([A-Za-z]+)', r'naitwa ([A-Za-z]+)'
     ]
-    for pattern in patterns:
-        match = re.search(pattern, text, re.IGNORECASE)
-        if match:
-            return match.group(1).capitalize()
+    for p in patterns:
+        m = re.search(p, text, re.IGNORECASE)
+        if m:
+            return m.group(1).capitalize()
     return None
 
 def get_client():
-    key = os.environ.get("GROQ_API_KEY")
-    if not key:
-        raise ValueError("GROQ_API_KEY environment variable is not set")
-    return Groq(api_key=key)
+    return Groq(api_key=os.environ["GROQ_API_KEY"])
 
-# ── KENYA SOIL DATA BY COUNTY ────────────────────────────────────────────────
+# ── SOIL DATA ─────────────────────────────────────────────────────────────────
 SOIL_DATA = {
-    "Nairobi": {"type": "Clay loam", "ph": 6.5, "fertility": "Medium", "drainage": "Good"},
-    "Kiambu": {"type": "Red volcanic", "ph": 6.8, "fertility": "High", "drainage": "Excellent"},
-    "Nakuru": {"type": "Clay", "ph": 7.2, "fertility": "High", "drainage": "Moderate"},
-    "Kisumu": {"type": "Sandy loam", "ph": 6.0, "fertility": "Medium", "drainage": "Good"},
-    "Siaya": {"type": "Sandy clay", "ph": 5.8, "fertility": "Low-Medium", "drainage": "Poor"},
-    "Kakamega": {"type": "Clay loam", "ph": 6.2, "fertility": "High", "drainage": "Moderate"},
-    "Bungoma": {"type": "Loam", "ph": 6.5, "fertility": "High", "drainage": "Good"},
-    "Meru": {"type": "Volcanic loam", "ph": 6.9, "fertility": "Very High", "drainage": "Excellent"},
-    "Embu": {"type": "Red volcanic", "ph": 6.7, "fertility": "High", "drainage": "Good"},
-    "Machakos": {"type": "Sandy loam", "ph": 6.3, "fertility": "Low-Medium", "drainage": "Excellent"},
-    "Kitui": {"type": "Sandy", "ph": 6.0, "fertility": "Low", "drainage": "Excellent"},
-    "Nyeri": {"type": "Volcanic loam", "ph": 7.0, "fertility": "Very High", "drainage": "Excellent"},
-    "Murang'a": {"type": "Red volcanic", "ph": 6.8, "fertility": "High", "drainage": "Good"},
-    "Kirinyaga": {"type": "Clay loam", "ph": 6.5, "fertility": "High", "drainage": "Moderate"},
-    "Uasin Gishu": {"type": "Clay", "ph": 6.8, "fertility": "High", "drainage": "Good"}
+    "Nairobi":      {"type":"Clay loam",     "ph":6.5,"fertility":"Medium",    "drainage":"Good"},
+    "Kiambu":       {"type":"Red volcanic",  "ph":6.8,"fertility":"High",      "drainage":"Excellent"},
+    "Nakuru":       {"type":"Clay",          "ph":7.2,"fertility":"High",      "drainage":"Moderate"},
+    "Kisumu":       {"type":"Sandy loam",    "ph":6.0,"fertility":"Medium",    "drainage":"Good"},
+    "Siaya":        {"type":"Sandy clay",    "ph":5.8,"fertility":"Low-Medium","drainage":"Poor"},
+    "Kakamega":     {"type":"Clay loam",     "ph":6.2,"fertility":"High",      "drainage":"Moderate"},
+    "Bungoma":      {"type":"Loam",          "ph":6.5,"fertility":"High",      "drainage":"Good"},
+    "Meru":         {"type":"Volcanic loam", "ph":6.9,"fertility":"Very High", "drainage":"Excellent"},
+    "Embu":         {"type":"Red volcanic",  "ph":6.7,"fertility":"High",      "drainage":"Good"},
+    "Machakos":     {"type":"Sandy loam",    "ph":6.3,"fertility":"Low-Medium","drainage":"Excellent"},
+    "Kitui":        {"type":"Sandy",         "ph":6.0,"fertility":"Low",       "drainage":"Excellent"},
+    "Nyeri":        {"type":"Volcanic loam", "ph":7.0,"fertility":"Very High", "drainage":"Excellent"},
+    "Murang'a":     {"type":"Red volcanic",  "ph":6.8,"fertility":"High",      "drainage":"Good"},
+    "Kirinyaga":    {"type":"Clay loam",     "ph":6.5,"fertility":"High",      "drainage":"Moderate"},
+    "Uasin Gishu":  {"type":"Clay",          "ph":6.8,"fertility":"High",      "drainage":"Good"},
 }
 
-# ── CURRENT SEASON & WEATHER PATTERNS ────────────────────────────────────────
+# ── SEASON ────────────────────────────────────────────────────────────────────
 def get_current_season():
-    month = datetime.now().month
-    if month in [3, 4, 5]:
-        return "Long Rains", "High rainfall expected, ideal for maize, beans, and vegetables"
-    elif month in [6, 7, 8]:
-        return "Cool Dry", "Moderate temperatures, good for harvesting and land preparation"
-    elif month in [9, 10, 11]:
-        return "Short Rains", "Moderate rainfall, suitable for quick-maturing crops"
-    else:
-        return "Hot Dry", "Low rainfall, focus on drought-resistant crops and irrigation"
+    month = datetime.now(timezone.utc).month
+    if month in [3,4,5]:   return "Long Rains",  "High rainfall — ideal for maize, beans, vegetables"
+    if month in [6,7,8]:   return "Cool Dry",    "Moderate temps — good for harvesting and land prep"
+    if month in [9,10,11]: return "Short Rains", "Moderate rainfall — suitable for quick-maturing crops"
+    return "Hot Dry", "Low rainfall — focus on drought-resistant crops and irrigation"
 
-# ── MARKET PRICES (KES per 90kg bag) ─────────────────────────────────────────
+# ── MARKET PRICES ─────────────────────────────────────────────────────────────
 MARKET_PRICES = {
-    "Maize": {"price": 3200, "trend": "stable", "demand": "high"},
-    "Beans": {"price": 8500, "trend": "rising", "demand": "very high"},
-    "Sorghum": {"price": 4500, "trend": "stable", "demand": "medium"},
-    "Millet": {"price": 5200, "trend": "rising", "demand": "medium"},
-    "Potatoes": {"price": 4000, "trend": "falling", "demand": "high"},
-    "Tomatoes": {"price": 3500, "trend": "volatile", "demand": "very high"},
-    "Kales": {"price": 2800, "trend": "stable", "demand": "high"},
-    "Cabbage": {"price": 3000, "trend": "stable", "demand": "high"},
-    "Onions": {"price": 6500, "trend": "rising", "demand": "high"},
-    "Carrots": {"price": 4500, "trend": "stable", "demand": "medium"}
+    "Maize":    {"price":3200, "trend":"stable",   "demand":"high"},
+    "Beans":    {"price":8500, "trend":"rising",   "demand":"very high"},
+    "Sorghum":  {"price":4500, "trend":"stable",   "demand":"medium"},
+    "Millet":   {"price":5200, "trend":"rising",   "demand":"medium"},
+    "Potatoes": {"price":4000, "trend":"falling",  "demand":"high"},
+    "Tomatoes": {"price":3500, "trend":"volatile", "demand":"very high"},
+    "Kales":    {"price":2800, "trend":"stable",   "demand":"high"},
+    "Cabbage":  {"price":3000, "trend":"stable",   "demand":"high"},
+    "Onions":   {"price":6500, "trend":"rising",   "demand":"high"},
+    "Carrots":  {"price":4500, "trend":"stable",   "demand":"medium"},
 }
 
-# ── CROP SUITABILITY SCORING ─────────────────────────────────────────────────
+# ── CROP DATABASE ─────────────────────────────────────────────────────────────
 CROP_DATABASE = {
-    "Maize": {
-        "soil_types": ["Clay loam", "Loam", "Sandy loam", "Red volcanic", "Volcanic loam"],
-        "ph_range": (5.5, 7.5),
-        "rainfall": "medium-high",
-        "seasons": ["Long Rains", "Short Rains"],
-        "maturity_days": 90,
-        "varieties": ["H614", "DH04", "WEMA DT"]
-    },
-    "Beans": {
-        "soil_types": ["Loam", "Clay loam", "Sandy loam", "Red volcanic"],
-        "ph_range": (6.0, 7.5),
-        "rainfall": "medium",
-        "seasons": ["Long Rains", "Short Rains"],
-        "maturity_days": 75,
-        "varieties": ["KK15", "Rosecoco", "Mwitemania"]
-    },
-    "Sorghum": {
-        "soil_types": ["Sandy loam", "Sandy", "Clay", "Sandy clay"],
-        "ph_range": (5.5, 8.0),
-        "rainfall": "low-medium",
-        "seasons": ["Long Rains", "Short Rains", "Hot Dry"],
-        "maturity_days": 120,
-        "varieties": ["Seredo", "Gadam", "KARI Mtama 1"]
-    },
-    "Potatoes": {
-        "soil_types": ["Volcanic loam", "Red volcanic", "Loam"],
-        "ph_range": (5.0, 6.5),
-        "rainfall": "medium-high",
-        "seasons": ["Long Rains", "Cool Dry"],
-        "maturity_days": 90,
-        "varieties": ["Shangi", "Dutch Robjin", "Kenya Mpya"]
-    },
-    "Tomatoes": {
-        "soil_types": ["Loam", "Clay loam", "Sandy loam", "Red volcanic"],
-        "ph_range": (6.0, 7.0),
-        "rainfall": "medium",
-        "seasons": ["Long Rains", "Short Rains"],
-        "maturity_days": 75,
-        "varieties": ["Anna F1", "Kilele F1", "Money Maker"]
-    }
+    "Maize":    {"soil_types":["Clay loam","Loam","Sandy loam","Red volcanic","Volcanic loam"],"ph_range":(5.5,7.5),"seasons":["Long Rains","Short Rains"],"maturity_days":90, "varieties":["H614","DH04","WEMA DT"]},
+    "Beans":    {"soil_types":["Loam","Clay loam","Sandy loam","Red volcanic"],               "ph_range":(6.0,7.5),"seasons":["Long Rains","Short Rains"],"maturity_days":75, "varieties":["KK15","Rosecoco","Mwitemania"]},
+    "Sorghum":  {"soil_types":["Sandy loam","Sandy","Clay","Sandy clay"],                     "ph_range":(5.5,8.0),"seasons":["Long Rains","Short Rains","Hot Dry"],"maturity_days":120,"varieties":["Seredo","Gadam","KARI Mtama 1"]},
+    "Potatoes": {"soil_types":["Volcanic loam","Red volcanic","Loam"],                        "ph_range":(5.0,6.5),"seasons":["Long Rains","Cool Dry"],"maturity_days":90, "varieties":["Shangi","Dutch Robjin","Kenya Mpya"]},
+    "Tomatoes": {"soil_types":["Loam","Clay loam","Sandy loam","Red volcanic"],               "ph_range":(6.0,7.0),"seasons":["Long Rains","Short Rains"],"maturity_days":75, "varieties":["Anna F1","Kilele F1","Money Maker"]},
 }
 
-def calculate_crop_score(crop_name, crop_data, soil_info, season, season_desc):
-    score = 50  # Base score
-    
-    # Soil type match (30 points)
-    if soil_info["type"] in crop_data["soil_types"]:
-        score += 30
-    elif any(s in soil_info["type"] for s in crop_data["soil_types"]):
-        score += 15
-    
-    # pH suitability (20 points)
+def calculate_crop_score(crop_name, crop_data, soil_info, season):
+    score = 50
+    if soil_info["type"] in crop_data["soil_types"]:          score += 30
+    elif any(s in soil_info["type"] for s in crop_data["soil_types"]): score += 15
     ph_min, ph_max = crop_data["ph_range"]
-    if ph_min <= soil_info["ph"] <= ph_max:
-        score += 20
-    elif abs(soil_info["ph"] - ph_min) < 0.5 or abs(soil_info["ph"] - ph_max) < 0.5:
-        score += 10
-    
-    # Season match (20 points)
-    if season in crop_data["seasons"]:
-        score += 20
-    
-    # Market demand (15 points)
-    if crop_name in MARKET_PRICES:
-        demand = MARKET_PRICES[crop_name]["demand"]
-        if demand == "very high":
-            score += 15
-        elif demand == "high":
-            score += 10
-        elif demand == "medium":
-            score += 5
-    
-    # Fertility match (10 points)
-    if soil_info["fertility"] in ["High", "Very High"]:
-        score += 10
-    elif soil_info["fertility"] == "Medium":
-        score += 5
-    
-    # Market trend bonus (5 points)
-    if crop_name in MARKET_PRICES and MARKET_PRICES[crop_name]["trend"] == "rising":
-        score += 5
-    
+    if ph_min <= soil_info["ph"] <= ph_max:                   score += 20
+    elif abs(soil_info["ph"]-ph_min)<0.5 or abs(soil_info["ph"]-ph_max)<0.5: score += 10
+    if season in crop_data["seasons"]:                        score += 20
+    mkt = MARKET_PRICES.get(crop_name, {})
+    score += {"very high":15,"high":10,"medium":5}.get(mkt.get("demand",""),0)
+    score += 10 if soil_info["fertility"] in ["High","Very High"] else (5 if soil_info["fertility"]=="Medium" else 0)
+    if mkt.get("trend") == "rising":                          score += 5
     return min(score, 100)
 
-def get_crop_recommendations(county, sublocation):
-    soil_info = SOIL_DATA.get(county, {"type": "Loam", "ph": 6.5, "fertility": "Medium", "drainage": "Good"})
+CropResult = namedtuple("CropResult", ["recommendations","soil","season","season_desc"])
+
+def get_crop_recommendations(county: str, sublocation: str) -> CropResult:
+    soil   = SOIL_DATA.get(county, {"type":"Loam","ph":6.5,"fertility":"Medium","drainage":"Good"})
     season, season_desc = get_current_season()
-    
-    recommendations = []
-    for crop_name, crop_data in CROP_DATABASE.items():
-        score = calculate_crop_score(crop_name, crop_data, soil_info, season, season_desc)
-        
-        variety = crop_data["varieties"][0]
-        maturity = crop_data["maturity_days"]
-        
-        market_info = MARKET_PRICES.get(crop_name, {"price": 0, "trend": "stable", "demand": "medium"})
-        price = market_info["price"]
-        trend = market_info["trend"]
-        
-        detail = f"Plant now · {maturity} days · KES {price:,}/bag · {trend.capitalize()} price"
-        
-        recommendations.append({
-            "name": f"{crop_name} ({variety})",
-            "detail": detail,
-            "score": score
+    recs = []
+    for name, data in CROP_DATABASE.items():
+        score   = calculate_crop_score(name, data, soil, season)
+        mkt     = MARKET_PRICES.get(name, {"price":0,"trend":"stable","demand":"medium"})
+        variety = data["varieties"][0]
+        recs.append({
+            "name":   f"{name} ({variety})",
+            "detail": f"Plant now · {data['maturity_days']} days · KES {mkt['price']:,}/bag · {mkt['trend'].capitalize()} price",
+            "score":  score,
         })
-    
-    # Sort by score and return top 3
-    recommendations.sort(key=lambda x: x["score"], reverse=True)
-    return recommendations[:3], soil_info, season, season_desc
+    recs.sort(key=lambda x: x["score"], reverse=True)
+    return CropResult(recs[:3], soil, season, season_desc)
 
-# ── ENHANCED SYSTEM PROMPT ───────────────────────────────────────────────────
-SYSTEM_PROMPT = """You are "Fahamu Shamba," an AI-powered agricultural assistant for Kenyan farmers.
-Your role is to provide ONLY agricultural guidance and ignore or politely decline non-agricultural queries.
+# ── SYSTEM PROMPT ─────────────────────────────────────────────────────────────
+SYSTEM_PROMPT = """You are "Fahamu Shamba," an AI agricultural assistant for Kenyan farmers.
+Provide ONLY agricultural guidance. Politely decline non-agricultural queries.
 
-Voice & Conversation Rules:
-- Speak fluently in both English and Kiswahili.
-- Detect the farmer's preferred language automatically from their input and respond accordingly.
-- Deliver answers in a natural, conversational tone suitable for Text-to-Speech (TTS).
-- Keep responses clear, concise, and actionable.
-- Always personalize advice using remembered facts from conversation history.
-- If asked non-agricultural questions, respond: "I am your agricultural assistant. Please ask me about farming, crops, weather, or markets."
-- For Kiswahili responses, use natural, everyday language that farmers understand.
+Rules:
+- Respond in the farmer's detected language (English or Kiswahili).
+- Be warm, concise, and actionable.
+- Personalize using conversation history and farmer name if known.
 
-Core Agricultural Functions:
-1. Crop Recommendations (context: crops)
-   - Provide top 3 crops with percentage ratings based on suitability
-   - Consider soil type, fertility, pH, weather patterns, season, and market demand
-   - When recommendations are provided in context, present them conversationally with enthusiasm
-   - Explain WHY each crop is suitable
+Sections:
+1. crops   — Top 3 crop recommendations with suitability reasoning.
+2. weather — Weather, season, rainfall, temperature, and farming timing only.
+3. pests   — Pest/disease identification, prevention, and treatment only.
+4. market  — Market prices, trends, demand, and selling advice only.
+5. general — Any agricultural question: soil, fertilizer, irrigation, storage, etc.
 
-2. Weather Information (context: weather)
-   - ONLY provide weather-related information: current season, rainfall patterns, temperature
-   - Give farming advice based on weather conditions
-   - Suggest what farmers should do now based on the season
-   - DO NOT discuss crops, pests, or market prices unless directly related to weather impact
-
-3. Pest & Disease Management (context: pests)
-   - ONLY discuss pests and diseases affecting crops
-   - Provide identification, prevention, and treatment methods
-   - Suggest organic and chemical control options
-   - DO NOT discuss weather, market prices, or crop recommendations unless related to pest management
-
-4. Market Insights (context: market)
-   - ONLY provide market prices, trends, and demand information
-   - Help farmers decide when to sell for maximum profit
-   - Discuss price trends (rising, falling, stable)
-   - DO NOT discuss weather, pests, or planting advice unless related to market timing
-
-5. General Questions (context: general)
-   - Answer any agricultural question: soil prep, fertilizers, irrigation, storage, etc.
-   - Provide comprehensive farming knowledge
-   - Be educational and helpful
-
-Response Structure:
-- Opening: Warm greeting in detected language
-- Content: Focus ONLY on the current context/section
-- Closing: Encourage farmer and offer further help
-
-Goal: Empower farmers with focused, section-specific agricultural advice in a conversational manner.
+Always stay focused on the active section context provided.
 """
 
-def ask_groq(user_message: str, mode: str = "app", session_id: str = "default", context_data: dict = None, tab_context: str = None) -> str:
-    mode_instruction = {
-        "ussd": "Respond in under 160 characters. Plain text only. Be direct and concise.",
-        "ivr": "Use short sentences with natural pauses. Speak clearly for Text-to-Speech. Keep it conversational and easy to understand.",
-        "app": "Full conversational response. Be warm, friendly, and encouraging. Explain your reasoning. Use natural language suitable for both reading and voice output."
-    }.get(mode, "")
-    
-    # Add context-specific instructions
-    context_instructions = {
-        "crops": "\n\nCONTEXT: User is in the CROP RECOMMENDATIONS section. Focus ONLY on crop recommendations, planting advice, and suitability analysis. Present information enthusiastically.",
-        "weather": "\n\nCONTEXT: User is in the WEATHER section. Focus ONLY on weather information, seasonal patterns, rainfall, temperature, and weather-based farming advice. Do NOT discuss crop recommendations, pests, or market prices unless directly related to weather.",
-        "pests": "\n\nCONTEXT: User is in the PEST & DISEASES section. Focus ONLY on pest identification, disease management, prevention, and treatment methods. Do NOT discuss weather, market prices, or crop recommendations unless related to pest control.",
-        "market": "\n\nCONTEXT: User is in the MARKET PRICES section. Focus ONLY on market prices, price trends, demand levels, and selling advice. Do NOT discuss weather, pests, or planting advice unless related to market timing.",
-        "general": "\n\nCONTEXT: User is in the GENERAL QUESTIONS section. Answer any agricultural question comprehensively. Cover topics like soil preparation, fertilizers, irrigation, crop rotation, storage, organic farming, etc."
-    }
-    
-    context_instruction = context_instructions.get(tab_context, "") if tab_context else ""
+CONTEXT_INSTRUCTIONS = {
+    "crops":   "CONTEXT: CROP RECOMMENDATIONS — focus only on what to plant, why, and how.",
+    "weather": "CONTEXT: WEATHER — focus only on season, rainfall, temperature, and weather-based farming advice.",
+    "pests":   "CONTEXT: PEST & DISEASES — focus only on pest/disease identification, prevention, and treatment.",
+    "market":  "CONTEXT: MARKET PRICES — focus only on prices, trends, demand, and best time to sell.",
+    "general": "CONTEXT: GENERAL QUESTIONS — answer any agricultural question comprehensively.",
+}
 
+# ── FALLBACK RESPONSES ────────────────────────────────────────────────────────
+FALLBACK = {
+    "crops":   "🌾 Based on Kenya's current season, consider planting Maize, Beans, or Tomatoes. Set your location for personalized advice.",
+    "weather": "☀️ Kenya is currently in a seasonal transition. Monitor KMD forecasts and prepare your land accordingly.",
+    "pests":   "🐛 Common pests in Kenya include Fall Armyworm, Aphids, and Thrips. Use certified pesticides and practice crop rotation.",
+    "market":  "📈 Beans and Onions have rising demand. Maize prices are stable. Sell after peak harvest season for better prices.",
+    "general": "🌱 I'm here to help with any farming question. Ask about soil, fertilizers, irrigation, or crop management!",
+}
+
+def ask_groq(user_message: str, session_id: str, context_data: dict = None, tab_context: str = "general") -> str:
     try:
         client = get_client()
-        
         if session_id not in conversation_memory:
             conversation_memory[session_id] = []
-            user_profiles[session_id] = {'language': 'en', 'name': None}
-        
-        # Detect language and extract name
-        detected_lang = detect_language(user_message)
-        user_profiles[session_id]['language'] = detected_lang
-        
-        farmer_name = extract_farmer_name(user_message)
-        if farmer_name:
-            user_profiles[session_id]['name'] = farmer_name
-        
-        # Build system message with language and personalization
-        lang_instruction = f"\n\nDETECTED LANGUAGE: {'Kiswahili' if detected_lang == 'sw' else 'English'}. Respond in the same language."
-        
+            user_profiles[session_id] = {"language": "en", "name": None}
+
+        lang = detect_language(user_message)
+        user_profiles[session_id]["language"] = lang
+        name = extract_farmer_name(user_message)
+        if name:
+            user_profiles[session_id]["name"] = name
+
         profile = user_profiles[session_id]
-        if profile['name']:
-            lang_instruction += f"\n\nFARMER NAME: {profile['name']}. Use their name naturally in conversation to personalize advice."
-        
-        messages = [{"role": "system", "content": SYSTEM_PROMPT + f"\n\nMode: {mode_instruction}" + lang_instruction + context_instruction}]
-        
-        # Add context data if provided
+        lang_note = f"\nDETECTED LANGUAGE: {'Kiswahili' if lang=='sw' else 'English'}. Respond in the same language."
+        if profile["name"]:
+            lang_note += f"\nFARMER NAME: {profile['name']}. Use their name naturally."
+
+        ctx_note = CONTEXT_INSTRUCTIONS.get(tab_context, "")
+        system_content = SYSTEM_PROMPT + lang_note + "\n" + ctx_note
+
         if context_data:
-            context_str = f"\n\nCONTEXT DATA (Use this to provide informed recommendations):\n{json.dumps(context_data, indent=2)}"
-            messages[0]["content"] += context_str
-        
+            system_content += f"\n\nDATA:\n{json.dumps(context_data, indent=2)}"
+
+        messages = [{"role": "system", "content": system_content}]
         messages.extend(conversation_memory[session_id][-10:])
-        messages.append({"role": "user", "content": user_message})
-        
+        messages.append({"role": "user", "content": user_message[:MAX_MESSAGE_LEN]})
+
         response = client.chat.completions.create(
             model="llama-3.1-8b-instant",
             messages=messages,
-            max_tokens=800 if mode == "app" else (100 if mode == "ussd" else 400),
-            temperature=0.8
+            max_tokens=800,
+            temperature=0.8,
+            timeout=API_TIMEOUT,
         )
-        
-        assistant_reply = response.choices[0].message.content.strip()
-        
-        conversation_memory[session_id].append({"role": "user", "content": user_message})
-        conversation_memory[session_id].append({"role": "assistant", "content": assistant_reply})
-        
-        return assistant_reply
+        reply = response.choices[0].message.content.strip()
+        conversation_memory[session_id].append({"role": "user",      "content": user_message[:MAX_MESSAGE_LEN]})
+        conversation_memory[session_id].append({"role": "assistant", "content": reply})
+        return reply
     except Exception as e:
-        logger.error(f"Groq error: {e}")
-        raise
+        logger.error("Groq error: %s", sanitize(str(e)))
+        return FALLBACK.get(tab_context, "Sorry, I could not connect. Please try again.")
 
-def ask_groq_vision(image_bytes: bytes, mime_type: str, user_message: str, session_id: str = "default") -> str:
-    try:
-        client = get_client()
-        b64 = base64.standard_b64encode(image_bytes).decode("utf-8")
-        
-        messages = [{"role": "system", "content": SYSTEM_PROMPT}]
-        if session_id in conversation_memory:
-            messages.extend(conversation_memory[session_id][-5:])
-        
-        messages.append({
-            "role": "user", 
-            "content": [
-                {"type": "text", "text": user_message or "Identify crop, pest, or disease in this image and provide advice."},
-                {"type": "image_url", "image_url": {"url": f"data:{mime_type};base64,{b64}"}}
-            ]
-        })
-        
-        response = client.chat.completions.create(
-            model="llama-3.2-11b-vision-preview",
-            messages=messages,
-            max_tokens=600
-        )
-        return response.choices[0].message.content.strip()
-    except Exception as e:
-        logger.error(f"Vision error: {e}")
-        raise
-
-# ── API ENDPOINTS ─────────────────────────────────────────────────────────────
+# ── REQUEST MODEL ─────────────────────────────────────────────────────────────
 class ChatRequest(BaseModel):
-    message: str
-    session_id: str = "default"
-    county: str = None
-    sublocation: str = None
-    interrupted: bool = False
-    context: str = None  # Tab context: crops, weather, pests, market, general
+    message:     str
+    session_id:  str  = "default"
+    county:      str  = ""
+    sublocation: str  = ""
+    context:     str  = "general"
 
+    @field_validator("message")
+    @classmethod
+    def validate_message(cls, v):
+        v = v.strip()
+        if not v:
+            raise ValueError("Message cannot be empty")
+        return v[:MAX_MESSAGE_LEN]
+
+    @field_validator("session_id")
+    @classmethod
+    def validate_session(cls, v):
+        v = v.strip()
+        if not v or len(v) > 100:
+            return "default"
+        return re.sub(r"[^a-zA-Z0-9_\-]", "", v) or "default"
+
+    @field_validator("county")
+    @classmethod
+    def validate_county(cls, v):
+        return v.strip() if v.strip() in ALLOWED_COUNTIES else ""
+
+    @field_validator("context")
+    @classmethod
+    def validate_context(cls, v):
+        return v if v in ALLOWED_CONTEXTS else "general"
+
+# ── ENDPOINTS ─────────────────────────────────────────────────────────────────
 @app.get("/health")
 async def health():
-    return {"status": "ok", "groq_key_set": bool(os.environ.get("GROQ_API_KEY"))}
+    return {"status": "ok"}
 
 @app.post("/chat")
-async def chat(req: ChatRequest):
-    try:
-        # Handle interruption - clear any ongoing speech
-        if req.interrupted:
-            logger.info(f"Interruption detected for session {req.session_id}")
-        
-        context_data = None
-        recommendations = None
-        
-        # Check if this is a crop recommendation request
-        msg_lower = req.message.lower()
-        if any(keyword in msg_lower for keyword in ["best crop", "what to plant", "recommend", "should i plant", "top 3", "top three", "mazao", "panda", "kilimo", "crop"]):
-            if req.county:
-                recs, soil, season, season_desc = get_crop_recommendations(req.county, req.sublocation)
-                recommendations = recs
-                context_data = {
-                    "location": f"{req.sublocation}, {req.county}",
-                    "soil_type": soil["type"],
-                    "soil_ph": soil["ph"],
-                    "soil_fertility": soil["fertility"],
-                    "soil_drainage": soil["drainage"],
-                    "current_season": season,
-                    "season_description": season_desc,
-                    "top_3_crops": [
-                        {
-                            "rank": i+1,
-                            "name": rec["name"],
-                            "score": rec["score"],
-                            "details": rec["detail"]
-                        } for i, rec in enumerate(recs)
-                    ]
-                }
-        
-        reply = ask_groq(req.message, mode="app", session_id=req.session_id, context_data=context_data, tab_context=req.context)
-        
-        if recommendations:
-            return {
-                "reply": reply,
-                "recommendations": recommendations,
-                "language": user_profiles.get(req.session_id, {}).get('language', 'en')
-            }
-        else:
-            return {
-                "reply": reply,
-                "language": user_profiles.get(req.session_id, {}).get('language', 'en')
-            }
-    except Exception as e:
-        logger.error(f"/chat error: {e}")
-        return {"reply": f"Error: {str(e)}"}
+async def chat(req: ChatRequest, request: Request):
+    ip = request.client.host if request.client else "unknown"
+    if is_rate_limited(ip):
+        return JSONResponse({"reply": "Too many requests. Please wait a moment.", "language": "en"}, status_code=429)
 
-@app.post("/analyze-image")
-async def analyze_image(
-    image: UploadFile = File(...), 
-    message: str = Form(default=""), 
-    session_id: str = Form(default="default")
-):
-    try:
-        image_bytes = await image.read()
-        mime_type = image.content_type or "image/jpeg"
-        reply = ask_groq_vision(image_bytes, mime_type, message, session_id)
-        
-        if session_id not in conversation_memory:
-            conversation_memory[session_id] = []
-        conversation_memory[session_id].append({"role": "user", "content": f"[Image] {message}"})
-        conversation_memory[session_id].append({"role": "assistant", "content": reply})
-        
-        return {"reply": reply}
-    except Exception as e:
-        logger.error(f"/analyze-image error: {e}")
-        return {"reply": f"Error: {str(e)}"}
+    context_data  = None
+    recommendations = None
+    msg_lower = req.message.lower()
 
-@app.post("/get-recommendations")
-async def get_recommendations(county: str = Form(...), sublocation: str = Form(...)):
-    try:
-        recs, soil, season, season_desc = get_crop_recommendations(county, sublocation)
-        return {
-            "recommendations": recs,
-            "soil": soil,
-            "season": season,
-            "season_description": season_desc,
-            "location": f"{sublocation}, {county}"
-        }
-    except Exception as e:
-        logger.error(f"/get-recommendations error: {e}")
-        return {"error": str(e)}
+    if req.context == "crops" or any(k in msg_lower for k in ["best crop","what to plant","recommend","top 3","mazao","panda","kilimo","crop"]):
+        if req.county:
+            result = get_crop_recommendations(req.county, req.sublocation)
+            recommendations = result.recommendations
+            context_data = {
+                "location":        f"{req.sublocation}, {req.county}",
+                "soil_type":       result.soil["type"],
+                "soil_ph":         result.soil["ph"],
+                "soil_fertility":  result.soil["fertility"],
+                "soil_drainage":   result.soil["drainage"],
+                "current_season":  result.season,
+                "season_desc":     result.season_desc,
+                "top_3_crops": [
+                    {"rank": i+1, "name": r["name"], "score": r["score"], "details": r["detail"]}
+                    for i, r in enumerate(result.recommendations)
+                ],
+            }
+
+    reply = ask_groq(req.message, req.session_id, context_data, req.context)
+    lang  = user_profiles.get(req.session_id, {}).get("language", "en")
+
+    if recommendations:
+        return {"reply": reply, "recommendations": recommendations, "language": lang}
+    return {"reply": reply, "language": lang}
 
 @app.post("/ussd", response_class=PlainTextResponse)
-async def ussd(sessionId: str = Form(...), serviceCode: str = Form(...), phoneNumber: str = Form(...), text: str = Form("")):
+async def ussd(
+    sessionId:   str = Form(...),
+    serviceCode: str = Form(...),
+    phoneNumber: str = Form(...),
+    text:        str = Form(""),
+):
+    # Validate sessionId
+    if not sessionId or len(sessionId) > 100:
+        return "END Invalid session."
+    safe_sid = re.sub(r"[^a-zA-Z0-9_\-]", "", sessionId) or "default"
+
     if text == "":
         return "CON Karibu Fahamu Shamba\nWelcome to Fahamu Shamba\n1. Mazao Bora/Best Crops\n2. Wadudu/Pests\n3. Hali ya Hewa/Weather\n4. Bei za Soko/Market Prices"
-    elif text == "1":
-        return "CON Andika jina la kaunti yako\nEnter your county (e.g. Nakuru):"
-    elif text == "2":
-        return "CON Andika jina la zao\nEnter crop name (e.g. maize):"
-    elif text == "3":
-        return "CON Andika jina la kaunti yako\nEnter your county:"
-    elif text == "4":
-        return "CON Andika jina la zao\nEnter crop name:"
-    else:
-        parts = text.split("*")
-        menu = parts[0]
-        user_input = parts[-1] if len(parts) > 1 else ""
-        
-        if menu == "1" and user_input:
-            county = user_input.strip().title()
-            if county in SOIL_DATA:
-                recs, _, _, _ = get_crop_recommendations(county, "")
-                top = recs[0]
-                return f"END Zao bora/Top crop: {top['name']}\n{top['detail']}"
-            return f"END Panda mahindi, maharagwe au mtama\nPlant maize, beans or sorghum"
-        
-        queries = {
-            "2": f"Pest management for {user_input}",
-            "3": f"Weather advice for {user_input} Kenya",
-            "4": f"Market price for {user_input}"
-        }
-        query = queries.get(menu, user_input)
-        advice = ask_groq(query, mode="ussd", session_id=sessionId)
-        return f"END {advice}"
+    if text == "1": return "CON Enter your county (e.g. Nakuru):"
+    if text == "2": return "CON Enter crop name (e.g. maize):"
+    if text == "3": return "CON Enter your county:"
+    if text == "4": return "CON Enter crop name:"
+
+    parts      = text.split("*")
+    menu       = parts[0]
+    user_input = parts[-1].strip()[:100] if len(parts) > 1 else ""
+
+    if menu == "1" and user_input:
+        county = user_input.title()
+        if county in ALLOWED_COUNTIES:
+            result = get_crop_recommendations(county, "")
+            top    = result.recommendations[0]
+            return f"END Top crop: {top['name']}\n{top['detail']}"
+        return "END Plant maize, beans or sorghum / Panda mahindi, maharagwe au mtama"
+
+    queries = {
+        "2": f"Pest management for {user_input}",
+        "3": f"Weather advice for {user_input} Kenya",
+        "4": f"Market price for {user_input}",
+    }
+    query  = queries.get(menu, user_input)
+    advice = ask_groq(query[:MAX_MESSAGE_LEN], safe_sid, tab_context="general")
+    return f"END {advice[:160]}"
 
 @app.get("/", response_class=HTMLResponse)
 async def root():
-    with open("static/index.html") as f:
+    with open("static/index.html", encoding="utf-8") as f:
         return f.read()
