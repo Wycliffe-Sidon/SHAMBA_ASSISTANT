@@ -27,6 +27,20 @@
   --transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
+body.dark-theme {
+  --bg-primary: #111111;
+  --bg-secondary: #121212;
+  --bg-light: #1f1f1f;
+  --text-primary: #f4f4f4;
+  --text-secondary: #c5c5c5;
+  --border-color: rgba(255,255,255,0.12);
+  --accent-color: #a18553;
+  --accent-dark: #7f693f;
+  --shadow-sm: 0 1px 2px rgba(0,0,0,0.35);
+  --shadow-md: 0 4px 12px rgba(0,0,0,0.4);
+  --shadow-lg: 0 8px 24px rgba(0,0,0,0.55);
+}
+
 /* ── RESET & BASE STYLES ─────────────────────────────────────────────────── */
 * {
   box-sizing: border-box;
@@ -187,6 +201,75 @@ body {
 
 .lang-btn:hover {
   background: rgba(255, 255, 255, 0.3);
+}
+
+.theme-panel,
+.location-panel {
+  background: rgba(255,255,255,0.9);
+  border: 1px solid var(--border-color);
+  border-radius: 14px;
+  padding: 18px;
+  margin: 18px 20px;
+}
+
+.theme-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.panel-title {
+  font-size: 0.9rem;
+  color: var(--text-primary);
+  font-weight: 700;
+  margin-bottom: 10px;
+}
+
+.theme-btn {
+  padding: 10px 14px;
+  border: 1px solid var(--border-color);
+  border-radius: 10px;
+  cursor: pointer;
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  font-weight: 600;
+  transition: var(--transition);
+}
+
+.theme-btn.active {
+  background: var(--primary-color);
+  color: var(--bg-primary);
+  border-color: var(--primary-color);
+}
+
+.village-panel {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+  margin-top: 10px;
+}
+
+.chat-meta-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  justify-content: space-between;
+  padding: 14px 30px;
+  background: var(--bg-light);
+  border-bottom: 1px solid var(--border-color);
+}
+
+.chat-meta-bar .meta-item {
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+}
+
+.chat-meta-bar .meta-item strong {
+  color: var(--text-primary);
+  font-weight: 700;
 }
 
 /* ── HEADER ───────────────────────────────────────────────────────────────── */
@@ -982,27 +1065,47 @@ header p {
 </head>
 <body>
 
-<button class="hamburger" id="hamburger">☰</button>
+<button class="hamburger" id="hamburger" aria-label="Open menu">☰</button>
 <div class="overlay" id="overlay"></div>
 
 <div class="sidebar" id="sidebar">
   <div class="farmer-profile">
-    <h3>Wycliff Sidon</h3>
-    <p>Location: Nairobi</p>
-    <p>Land Size: 5 acres</p>
+    <h3>Fahamu Shamba</h3>
+    <p>Your intelligent farming assistant</p>
+  </div>
+  <div class="location-panel">
+    <div class="panel-title">Location settings</div>
+    <label class="form-label" for="countySelect">County</label>
+    <select id="countySelect" class="form-select">
+      <option value="">Select county</option>
+    </select>
+    <label class="form-label" for="sublocationSelect">Sub-location</label>
+    <select id="sublocationSelect" class="form-select" disabled>
+      <option value="">Select sub-location</option>
+    </select>
+    <div class="village-panel">
+      <span>Village detected:</span>
+      <strong id="villageText">Not detected yet</strong>
+    </div>
+    <button class="btn btn-primary" id="detect-village" type="button">Detect Village</button>
+  </div>
+  <div class="theme-panel">
+    <div class="panel-title">Theme</div>
+    <button class="theme-btn active" data-theme="light" type="button">Light</button>
+    <button class="theme-btn" data-theme="dark" type="button">Dark</button>
   </div>
   <div class="sidebar-menu">
-    <div class="menu-item active" data-function="best-crop">
+    <div class="menu-item active" data-function="crops">
       <span class="menu-icon">🌾</span>
-      <span>Best Crop to Plant</span>
+      <span>Best Crop</span>
     </div>
     <div class="menu-item" data-function="weather">
       <span class="menu-icon">☀️</span>
-      <span>Weather Update</span>
+      <span>Weather</span>
     </div>
-    <div class="menu-item" data-function="pest">
+    <div class="menu-item" data-function="pests">
       <span class="menu-icon">🐛</span>
-      <span>Pest & Disease Tips</span>
+      <span>Pest & Disease</span>
     </div>
     <div class="menu-item" data-function="market">
       <span class="menu-icon">📈</span>
@@ -1010,39 +1113,31 @@ header p {
     </div>
     <div class="menu-item" data-function="general">
       <span class="menu-icon">💬</span>
-      <span>General Questions</span>
+      <span>General Advice</span>
     </div>
   </div>
-  <button class="new-chat-btn" id="new-chat-btn">New Chat</button>
+  <button class="new-chat-btn" id="new-chat-btn" type="button">New Chat</button>
 </div>
 
 <div class="main-panel">
   <div class="main-header">
-    <h1>Fahamu Shamba – Your Farming Advisor</h1>
-    <p>Empowering farmers through technology</p>
+    <h1>I am your Fahamu-Shamba</h1>
+    <p>How can I assist you today?</p>
     <div class="language-toggle">
-      <button class="lang-btn active" data-lang="en">English</button>
-      <button class="lang-btn" data-lang="sw">Kiswahili</button>
-      <button class="lang-btn" data-lang="luo">Luo</button>
+      <button class="lang-btn active" data-lang="en" type="button">English</button>
+      <button class="lang-btn" data-lang="sw" type="button">Kiswahili</button>
+      <button class="lang-btn" data-lang="luo" type="button">Luo</button>
     </div>
   </div>
-  <div id="chat-window">
-    <!-- Chat messages will appear here -->
-    <div class="bubble-row bot">
-      <div class="avatar">🤖</div>
-      <div class="bubble">
-        <div class="bubble-text">Hello Wycliff, welcome to Fahamu Shamba! Based on your location in Nairobi and 5-acre land, what can I help you with today?</div>
-        <div class="meta">
-          <span class="time">Just now</span>
-          <button class="speak-btn" onclick="speakText(this.previousElementSibling.previousElementSibling.textContent)">🔊</button>
-        </div>
-      </div>
-    </div>
+  <div class="chat-meta-bar">
+    <div class="meta-item">County: <strong id="locationDisplay">Not selected</strong></div>
+    <div class="meta-item">Theme: <strong id="themeDisplay">Light</strong></div>
   </div>
+  <div id="chat-window"></div>
   <div class="input-bar">
-    <input type="text" id="user-input" placeholder="Ask me anything about farming..."/>
-    <button class="icon-btn" id="mic-btn" title="Voice input">🎤</button>
-    <button class="icon-btn" id="send-btn">➤</button>
+    <input type="text" id="user-input" placeholder="Ask me anything about farming..." />
+    <button class="icon-btn" id="mic-btn" title="Voice input" type="button">🎤</button>
+    <button class="icon-btn" id="send-btn" type="button">➤</button>
   </div>
 </div>
 
@@ -1057,15 +1152,123 @@ const sidebar = document.getElementById('sidebar');
 const menuItems = document.querySelectorAll('.menu-item');
 const langBtns = document.querySelectorAll('.lang-btn');
 const newChatBtn = document.getElementById('new-chat-btn');
+const countySelect = document.getElementById('countySelect');
+const sublocationSelect = document.getElementById('sublocationSelect');
+const villageText = document.getElementById('villageText');
+const detectVillageBtn = document.getElementById('detect-village');
+const themeBtns = document.querySelectorAll('.theme-btn');
+const locationDisplay = document.getElementById('locationDisplay');
+const themeDisplay = document.getElementById('themeDisplay');
 
 let activeSpeakBtn = null;
 let currentSessionId = 'session_' + Date.now();
 let isSpeaking = false;
 let currentUtterance = null;
-let currentFunction = 'best-crop';
+let currentFunction = 'crops';
 let currentLang = 'en';
+let currentCounty = '';
+let currentSublocation = '';
+let currentVillage = '';
+let currentTheme = localStorage.getItem('farmTheme') || 'light';
+
+const countySublocations = {
+  Nairobi: ['Westlands', 'Kibera', 'Embakasi', 'Langata'],
+  Kiambu: ['Thika', 'Limuru', 'Kiambu Town', 'Githunguri'],
+  Nakuru: ['Nakuru Town', 'Gilgil', 'Naivasha', 'Molo'],
+  Kisumu: ['Kisumu City', 'Kibos', 'Migosi', 'Kendu Bay'],
+  Siaya: ['Siaya Town', 'Bondo', 'Ugunja', 'Alego'],
+  Kakamega: ['Kakamega Town', 'Mumias', 'Ikolomani', 'Lurambi'],
+  Bungoma: ['Bungoma Town', 'Webuye', 'Kimilili', 'Bokoli'],
+  Meru: ['Meru Town', 'Maua', 'Igembe', 'Buuri'],
+  Embu: ['Embu Town', 'Kiritiri', 'Mbeere', 'Runyenjes'],
+  Machakos: ['Machakos Town', 'Mlolongo', 'Yatta', 'Kangundo'],
+  Kitui: ['Kitui Town', 'Mwingi', 'Mutomo', 'Kanziko'],
+  Nyeri: ['Nyeri Town', 'Karatina', 'Kieni', 'Othaya'],
+  "Murang'a": ['Murang\'a Town', 'Kangema', 'Maragua', 'Kiharu'],
+  Kirinyaga: ['Kerugoya', 'Kutus', 'Mwea', 'Sagana'],
+  'Uasin Gishu': ['Eldoret', 'Turbo', 'Kapsabet', 'Maili Tisa']
+};
 
 const now = () => new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+function setTheme(theme) {
+  currentTheme = theme;
+  document.body.classList.toggle('dark-theme', theme === 'dark');
+  themeBtns.forEach(btn => btn.classList.toggle('active', btn.dataset.theme === theme));
+  themeDisplay.textContent = theme === 'dark' ? 'Dark' : 'Light';
+  localStorage.setItem('farmTheme', theme);
+}
+
+function updatePlaceholders() {
+  const placeholders = {
+    en: 'Ask me anything about farming...',
+    sw: 'Uliza kuhusu kilimo...',
+    luo: 'Penj kuhusu puodho...'
+  };
+  userInput.placeholder = placeholders[currentLang] || placeholders.en;
+}
+
+function populateCountyOptions() {
+  Object.keys(countySublocations).sort().forEach(county => {
+    const option = document.createElement('option');
+    option.value = county;
+    option.textContent = county;
+    countySelect.appendChild(option);
+  });
+}
+
+function populateSublocations(county) {
+  sublocationSelect.innerHTML = '<option value="">Select sub-location</option>';
+  if (!county || !countySublocations[county]) {
+    sublocationSelect.disabled = true;
+    return;
+  }
+  countySublocations[county].forEach(location => {
+    const option = document.createElement('option');
+    option.value = location;
+    option.textContent = location;
+    sublocationSelect.appendChild(option);
+  });
+  sublocationSelect.disabled = false;
+}
+
+function getVillageNameFromCoords(lat, lng) {
+  if (currentCounty === 'Nairobi') return 'Nearby Nairobi village';
+  if (currentCounty === 'Kiambu') return 'Nearby Kiambu village';
+  if (currentCounty === 'Kisumu') return 'Nearby Kisumu village';
+  if (currentCounty === 'Nakuru') return 'Nearby Nakuru village';
+  return `Village near ${lat.toFixed(2)}, ${lng.toFixed(2)}`;
+}
+
+function updateLocationDisplay() {
+  locationDisplay.textContent = currentCounty && currentSublocation ? `${currentSublocation}, ${currentCounty}` : 'Not selected';
+  villageText.textContent = currentVillage || 'Detect your village';
+}
+
+function detectVillage() {
+  if (!navigator.geolocation) {
+    currentVillage = 'Geolocation unavailable';
+    updateLocationDisplay();
+    return;
+  }
+  detectVillageBtn.disabled = true;
+  detectVillageBtn.textContent = 'Detecting...';
+  navigator.geolocation.getCurrentPosition(position => {
+    currentVillage = getVillageNameFromCoords(position.coords.latitude, position.coords.longitude);
+    updateLocationDisplay();
+    detectVillageBtn.disabled = false;
+    detectVillageBtn.textContent = 'Detect Village';
+  }, () => {
+    currentVillage = 'Unable to detect village';
+    updateLocationDisplay();
+    detectVillageBtn.disabled = false;
+    detectVillageBtn.textContent = 'Detect Village';
+  }, { timeout: 10000 });
+}
+
+function createBotIntro() {
+  addBubble('I am your Fahamu-Shamba — how can I assist you today?', 'bot');
+}
 
 // Hamburger menu toggle
 hamburger.addEventListener('click', () => {
@@ -1084,7 +1287,6 @@ menuItems.forEach(item => {
     menuItems.forEach(i => i.classList.remove('active'));
     item.classList.add('active');
     currentFunction = item.dataset.function;
-    // Close sidebar on mobile
     if (window.innerWidth <= 767) {
       sidebar.classList.remove('mobile-visible');
       overlay.style.display = 'none';
@@ -1100,22 +1302,6 @@ langBtns.forEach(btn => {
     currentLang = btn.dataset.lang;
     updatePlaceholders();
   });
-});
-
-function updatePlaceholders() {
-  const placeholders = {
-    en: 'Ask me anything about farming...',
-    sw: 'Uliza kuhusu kilimo...',
-    luo: 'Penj kuhusu puodho...'
-  };
-  userInput.placeholder = placeholders[currentLang] || placeholders.en;
-}
-
-// New chat
-newChatBtn.addEventListener('click', () => {
-  chatWindow.innerHTML = '';
-  currentSessionId = 'session_' + Date.now();
-  addBubble('Hello Wycliff, welcome back! What can I help you with today?', 'bot');
 });
 
 function addBubble(htmlText, role, lang = currentLang) {
@@ -1179,7 +1365,7 @@ function speak(text, onDone, lang = currentLang) {
       return;
     }
     currentUtterance = new SpeechSynthesisUtterance(sentences[i++].trim());
-    currentUtterance.lang = lang === 'sw' ? 'sw-KE' : lang === 'luo' ? 'en-US' : 'en-US'; // Adjust as needed
+    currentUtterance.lang = lang === 'sw' ? 'sw-KE' : 'en-US';
     currentUtterance.rate = 0.93;
     currentUtterance.onend = next;
     currentUtterance.onerror = next;
@@ -1203,48 +1389,112 @@ function onSpeakBtn(btn) {
 }
 
 async function fetchReply(text) {
-  const wasInterrupted = isSpeaking;
-  if (isSpeaking) {
-    stopSpeaking();
-  }
-
-  // Simulate API call - replace with actual endpoint
-  return new Promise(resolve => {
-    setTimeout(() => {
-      resolve({
-        reply: `Based on your query "${text}" and current function "${currentFunction}", here's some advice...`,
-        language: currentLang
-      });
-    }, 1000);
+  if (isSpeaking) stopSpeaking();
+  const payload = {
+    message: text,
+    session_id: currentSessionId,
+    county: currentCounty,
+    sublocation: currentSublocation,
+    village: currentVillage,
+    context: currentFunction
+  };
+  const response = await fetch('/chat', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload)
   });
+  if (!response.ok) {
+    throw new Error('Chat API failed');
+  }
+  return response.json();
 }
 
 async function sendMessage(text) {
   text = (text || '').trim();
   if (!text) return;
-
+  if (!currentCounty || !currentSublocation) {
+    addBubble('Please choose your county and sub-location first so Fahamu-Shamba can make the right location-based decision.', 'bot');
+    return;
+  }
   addBubble(text, 'user');
   userInput.value = '';
   showTyping();
-
   try {
     const data = await fetchReply(text);
     removeTyping();
-    addBubble(data.reply, 'bot', data.language);
+    addBubble((data.reply || 'Sorry, something went wrong.').replace(/\n/g, '<br>'), 'bot', data.language || currentLang);
   } catch (error) {
     removeTyping();
-    addBubble('Sorry, I encountered an error. Please try again.', 'bot');
+    addBubble('Sorry, I could not connect. Please try again.', 'bot');
   }
 }
 
-// Event listeners
-sendBtn.addEventListener('click', () => sendMessage(userInput.value));
-userInput.addEventListener('keypress', (e) => {
-  if (e.key === 'Enter') sendMessage(userInput.value);
+newChatBtn.addEventListener('click', () => {
+  chatWindow.innerHTML = '';
+  currentSessionId = 'session_' + Date.now();
+  createBotIntro();
 });
 
-// Initialize
-updatePlaceholders();
+sendBtn.addEventListener('click', () => sendMessage(userInput.value));
+userInput.addEventListener('keydown', e => { if (e.key === 'Enter') sendMessage(userInput.value); });
+
+countySelect.addEventListener('change', () => {
+  currentCounty = countySelect.value;
+  currentSublocation = '';
+  populateSublocations(currentCounty);
+  updateLocationDisplay();
+});
+
+sublocationSelect.addEventListener('change', () => {
+  currentSublocation = sublocationSelect.value;
+  updateLocationDisplay();
+});
+
+detectVillageBtn.addEventListener('click', detectVillage);
+
+themeBtns.forEach(btn => btn.addEventListener('click', () => setTheme(btn.dataset.theme)));
+
+const SRClass = window.SpeechRecognition || window.webkitSpeechRecognition;
+document.addEventListener('click', () => {
+  const u = new SpeechSynthesisUtterance('');
+  window.speechSynthesis.speak(u);
+  window.speechSynthesis.cancel();
+}, { once: true });
+
+if (SRClass) {
+  let recog = null;
+  micBtn.addEventListener('click', () => {
+    if (micBtn.classList.contains('recording')) {
+      if (recog) recog.stop();
+      micBtn.classList.remove('recording');
+      return;
+    }
+    recog = new SRClass();
+    recog.lang = 'en-US';
+    recog.continuous = false;
+    recog.interimResults = true;
+    recog.onresult = e => {
+      userInput.value = Array.from(e.results).map(r => r[0].transcript).join('');
+    };
+    recog.onend = () => micBtn.classList.remove('recording');
+    recog.onerror = () => micBtn.classList.remove('recording');
+    micBtn.classList.add('recording');
+    try { recog.start(); } catch (err) { micBtn.classList.remove('recording'); }
+  });
+} else {
+  micBtn.disabled = true;
+  micBtn.style.opacity = '.4';
+}
+
+window.addEventListener('DOMContentLoaded', () => {
+  populateCountyOptions();
+  setTheme(currentTheme);
+  updatePlaceholders();
+  updateLocationDisplay();
+  createBotIntro();
+  detectVillage();
+});
+
 </script>
 </body>
 </html>

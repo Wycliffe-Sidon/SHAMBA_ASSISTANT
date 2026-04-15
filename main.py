@@ -7,6 +7,7 @@ import time
 from collections import namedtuple
 from datetime import datetime, timezone
 
+import openai
 from fastapi import FastAPI, Form, Request
 from fastapi.responses import HTMLResponse, JSONResponse, PlainTextResponse
 from fastapi.staticfiles import StaticFiles
@@ -14,8 +15,14 @@ from groq import Groq
 from pydantic import BaseModel, field_validator
 
 # ── STARTUP VALIDATION ────────────────────────────────────────────────────────
-if not os.environ.get("GROQ_API_KEY"):
-    raise RuntimeError("GROQ_API_KEY is not set. App cannot start.")
+OPENAI_API_KEY = os.environ.get("OPENAI_API_KEY")
+GROQ_API_KEY = os.environ.get("GROQ_API_KEY")
+
+if not OPENAI_API_KEY and not GROQ_API_KEY:
+    raise RuntimeError("OPENAI_API_KEY or GROQ_API_KEY must be set. App cannot start.")
+
+if OPENAI_API_KEY:
+    openai.api_key = OPENAI_API_KEY
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -73,7 +80,49 @@ def extract_farmer_name(text: str):
     return None
 
 def get_client():
-    return Groq(api_key=os.environ["GROQ_API_KEY"])
+    return Groq(api_key=GROQ_API_KEY)
+
+def ask_openai(user_message: str, session_id: str, context_data: dict = None, tab_context: str = "general") -> str:
+    try:
+        if session_id not in conversation_memory:
+            conversation_memory[session_id] = []
+            user_profiles[session_id] = {"language": "en", "name": None}
+
+        lang = detect_language(user_message)
+        user_profiles[session_id]["language"] = lang
+        name = extract_farmer_name(user_message)
+        if name:
+            user_profiles[session_id]["name"] = name
+
+        profile = user_profiles[session_id]
+        lang_note = f"\nDETECTED LANGUAGE: {'Kiswahili' if lang=='sw' else 'English'}. Respond in the same language."
+        if profile["name"]:
+            lang_note += f"\nFARMER NAME: {profile['name']}. Use their name naturally."
+
+        ctx_note = CONTEXT_INSTRUCTIONS.get(tab_context, "")
+        system_content = SYSTEM_PROMPT + lang_note + "\n" + ctx_note
+
+        if context_data:
+            system_content += f"\n\nDATA:\n{json.dumps(context_data, indent=2)}"
+
+        messages = [{"role": "system", "content": system_content}]
+        messages.extend(conversation_memory[session_id][-10:])
+        messages.append({"role": "user", "content": user_message[:MAX_MESSAGE_LEN]})
+
+        response = openai.ChatCompletion.create(
+            model="gpt-3.5-turbo",
+            messages=messages,
+            max_tokens=800,
+            temperature=0.8,
+            timeout=API_TIMEOUT,
+        )
+        reply = response.choices[0].message.content.strip()
+        conversation_memory[session_id].append({"role": "user", "content": user_message[:MAX_MESSAGE_LEN]})
+        conversation_memory[session_id].append({"role": "assistant", "content": reply})
+        return reply
+    except Exception as e:
+        logger.error("OpenAI error: %s", sanitize(str(e)))
+        return FALLBACK.get(tab_context, "Sorry, I could not connect. Please try again.")
 
 # ── SOIL DATA ─────────────────────────────────────────────────────────────────
 SOIL_DATA = {
@@ -236,6 +285,12 @@ def ask_groq(user_message: str, session_id: str, context_data: dict = None, tab_
         logger.error("Groq error: %s", sanitize(str(e)))
         return FALLBACK.get(tab_context, "Sorry, I could not connect. Please try again.")
 
+
+def ask_ai(user_message: str, session_id: str, context_data: dict = None, tab_context: str = "general") -> str:
+    if OPENAI_API_KEY:
+        return ask_openai(user_message, session_id, context_data, tab_context)
+    return ask_groq(user_message, session_id, context_data, tab_context)
+
 # ── REQUEST MODEL ─────────────────────────────────────────────────────────────
 class ChatRequest(BaseModel):
     message:     str
@@ -243,6 +298,7 @@ class ChatRequest(BaseModel):
     county:      str  = ""
     sublocation: str  = ""
     context:     str  = "general"
+    village:     str  = ""
 
     @field_validator("message")
     @classmethod
@@ -265,6 +321,16 @@ class ChatRequest(BaseModel):
     def validate_county(cls, v):
         return v.strip() if v.strip() in ALLOWED_COUNTIES else ""
 
+    @field_validator("sublocation")
+    @classmethod
+    def validate_sublocation(cls, v):
+        return v.strip()[:100]
+
+    @field_validator("village")
+    @classmethod
+    def validate_village(cls, v):
+        return v.strip()[:100]
+
     @field_validator("context")
     @classmethod
     def validate_context(cls, v):
@@ -285,25 +351,32 @@ async def chat(req: ChatRequest, request: Request):
     recommendations = None
     msg_lower = req.message.lower()
 
+    if req.county:
+        context_data = {
+            "location":       f"{req.sublocation}, {req.county}",
+            "village":        req.village or "Unknown",
+            "county":         req.county,
+            "sublocation":    req.sublocation,
+        }
+
     if req.context == "crops" or any(k in msg_lower for k in ["best crop","what to plant","recommend","top 3","mazao","panda","kilimo","crop"]):
         if req.county:
             result = get_crop_recommendations(req.county, req.sublocation)
             recommendations = result.recommendations
-            context_data = {
-                "location":        f"{req.sublocation}, {req.county}",
-                "soil_type":       result.soil["type"],
-                "soil_ph":         result.soil["ph"],
-                "soil_fertility":  result.soil["fertility"],
-                "soil_drainage":   result.soil["drainage"],
-                "current_season":  result.season,
-                "season_desc":     result.season_desc,
+            context_data.update({
+                "soil_type":      result.soil["type"],
+                "soil_ph":        result.soil["ph"],
+                "soil_fertility": result.soil["fertility"],
+                "soil_drainage":  result.soil["drainage"],
+                "current_season": result.season,
+                "season_desc":    result.season_desc,
                 "top_3_crops": [
                     {"rank": i+1, "name": r["name"], "score": r["score"], "details": r["detail"]}
                     for i, r in enumerate(result.recommendations)
                 ],
-            }
+            })
 
-    reply = ask_groq(req.message, req.session_id, context_data, req.context)
+    reply = ask_ai(req.message, req.session_id, context_data, req.context)
     lang  = user_profiles.get(req.session_id, {}).get("language", "en")
 
     if recommendations:

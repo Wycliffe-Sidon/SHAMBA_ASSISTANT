@@ -2,7 +2,7 @@
 
 ## 🌾 Overview
 
-Fahamu Shamba AI is an intelligent, AI-powered farming assistant designed specifically for African farmers. It provides personalized agricultural recommendations based on location, soil conditions, weather patterns, and market trends. The application uses the **Groq API** for fast, efficient AI responses and supports both **English and Swahili** languages.
+Fahamu Shamba AI is an intelligent, AI-powered farming assistant designed specifically for African farmers. It provides personalized agricultural recommendations based on location, soil conditions, weather patterns, and market trends. The application uses the **OpenAI API** for fast AI responses and supports both **English and Swahili** languages.
 
 ## ✨ Key Features
 
@@ -62,7 +62,7 @@ Fahamu Shamba AI is an intelligent, AI-powered farming assistant designed specif
 
 ### Back-End
 - **Framework**: FastAPI (Python)
-- **AI Engine**: Groq API (LLaMA models)
+- **AI Engine**: OpenAI API
 - **Deployment**: Render.com
 - **Features**:
   - Session management
@@ -86,7 +86,7 @@ Each county includes detailed sub-locations for precise localization.
 ### Prerequisites
 - Python 3.8+
 - pip or conda
-- Groq API key (get it from [groq.com](https://groq.com))
+- OpenAI API key (get it from [openai.com](https://openai.com))
 
 ### Installation
 
@@ -99,8 +99,8 @@ cd SHAMBA_ASSISTANT
 2. **Set up environment variables**
 ```bash
 cp .env.example .env
-# Edit .env and add your GROQ_API_KEY
-echo "GROQ_API_KEY=your_api_key_here" > .env
+# Edit .env and add your OPENAI_API_KEY
+echo "OPENAI_API_KEY=your_api_key_here" > .env
 ```
 
 3. **Install dependencies**
@@ -123,7 +123,7 @@ Open your browser and navigate to `http://localhost:8000`
 ### Python (Backend)
 - **fastapi**: Web framework for building APIs
 - **uvicorn**: ASGI server
-- **groq**: Official Groq API client
+- **openai**: Official OpenAI API client
 - **python-multipart**: Form data parsing
 - **pydantic**: Data validation
 
@@ -137,7 +137,7 @@ Open your browser and navigate to `http://localhost:8000`
 Create a `.env` file in the project root:
 
 ```bash
-GROQ_API_KEY=your_groq_api_key_here
+OPENAI_API_KEY=your_openai_api_key_here
 ```
 
 ## 📱 Responsive Design
@@ -274,7 +274,7 @@ For issues, questions, or suggestions:
 
 ## 🙏 Acknowledgments
 
-- **Groq** - For providing powerful AI API
+- **OpenAI** - For providing powerful AI API
 - **FastAPI** - For the excellent Python web framework
 - **African farmers** - For their valuable feedback and insights
 - **Open source community** - For inspiration and resources
@@ -284,7 +284,7 @@ For issues, questions, or suggestions:
 - **Countries Served**: Kenya (expandable to Africa)
 - **Counties Covered**: 15+
 - **Supported Languages**: 2 (English, Swahili)
-- **AI Model**: Groq LLaMA
+- **AI Model**: OpenAI GPT-3.5 / GPT-4 family
 - **Response Time**: < 2 seconds average
 
 ---
