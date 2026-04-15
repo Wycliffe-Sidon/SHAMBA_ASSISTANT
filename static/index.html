@@ -440,7 +440,7 @@ body {
 }
 
 .new-chat-btn {
-  margin: 20px;
+  margin: 20px 20px 8px;
   padding: 14px;
   background: var(--accent-color);
   color: var(--primary-color);
@@ -454,6 +454,26 @@ body {
 
 .new-chat-btn:hover {
   background: var(--accent-dark);
+  transform: translateY(-2px);
+}
+
+.logout-btn {
+  margin: 0 20px 20px;
+  padding: 14px;
+  background: transparent;
+  color: #ef4444;
+  border: 2px solid #ef4444;
+  border-radius: 10px;
+  font-size: 1rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: var(--transition);
+  width: calc(100% - 40px);
+}
+
+.logout-btn:hover {
+  background: #ef4444;
+  color: white;
   transform: translateY(-2px);
 }
 
@@ -1094,6 +1114,7 @@ body {
     </div>
 
     <button class="new-chat-btn" onclick="newChat()">+ New Chat</button>
+    <button class="logout-btn" onclick="handleLogout()">🚪 Log Out</button>
   </div>
 
   <div class="main-panel">
@@ -1187,6 +1208,14 @@ const crops = [
 let currentLang = 'en';
 let currentTheme = 'light';
 let currentContext = 'crops';
+
+function handleLogout() {
+  localStorage.removeItem('isLoggedIn');
+  localStorage.removeItem('farmerData');
+  localStorage.removeItem('rememberMe');
+  localStorage.removeItem('sessionId');
+  showPage('landing-page');
+}
 
 function showPage(pageId) {
   document.querySelectorAll('.page-section').forEach(page => page.classList.remove('active'));
