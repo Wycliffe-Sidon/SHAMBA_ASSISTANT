@@ -40,6 +40,7 @@ ALLOWED_COUNTIES = {
     "Meru","Embu","Machakos","Kitui","Nyeri","Murang'a","Kirinyaga","Uasin Gishu"
 }
 ALLOWED_CONTEXTS = {"crops","weather","pests","market","general"}
+ALLOWED_LANGUAGES = {"en", "sw", "luo"}
 MAX_MESSAGE_LEN  = 1000
 RATE_LIMIT       = 20          # requests per minute per IP
 API_TIMEOUT      = 30          # seconds
@@ -82,20 +83,21 @@ def extract_farmer_name(text: str):
 def get_client():
     return Groq(api_key=GROQ_API_KEY)
 
-def ask_openai(user_message: str, session_id: str, context_data: dict = None, tab_context: str = "general") -> str:
+def ask_openai(user_message: str, session_id: str, context_data: dict = None, tab_context: str = "general", language: str = "en") -> str:
     try:
         if session_id not in conversation_memory:
             conversation_memory[session_id] = []
             user_profiles[session_id] = {"language": "en", "name": None}
 
-        lang = detect_language(user_message)
+        lang = language
         user_profiles[session_id]["language"] = lang
         name = extract_farmer_name(user_message)
         if name:
             user_profiles[session_id]["name"] = name
 
         profile = user_profiles[session_id]
-        lang_note = f"\nDETECTED LANGUAGE: {'Kiswahili' if lang=='sw' else 'English'}. Respond in the same language."
+        lang_name = {"en": "English", "sw": "Kiswahili", "luo": "Luo"}.get(lang, "English")
+        lang_note = f"\nLANGUAGE: {lang_name}. Respond in the same language."
         if profile["name"]:
             lang_note += f"\nFARMER NAME: {profile['name']}. Use their name naturally."
 
@@ -242,21 +244,22 @@ FALLBACK = {
     "general": "🌱 I'm here to help with any farming question. Ask about soil, fertilizers, irrigation, or crop management!",
 }
 
-def ask_groq(user_message: str, session_id: str, context_data: dict = None, tab_context: str = "general") -> str:
+def ask_groq(user_message: str, session_id: str, context_data: dict = None, tab_context: str = "general", language: str = "en") -> str:
     try:
         client = get_client()
         if session_id not in conversation_memory:
             conversation_memory[session_id] = []
             user_profiles[session_id] = {"language": "en", "name": None}
 
-        lang = detect_language(user_message)
+        lang = language
         user_profiles[session_id]["language"] = lang
         name = extract_farmer_name(user_message)
         if name:
             user_profiles[session_id]["name"] = name
 
         profile = user_profiles[session_id]
-        lang_note = f"\nDETECTED LANGUAGE: {'Kiswahili' if lang=='sw' else 'English'}. Respond in the same language."
+        lang_name = {"en": "English", "sw": "Kiswahili", "luo": "Luo"}.get(lang, "English")
+        lang_note = f"\nLANGUAGE: {lang_name}. Respond in the same language."
         if profile["name"]:
             lang_note += f"\nFARMER NAME: {profile['name']}. Use their name naturally."
 
@@ -286,10 +289,10 @@ def ask_groq(user_message: str, session_id: str, context_data: dict = None, tab_
         return FALLBACK.get(tab_context, "Sorry, I could not connect. Please try again.")
 
 
-def ask_ai(user_message: str, session_id: str, context_data: dict = None, tab_context: str = "general") -> str:
+def ask_ai(user_message: str, session_id: str, context_data: dict = None, tab_context: str = "general", language: str = "en") -> str:
     if OPENAI_API_KEY:
-        return ask_openai(user_message, session_id, context_data, tab_context)
-    return ask_groq(user_message, session_id, context_data, tab_context)
+        return ask_openai(user_message, session_id, context_data, tab_context, language)
+    return ask_groq(user_message, session_id, context_data, tab_context, language)
 
 # ── REQUEST MODEL ─────────────────────────────────────────────────────────────
 class ChatRequest(BaseModel):
@@ -298,6 +301,7 @@ class ChatRequest(BaseModel):
     county:      str  = ""
     sublocation: str  = ""
     context:     str  = "general"
+    language:    str  = "en"
     village:     str  = ""
 
     @field_validator("message")
@@ -335,6 +339,11 @@ class ChatRequest(BaseModel):
     @classmethod
     def validate_context(cls, v):
         return v if v in ALLOWED_CONTEXTS else "general"
+
+    @field_validator("language")
+    @classmethod
+    def validate_language(cls, v):
+        return v if v in ALLOWED_LANGUAGES else "en"
 
 # ── ENDPOINTS ─────────────────────────────────────────────────────────────────
 @app.get("/health")
@@ -376,8 +385,8 @@ async def chat(req: ChatRequest, request: Request):
                 ],
             })
 
-    reply = ask_ai(req.message, req.session_id, context_data, req.context)
-    lang  = user_profiles.get(req.session_id, {}).get("language", "en")
+    reply = ask_ai(req.message, req.session_id, context_data, req.context, req.language)
+    lang  = req.language
 
     if recommendations:
         return {"reply": reply, "recommendations": recommendations, "language": lang}

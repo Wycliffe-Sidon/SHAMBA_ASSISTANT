@@ -992,17 +992,17 @@ body {
         <span class="menu-icon">☀️</span>
         <span>Weather</span>
       </div>
-      <div class="menu-item" data-menu="pest" onclick="selectMenu(this)">
+      <div class="menu-item" data-menu="pests" onclick="selectMenu(this)">
         <span class="menu-icon">🐛</span>
         <span>Pest & Disease</span>
       </div>
-      <div class="menu-item" data-menu="prices" onclick="selectMenu(this)">
+      <div class="menu-item" data-menu="market" onclick="selectMenu(this)">
         <span class="menu-icon">📈</span>
         <span>Market Prices</span>
       </div>
-      <div class="menu-item" data-menu="yields" onclick="selectMenu(this)">
-        <span class="menu-icon">📊</span>
-        <span>Report Yields</span>
+      <div class="menu-item" data-menu="general" onclick="selectMenu(this)">
+        <span class="menu-icon">💬</span>
+        <span>General</span>
       </div>
     </div>
 
@@ -1093,6 +1093,7 @@ const crops = [
 
 let currentLang = 'en';
 let currentTheme = 'light';
+let currentContext = 'crops';
 
 function showPage(pageId) {
   document.querySelectorAll('.page-section').forEach(page => page.classList.remove('active'));
@@ -1166,6 +1167,7 @@ function updateFarmerProfile(name, soilType, acres, photo = '') {
 function selectMenu(element) {
   document.querySelectorAll('.menu-item').forEach(item => item.classList.remove('active'));
   element.classList.add('active');
+  currentContext = element.dataset.menu;
   closeMobileSidebar();
 }
 
@@ -1254,7 +1256,8 @@ async function sendMessage(message) {
         message: message,
         session_id: sessionId,
         county: county,
-        context: 'general'
+        context: currentContext,
+        language: currentLang
       }),
     });
 
