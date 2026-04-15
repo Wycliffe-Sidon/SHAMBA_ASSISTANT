@@ -978,9 +978,6 @@ body {
     <div class="farmer-profile">
       <img id="farmerPhoto" src="" alt="Profile Photo" style="width: 60px; height: 60px; border-radius: 50%; margin-bottom: 10px; object-fit: cover; display: none;">
       <h3 id="farmerName">John Madumo</h3>
-      <p id="farmerLocation">📍 Nakuru, Kenya</p>
-      <p id="farmerSoil">🌱 Loam Soil</p>
-      <p id="farmerAcres">📐 2.5 Acres</p>
     </div>
 
     <div class="sidebar-menu">
@@ -1007,6 +1004,15 @@ body {
     </div>
 
     <div class="settings-section">
+      <div class="settings-btn" onclick="toggleProfileOptions()">
+        <span class="menu-icon">👤</span>
+        <span>Profile</span>
+      </div>
+      <div class="profile-options" id="profileOptions" style="display: none; padding: 10px 20px;">
+        <p id="profileLocation">📍 Nakuru, Kenya</p>
+        <p id="profileSoil">🌱 Loam Soil</p>
+        <p id="profileAcres">📐 2.5 Acres</p>
+      </div>
       <div class="settings-btn" onclick="toggleThemeOptions()">
         <span class="menu-icon">⚙️</span>
         <span>Settings</span>
@@ -1028,7 +1034,7 @@ body {
 
   <div class="main-panel">
     <div class="main-header">
-      <h1>WELCOME FAHAMU-SHAMBA_ASSISTANT</h1>
+      <h1>WELCOME TO FAHAMU SHAMBA</h1>
       <p>I am your Fahamu-Shamba — How can I assist you today?</p>
       <div class="language-toggle">
         <button class="lang-btn active" data-lang="en" onclick="setLanguage('en')">English</button>
@@ -1153,8 +1159,9 @@ function handleLogin(event) {
 
 function updateFarmerProfile(name, soilType, acres, photo = '') {
   document.getElementById('farmerName').textContent = name;
-  document.getElementById('farmerAcres').textContent = '📐 ' + acres + ' Acres';
-  document.getElementById('farmerSoil').textContent = '🌱 ' + soilType.charAt(0).toUpperCase() + soilType.slice(1) + ' Soil';
+  document.getElementById('profileAcres').textContent = '📐 ' + acres + ' Acres';
+  document.getElementById('profileSoil').textContent = '🌱 ' + soilType.charAt(0).toUpperCase() + soilType.slice(1) + ' Soil';
+  document.getElementById('profileLocation').textContent = '📍 Nakuru, Kenya'; // or from data
   const photoEl = document.getElementById('farmerPhoto');
   if (photo) {
     photoEl.src = photo;
@@ -1180,6 +1187,11 @@ function setLanguage(lang) {
 function toggleThemeOptions() {
   const options = document.getElementById('themeOptions');
   options.classList.toggle('show');
+}
+
+function toggleProfileOptions() {
+  const options = document.getElementById('profileOptions');
+  options.style.display = options.style.display === 'none' ? 'block' : 'none';
 }
 
 function setTheme(theme) {
@@ -1218,12 +1230,15 @@ function displayCrops() {
   `).join('');
 }
 
-function selectCrop(cropName) {
+async function selectCrop(cropName) {
   const chatWindow = document.getElementById('chat-window');
-  addBubble(`You selected ${cropName}. Tell me more about planting this crop.`, 'user');
-  addBubble(`Great choice! ${cropName} is excellent for your region. Here's what you need to know...`, 'bot');
+  const userMessage = `Tell me more about planting ${cropName}`;
+  addBubble(userMessage, 'user');
   document.getElementById('crops-section').style.display = 'none';
   chatWindow.style.display = 'flex';
+
+  const botReply = await sendMessage(userMessage);
+  addBubble(botReply, 'bot');
 }
 
 function addBubble(text, role) {
