@@ -721,6 +721,40 @@ body {
 
 .voice-call-banner span { opacity: 0.9; }
 
+.landing-subtext {
+  font-size: 1.2rem;
+  color: var(--text-secondary);
+  margin-bottom: 40px;
+}
+
+#farmerPhoto {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  margin-bottom: 10px;
+  object-fit: cover;
+  display: none;
+}
+
+.profile-options {
+  display: none;
+  padding: 10px 20px;
+}
+
+.context-section {
+  display: none;
+}
+
+#crops-section {
+  display: block;
+}
+
+.tts-btn {
+  margin-left: auto;
+  font-size: 0.8rem;
+  padding: 5px 10px;
+}
+
 .mic-active {
   animation: pulse-mic 1s infinite;
   background: #16a34a !important;
@@ -890,7 +924,7 @@ body {
     <div class="landing-logo">🌾</div>
     <h1 class="landing-header">Fahamu Shamba</h1>
     <p class="landing-tagline">Your Farming Advisor</p>
-    <p style="font-size: 1.2rem; color: var(--text-secondary); margin-bottom: 40px;">Empowering farmers through technology</p>
+    <p class="landing-subtext">Empowering farmers through technology</p>
 
     <div class="landing-buttons">
       <button class="btn-landing btn-login" onclick="showPage('login-page')">Login</button>
@@ -1001,7 +1035,7 @@ body {
 
   <div class="sidebar" id="sidebar">
     <div class="farmer-profile">
-      <img id="farmerPhoto" src="" alt="Profile Photo" style="width: 60px; height: 60px; border-radius: 50%; margin-bottom: 10px; object-fit: cover; display: none;">
+      <img id="farmerPhoto" src="" alt="Profile Photo">
       <h3 id="farmerName">John Madumo</h3>
     </div>
 
@@ -1033,7 +1067,7 @@ body {
         <span class="menu-icon">👤</span>
         <span>Profile</span>
       </div>
-      <div class="profile-options" id="profileOptions" style="display: none; padding: 10px 20px;">
+      <div class="profile-options" id="profileOptions">
         <p id="profileLocation">📍 Nakuru, Kenya</p>
         <p id="profileSoil">🌱 Loam Soil</p>
         <p id="profileAcres">📐 2.5 Acres</p>
@@ -1073,19 +1107,19 @@ body {
         <h2 class="section-title">Top Crop Recommendations</h2>
         <div class="crops-grid" id="cropsGrid"></div>
       </div>
-      <div class="context-section" id="weather-section" style="display:none;">
+      <div class="context-section" id="weather-section">
         <h2 class="section-title">Weather Insights</h2>
         <p id="weather-description">Ask about rainfall, seasons, and weather-based farming decisions.</p>
       </div>
-      <div class="context-section" id="pests-section" style="display:none;">
+      <div class="context-section" id="pests-section">
         <h2 class="section-title">Pest & Disease Advice</h2>
         <p id="pests-description">Ask about pest management, disease prevention, and crop protection.</p>
       </div>
-      <div class="context-section" id="market-section" style="display:none;">
+      <div class="context-section" id="market-section">
         <h2 class="section-title">Market Prices</h2>
         <p id="market-description">Ask about current market prices, demand, and selling timing.</p>
       </div>
-      <div class="context-section" id="general-section" style="display:none;">
+      <div class="context-section" id="general-section">
         <h2 class="section-title">General Farming Help</h2>
         <p id="general-description">Ask any agricultural question about soil, fertilizer, irrigation, storage, and more.</p>
       </div>
@@ -1094,7 +1128,7 @@ body {
     <div class="voice-call-banner">
       <span>📞</span>
       <span>Call Fahamu Shamba: <strong id="voice-number">(320) 431-3553</strong> &nbsp;|&nbsp; Speak your farming question after the greeting</span>
-      <button class="lang-btn" style="margin-left:auto;font-size:0.8rem;padding:5px 10px;" onclick="toggleTTS()" id="tts-toggle" title="Toggle spoken replies">🔊 Voice Replies: ON</button>
+      <button class="lang-btn tts-btn" onclick="toggleTTS()" id="tts-toggle" title="Toggle spoken replies">🔊 Voice Replies: ON</button>
     </div>
     <div id="chat-window"></div>
     <div class="input-bar">
