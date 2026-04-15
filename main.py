@@ -4,12 +4,14 @@ import json
 import logging
 import os
 import time
+import urllib.parse
+import urllib.request
 from collections import namedtuple
 from datetime import datetime, timezone
 
 import openai
 from fastapi import FastAPI, Form, Request
-from fastapi.responses import HTMLResponse, JSONResponse, PlainTextResponse
+from fastapi.responses import HTMLResponse, JSONResponse, PlainTextResponse, Response
 from fastapi.staticfiles import StaticFiles
 from groq import Groq
 from pydantic import BaseModel, field_validator
@@ -17,6 +19,9 @@ from pydantic import BaseModel, field_validator
 # ── STARTUP VALIDATION ────────────────────────────────────────────────────────
 OPENAI_API_KEY = os.environ.get("OPENAI_API_KEY")
 GROQ_API_KEY = os.environ.get("GROQ_API_KEY")
+OPENWEATHER_API_KEY = os.environ.get("OPENWEATHER_API_KEY")
+MARKET_API_URL = os.environ.get("MARKET_API_URL")
+MARKET_API_KEY = os.environ.get("MARKET_API_KEY")
 
 if not OPENAI_API_KEY and not GROQ_API_KEY:
     raise RuntimeError("OPENAI_API_KEY or GROQ_API_KEY must be set. App cannot start.")
@@ -82,6 +87,70 @@ def extract_farmer_name(text: str):
 
 def get_client():
     return Groq(api_key=GROQ_API_KEY)
+
+
+def geocode_location(location: str) -> dict | None:
+    if not OPENWEATHER_API_KEY or not location:
+        return None
+    try:
+        query = urllib.parse.urlencode({"q": location, "limit": 1, "appid": OPENWEATHER_API_KEY})
+        url = f"https://api.openweathermap.org/geo/1.0/direct?{query}"
+        with urllib.request.urlopen(url, timeout=15) as resp:
+            data = json.load(resp)
+            if isinstance(data, list) and data:
+                return data[0]
+    except Exception as e:
+        logger.warning("Geocoding failed for %s: %s", location, sanitize(str(e)))
+    return None
+
+
+def fetch_weather(location: str) -> dict | None:
+    geo = geocode_location(location)
+    if not geo:
+        return None
+    try:
+        query = urllib.parse.urlencode({
+            "lat": geo.get("lat"),
+            "lon": geo.get("lon"),
+            "units": "metric",
+            "appid": OPENWEATHER_API_KEY,
+        })
+        url = f"https://api.openweathermap.org/data/2.5/weather?{query}"
+        with urllib.request.urlopen(url, timeout=15) as resp:
+            data = json.load(resp)
+            return {
+                "source": "OpenWeather",
+                "location": location,
+                "temperature_c": data.get("main", {}).get("temp"),
+                "feels_like_c": data.get("main", {}).get("feels_like"),
+                "humidity": data.get("main", {}).get("humidity"),
+                "wind_speed_m_s": data.get("wind", {}).get("speed"),
+                "description": data.get("weather", [{}])[0].get("description", ""),
+                "pressure": data.get("main", {}).get("pressure"),
+                "clouds": data.get("clouds", {}).get("all"),
+            }
+    except Exception as e:
+        logger.warning("Weather fetch failed for %s: %s", location, sanitize(str(e)))
+    return None
+
+
+def get_market_data() -> dict:
+    if MARKET_API_URL and MARKET_API_KEY:
+        try:
+            query = urllib.parse.urlencode({"apikey": MARKET_API_KEY})
+            url = f"{MARKET_API_URL}?{query}"
+            with urllib.request.urlopen(url, timeout=15) as resp:
+                data = json.load(resp)
+                if isinstance(data, dict):
+                    return {"source": "external", "timestamp": datetime.now(timezone.utc).isoformat(), "prices": data}
+        except Exception as e:
+            logger.warning("External market fetch failed: %s", sanitize(str(e)))
+    return {
+        "source": "internal",
+        "timestamp": datetime.now(timezone.utc).isoformat(),
+        "prices": MARKET_PRICES,
+    }
+
 
 def ask_openai(user_message: str, session_id: str, context_data: dict = None, tab_context: str = "general", language: str = "en") -> str:
     try:
@@ -225,6 +294,8 @@ Sections:
 5. general — Any agricultural question: soil, fertilizer, irrigation, storage, etc.
 
 Always stay focused on the active section context provided.
+If actual weather or market data is provided in DATA, use it directly to answer the user.
+Provide concise, location-specific agricultural guidance based on the available data.
 """
 
 CONTEXT_INSTRUCTIONS = {
@@ -360,13 +431,20 @@ async def chat(req: ChatRequest, request: Request):
     recommendations = None
     msg_lower = req.message.lower()
 
+    weather_data = None
+    market_data = get_market_data()
+
     if req.county:
+        location_text = f"{req.sublocation}, {req.county}".strip(', ')
         context_data = {
-            "location":       f"{req.sublocation}, {req.county}",
+            "location":       location_text,
             "village":        req.village or "Unknown",
             "county":         req.county,
             "sublocation":    req.sublocation,
+            "weather_data":   fetch_weather(location_text),
+            "market_data":    market_data,
         }
+        weather_data = context_data["weather_data"]
 
     if req.context == "crops" or any(k in msg_lower for k in ["best crop","what to plant","recommend","top 3","mazao","panda","kilimo","crop"]):
         if req.county:
@@ -431,6 +509,69 @@ async def ussd(
     query  = queries.get(menu, user_input)
     advice = ask_groq(query[:MAX_MESSAGE_LEN], safe_sid, tab_context="general")
     return f"END {advice[:160]}"
+
+@app.post("/voice/incoming")
+async def voice_incoming():
+    """Twilio voice call entry point — greet and prompt the farmer."""
+    twiml = """<?xml version="1.0" encoding="UTF-8"?>
+<Response>
+  <Say voice="alice" language="en-KE">
+    Welcome to Fahamu Shamba, your smart farming assistant.
+    You can ask me about crops, weather, pests, market prices, or any farming question.
+    Please speak your question after the beep.
+  </Say>
+  <Gather input="speech" action="/voice/respond" method="POST"
+          language="en-KE" speechTimeout="auto" timeout="10">
+    <Say voice="alice" language="en-KE">Go ahead, I am listening.</Say>
+  </Gather>
+  <Say voice="alice" language="en-KE">I did not hear anything. Please call again. Goodbye.</Say>
+</Response>"""
+    return Response(content=twiml, media_type="application/xml")
+
+
+@app.post("/voice/respond")
+async def voice_respond(
+    request: Request,
+    CallSid: str = Form(""),
+    SpeechResult: str = Form(""),
+    Confidence: str = Form(""),
+):
+    """Handle the farmer's spoken question and reply conversationally."""
+    if not CallSid or len(CallSid) > 100:
+        CallSid = "voice_default"
+    session_id = "voice_" + re.sub(r"[^a-zA-Z0-9_\-]", "", CallSid)[:80]
+
+    spoken = SpeechResult.strip()[:MAX_MESSAGE_LEN]
+    if not spoken:
+        twiml = """<?xml version="1.0" encoding="UTF-8"?>
+<Response>
+  <Say voice="alice" language="en-KE">Sorry, I could not hear you clearly. Please try again.</Say>
+  <Gather input="speech" action="/voice/respond" method="POST"
+          language="en-KE" speechTimeout="auto" timeout="10">
+    <Say voice="alice" language="en-KE">Please ask your farming question now.</Say>
+  </Gather>
+</Response>"""
+        return Response(content=twiml, media_type="application/xml")
+
+    lang = detect_language(spoken)
+    reply = ask_ai(spoken, session_id, tab_context="general", language=lang)
+
+    # Strip markdown symbols that sound bad over voice
+    voice_reply = re.sub(r"[*_#`>\.]{1,3}", "", reply).strip()
+    voice_reply = voice_reply[:600]  # keep TTS short
+
+    voice_lang = "sw-KE" if lang == "sw" else "en-KE"
+    twiml = f"""<?xml version="1.0" encoding="UTF-8"?>
+<Response>
+  <Say voice="alice" language="{voice_lang}">{html.escape(voice_reply)}</Say>
+  <Gather input="speech" action="/voice/respond" method="POST"
+          language="{voice_lang}" speechTimeout="auto" timeout="10">
+    <Say voice="alice" language="{voice_lang}">Do you have another question? Go ahead.</Say>
+  </Gather>
+  <Say voice="alice" language="{voice_lang}">Thank you for using Fahamu Shamba. Goodbye and happy farming!</Say>
+</Response>"""
+    return Response(content=twiml, media_type="application/xml")
+
 
 @app.get("/", response_class=HTMLResponse)
 async def root():

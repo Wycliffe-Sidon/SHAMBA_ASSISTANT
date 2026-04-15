@@ -707,6 +707,27 @@ body {
   border-radius: 4px 16px 16px 16px;
 }
 
+.voice-call-banner {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 20px;
+  background: linear-gradient(90deg, var(--primary-color), var(--primary-light));
+  border-bottom: 2px solid var(--accent-color);
+  font-size: 0.88rem;
+  color: var(--accent-color);
+  flex-shrink: 0;
+}
+
+.voice-call-banner span { opacity: 0.9; }
+
+.mic-active { animation: pulse-mic 1s infinite; }
+
+@keyframes pulse-mic {
+  0%, 100% { transform: scale(1); background: #ef4444; }
+  50% { transform: scale(1.15); background: #dc2626; }
+}
+
 .input-bar {
   display: flex;
   align-items: center;
@@ -1066,10 +1087,15 @@ body {
       </div>
     </div>
 
+    <div class="voice-call-banner">
+      <span>📞</span>
+      <span>Call Fahamu Shamba: <strong id="voice-number">(320) 431-3553</strong> &nbsp;|&nbsp; Speak your farming question after the greeting</span>
+      <button class="lang-btn" style="margin-left:auto;font-size:0.8rem;padding:5px 10px;" onclick="toggleTTS()" id="tts-toggle" title="Toggle spoken replies">🔊 Voice Replies: ON</button>
+    </div>
     <div id="chat-window"></div>
     <div class="input-bar">
       <input type="text" id="user-input" placeholder="Ask me anything about farming..." />
-      <button class="icon-btn" id="mic-btn" title="Voice input">🎤</button>
+      <button class="icon-btn" id="mic-btn" title="Hold to speak">🎤</button>
       <button class="icon-btn" id="send-btn" title="Send message">➤</button>
     </div>
   </div>
@@ -1313,32 +1339,91 @@ async function sendMessage(message) {
   }
 }
 
+// ── VOICE / TTS ──────────────────────────────────────────────────────────────
+let ttsEnabled = true;
+let recognition = null;
+let isListening = false;
+
+function toggleTTS() {
+  ttsEnabled = !ttsEnabled;
+  document.getElementById('tts-toggle').textContent = `🔊 Voice Replies: ${ttsEnabled ? 'ON' : 'OFF'}`;
+}
+
+function speak(text) {
+  if (!ttsEnabled || !window.speechSynthesis) return;
+  window.speechSynthesis.cancel();
+  const clean = text.replace(/[*_#`>]/g, '').trim();
+  const utt = new SpeechSynthesisUtterance(clean);
+  utt.lang = currentLang === 'sw' ? 'sw-KE' : 'en-US';
+  utt.rate = 0.95;
+  window.speechSynthesis.speak(utt);
+}
+
+function initVoiceInput() {
+  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SpeechRecognition) {
+    document.getElementById('mic-btn').title = 'Voice input not supported in this browser';
+    return;
+  }
+  recognition = new SpeechRecognition();
+  recognition.continuous = false;
+  recognition.interimResults = false;
+
+  recognition.onstart = () => {
+    isListening = true;
+    document.getElementById('mic-btn').classList.add('mic-active');
+    document.getElementById('mic-btn').textContent = '🔴';
+  };
+
+  recognition.onresult = (e) => {
+    const transcript = e.results[0][0].transcript.trim();
+    document.getElementById('user-input').value = transcript;
+    document.getElementById('send-btn').click();
+  };
+
+  recognition.onerror = () => stopListening();
+  recognition.onend  = () => stopListening();
+}
+
+function stopListening() {
+  isListening = false;
+  const btn = document.getElementById('mic-btn');
+  btn.classList.remove('mic-active');
+  btn.textContent = '🎤';
+}
+
 document.addEventListener('DOMContentLoaded', () => {
   displayCrops();
   addBubble('Welcome to Fahamu Shamba! How can I assist you today?', 'bot');
 
-  // Load saved theme
   const savedTheme = localStorage.getItem('farmTheme') || 'light';
   setTheme(savedTheme);
 
-  // Load farmer profile if logged in
   const farmerData = JSON.parse(localStorage.getItem('farmerData') || '{}');
   if (farmerData.name) {
     updateFarmerProfile(farmerData.name, farmerData.soilType, farmerData.acres, farmerData.photo);
   }
 
   updateSectionViews();
+  initVoiceInput();
+
+  // Mic button — tap to start, tap again to stop
+  document.getElementById('mic-btn').addEventListener('click', () => {
+    if (!recognition) return;
+    if (isListening) { recognition.stop(); return; }
+    recognition.lang = currentLang === 'sw' ? 'sw-KE' : 'en-US';
+    recognition.start();
+  });
 
   document.getElementById('send-btn').addEventListener('click', async () => {
     const input = document.getElementById('user-input');
-    if (input.value.trim()) {
-      const userMessage = input.value.trim();
-      addBubble(userMessage, 'user');
-      input.value = '';
-
-      const botReply = await sendMessage(userMessage);
-      addBubble(botReply, 'bot');
-    }
+    if (!input.value.trim()) return;
+    const userMessage = input.value.trim();
+    addBubble(userMessage, 'user');
+    input.value = '';
+    const botReply = await sendMessage(userMessage);
+    addBubble(botReply, 'bot');
+    speak(botReply);
   });
 
   document.getElementById('user-input').addEventListener('keypress', (e) => {
