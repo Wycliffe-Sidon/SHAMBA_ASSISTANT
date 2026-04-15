@@ -721,11 +721,15 @@ body {
 
 .voice-call-banner span { opacity: 0.9; }
 
-.mic-active { animation: pulse-mic 1s infinite; }
+.mic-active {
+  animation: pulse-mic 1s infinite;
+  background: #16a34a !important;
+  color: white !important;
+}
 
 @keyframes pulse-mic {
-  0%, 100% { transform: scale(1); background: #ef4444; }
-  50% { transform: scale(1.15); background: #dc2626; }
+  0%, 100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(22,163,74,0.5); }
+  50% { transform: scale(1.1); box-shadow: 0 0 0 8px rgba(22,163,74,0); }
 }
 
 .input-bar {
@@ -1371,8 +1375,10 @@ function initVoiceInput() {
 
   recognition.onstart = () => {
     isListening = true;
-    document.getElementById('mic-btn').classList.add('mic-active');
-    document.getElementById('mic-btn').textContent = '🔴';
+    const btn = document.getElementById('mic-btn');
+    btn.classList.add('mic-active');
+    btn.textContent = '⏹';
+    btn.title = 'Tap to stop listening';
   };
 
   recognition.onresult = (e) => {
