@@ -1043,9 +1043,27 @@ body {
       </div>
     </div>
 
-    <div class="content-area" id="crops-section">
-      <h2 class="section-title">Top Crop Recommendations</h2>
-      <div class="crops-grid" id="cropsGrid"></div>
+    <div class="content-area" id="content-area">
+      <div class="context-section" id="crops-section">
+        <h2 class="section-title">Top Crop Recommendations</h2>
+        <div class="crops-grid" id="cropsGrid"></div>
+      </div>
+      <div class="context-section" id="weather-section" style="display:none;">
+        <h2 class="section-title">Weather Insights</h2>
+        <p id="weather-description">Ask about rainfall, seasons, and weather-based farming decisions.</p>
+      </div>
+      <div class="context-section" id="pests-section" style="display:none;">
+        <h2 class="section-title">Pest & Disease Advice</h2>
+        <p id="pests-description">Ask about pest management, disease prevention, and crop protection.</p>
+      </div>
+      <div class="context-section" id="market-section" style="display:none;">
+        <h2 class="section-title">Market Prices</h2>
+        <p id="market-description">Ask about current market prices, demand, and selling timing.</p>
+      </div>
+      <div class="context-section" id="general-section" style="display:none;">
+        <h2 class="section-title">General Farming Help</h2>
+        <p id="general-description">Ask any agricultural question about soil, fertilizer, irrigation, storage, and more.</p>
+      </div>
     </div>
 
     <div id="chat-window"></div>
@@ -1175,6 +1193,7 @@ function selectMenu(element) {
   document.querySelectorAll('.menu-item').forEach(item => item.classList.remove('active'));
   element.classList.add('active');
   currentContext = element.dataset.menu;
+  updateSectionViews();
   closeMobileSidebar();
 }
 
@@ -1230,11 +1249,21 @@ function displayCrops() {
   `).join('');
 }
 
+function updateSectionViews() {
+  const sections = ['crops', 'weather', 'pests', 'market', 'general'];
+  sections.forEach(section => {
+    const el = document.getElementById(`${section}-section`);
+    if (el) {
+      el.style.display = currentContext === section ? 'block' : 'none';
+    }
+  });
+}
+
 async function selectCrop(cropName) {
   const chatWindow = document.getElementById('chat-window');
   const userMessage = `Tell me more about planting ${cropName}`;
   addBubble(userMessage, 'user');
-  document.getElementById('crops-section').style.display = 'none';
+  updateSectionViews();
   chatWindow.style.display = 'flex';
 
   const botReply = await sendMessage(userMessage);
@@ -1297,6 +1326,8 @@ document.addEventListener('DOMContentLoaded', () => {
   if (farmerData.name) {
     updateFarmerProfile(farmerData.name, farmerData.soilType, farmerData.acres, farmerData.photo);
   }
+
+  updateSectionViews();
 
   document.getElementById('send-btn').addEventListener('click', async () => {
     const input = document.getElementById('user-input');
