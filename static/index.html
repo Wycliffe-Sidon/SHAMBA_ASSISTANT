@@ -3,6 +3,1137 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<meta name="description" content="Fahamu Shamba - AI-powered agricultural assistant empowering Kenyan farmers with smart crop recommendations, weather insights, pest management, and market prices."/>
+<title>WELCOME FAHAMU-SHAMBA_ASSISTANT</title>
+<style>
+:root {
+  --primary-color: #001a4d;
+  --primary-light: #0d2980;
+  --accent-color: #ffd700;
+  --accent-dark: #ffb700;
+  --text-primary: #f4f4f4;
+  --text-secondary: #b0b0b0;
+  --bg-primary: #f8f9fa;
+  --bg-secondary: #0f1b3c;
+  --bg-light: #1a2d5e;
+  --border-color: #ffd700;
+  --success: #4ade80;
+  --error: #ef4444;
+  --warning: #fbbf24;
+  --shadow-sm: 0 1px 2px rgba(0,0,0,0.1);
+  --shadow-md: 0 4px 12px rgba(0,0,0,0.3);
+  --shadow-lg: 0 8px 24px rgba(0,0,0,0.5);
+  --transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html, body {
+  width: 100%;
+  height: 100%;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  background: linear-gradient(135deg, #0f1b3c 0%, #001a4d 100%);
+  color: var(--text-primary);
+  line-height: 1.6;
+}
+
+.page-section {
+  display: none;
+  min-height: 100vh;
+  width: 100%;
+}
+
+.page-section.active {
+  display: flex;
+}
+
+#landing-page {
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 20px;
+  background: linear-gradient(135deg, rgba(15, 27, 60, 0.9) 0%, rgba(0, 26, 77, 0.95) 100%);
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+
+.landing-content {
+  max-width: 700px;
+  z-index: 10;
+  animation: fadeInUp 0.8s ease-out;
+}
+
+.landing-logo {
+  font-size: 70px;
+  margin-bottom: 20px;
+}
+
+.landing-header {
+  font-size: 3.5rem;
+  font-weight: 800;
+  color: var(--accent-color);
+  margin-bottom: 15px;
+  letter-spacing: -1px;
+}
+
+.landing-tagline {
+  font-size: 1.4rem;
+  color: var(--text-secondary);
+  margin-bottom: 40px;
+  font-weight: 300;
+}
+
+.landing-buttons {
+  display: flex;
+  gap: 20px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.btn-landing {
+  padding: 16px 40px;
+  border: none;
+  border-radius: 12px;
+  font-size: 1.1rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: var(--transition);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.btn-login {
+  background: transparent;
+  color: var(--accent-color);
+  border: 2px solid var(--accent-color);
+}
+
+.btn-login:hover {
+  background: var(--accent-color);
+  color: var(--primary-color);
+  transform: translateY(-4px);
+  box-shadow: 0 8px 20px rgba(255, 215, 0, 0.4);
+}
+
+.btn-register {
+  background: linear-gradient(135deg, var(--accent-color), var(--accent-dark));
+  color: var(--primary-color);
+}
+
+.btn-register:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 20px rgba(255, 215, 0, 0.5);
+}
+
+.form-page {
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 20px;
+}
+
+.form-container {
+  background: rgba(10, 17, 40, 0.8);
+  border: 2px solid var(--accent-color);
+  border-radius: 20px;
+  padding: 50px 40px;
+  width: 100%;
+  max-width: 450px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(10px);
+  animation: slideUpForm 0.5s ease-out;
+  position: relative;
+}
+
+.form-header {
+  text-align: center;
+  margin-bottom: 35px;
+}
+
+.form-header h2 {
+  font-size: 2rem;
+  color: var(--accent-color);
+  margin-bottom: 10px;
+}
+
+.form-header p {
+  color: var(--text-secondary);
+  font-size: 0.95rem;
+}
+
+.form-group {
+  margin-bottom: 22px;
+}
+
+.form-label {
+  display: block;
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--accent-color);
+  margin-bottom: 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.form-input,
+.form-select {
+  width: 100%;
+  padding: 12px 16px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1.5px solid var(--accent-color);
+  border-radius: 10px;
+  color: var(--text-primary);
+  font-size: 1rem;
+  font-family: inherit;
+  transition: var(--transition);
+}
+
+.form-input:focus,
+.form-select:focus {
+  outline: none;
+  background: rgba(255, 255, 255, 0.1);
+  border-color: var(--accent-dark);
+  box-shadow: 0 0 0 3px rgba(255, 215, 0, 0.2);
+}
+
+.form-input::placeholder {
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.form-checkbox {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.form-checkbox input {
+  width: 18px;
+  height: 18px;
+  cursor: pointer;
+  accent-color: var(--accent-color);
+}
+
+.form-checkbox label {
+  color: var(--text-secondary);
+  font-size: 0.95rem;
+  cursor: pointer;
+}
+
+.forgot-password {
+  text-align: right;
+  margin-bottom: 25px;
+}
+
+.forgot-password a {
+  color: var(--accent-color);
+  text-decoration: none;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.btn-submit {
+  width: 100%;
+  padding: 14px;
+  background: linear-gradient(135deg, var(--accent-color), var(--accent-dark));
+  color: var(--primary-color);
+  border: none;
+  border-radius: 10px;
+  font-size: 1rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: var(--transition);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-top: 15px;
+}
+
+.btn-submit:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(255, 215, 0, 0.4);
+}
+
+.form-footer {
+  text-align: center;
+  margin-top: 25px;
+  color: var(--text-secondary);
+  font-size: 0.95rem;
+}
+
+.form-footer a {
+  color: var(--accent-color);
+  text-decoration: none;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.back-button {
+  position: absolute;
+  top: 30px;
+  left: 30px;
+  background: var(--accent-color);
+  color: var(--primary-color);
+  border: none;
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  font-size: 1.5rem;
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.back-button:hover {
+  transform: scale(1.1);
+}
+
+#dashboard {
+  flex-direction: row;
+  min-height: 100vh;
+}
+
+.sidebar {
+  width: 280px;
+  background: linear-gradient(180deg, #1a2d5e, #001a4d);
+  border-right: 3px solid var(--accent-color);
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+  box-shadow: var(--shadow-md);
+  overflow-y: auto;
+}
+
+.farmer-profile {
+  padding: 25px;
+  border-bottom: 2px solid var(--accent-color);
+  background: linear-gradient(135deg, var(--primary-color), var(--primary-light));
+  color: var(--accent-color);
+}
+
+.farmer-profile h3 {
+  margin: 0 0 10px 0;
+  font-size: 1.2rem;
+  font-weight: 700;
+}
+
+.farmer-profile p {
+  margin: 5px 0;
+  font-size: 0.85rem;
+  opacity: 0.9;
+}
+
+.sidebar-menu {
+  flex: 1;
+  padding: 20px 0;
+}
+
+.menu-item {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  padding: 15px 20px;
+  cursor: pointer;
+  transition: var(--transition);
+  border-left: 4px solid transparent;
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.menu-item:hover {
+  background: rgba(255, 215, 0, 0.1);
+  border-left-color: var(--accent-color);
+}
+
+.menu-item.active {
+  background: rgba(255, 215, 0, 0.15);
+  border-left-color: var(--accent-color);
+  color: var(--accent-color);
+}
+
+.menu-icon {
+  font-size: 1.5rem;
+  width: 30px;
+  text-align: center;
+}
+
+.new-chat-btn {
+  margin: 20px;
+  padding: 14px;
+  background: var(--accent-color);
+  color: var(--primary-color);
+  border: none;
+  border-radius: 10px;
+  font-size: 1rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.new-chat-btn:hover {
+  background: var(--accent-dark);
+  transform: translateY(-2px);
+}
+
+.main-panel {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  background: linear-gradient(135deg, #f8f9fa 0%, #e8ecf1 100%);
+  overflow: hidden;
+}
+
+.main-header {
+  padding: 30px 30px;
+  background: linear-gradient(135deg, var(--primary-color), var(--primary-light));
+  color: var(--accent-color);
+  text-align: center;
+  box-shadow: var(--shadow-lg);
+  border-bottom: 3px solid var(--accent-color);
+}
+
+.main-header h1 {
+  font-size: 2.5rem;
+  font-weight: 800;
+  margin: 0 0 10px 0;
+  letter-spacing: 1px;
+}
+
+.main-header p {
+  font-size: 1.3rem;
+  opacity: 0.95;
+  margin: 0;
+  font-weight: 600;
+}
+
+.language-toggle {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  margin-top: 15px;
+}
+
+.lang-btn {
+  padding: 8px 14px;
+  background: rgba(255, 255, 255, 0.2);
+  color: var(--accent-color);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 0.85rem;
+  font-weight: 600;
+  transition: var(--transition);
+}
+
+.lang-btn.active {
+  background: var(--accent-color);
+  color: var(--primary-color);
+}
+
+.content-area {
+  flex: 1;
+  overflow-y: auto;
+  padding: 30px;
+}
+
+.section-title {
+  font-size: 1.8rem;
+  color: var(--primary-color);
+  margin-bottom: 25px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.crops-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 25px;
+  margin-bottom: 40px;
+}
+
+.crop-card {
+  background: white;
+  border: 2px solid var(--accent-color);
+  border-radius: 16px;
+  padding: 25px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  transition: var(--transition);
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+}
+
+.crop-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, var(--accent-color), var(--accent-dark));
+}
+
+.crop-card:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 12px 28px rgba(255, 215, 0, 0.2);
+}
+
+.crop-emoji {
+  font-size: 3.5rem;
+  margin-bottom: 15px;
+  text-align: center;
+}
+
+.crop-name {
+  font-size: 1.5rem;
+  color: var(--primary-color);
+  font-weight: 800;
+  margin-bottom: 12px;
+  text-align: center;
+}
+
+.crop-description {
+  color: #666;
+  font-size: 0.95rem;
+  margin-bottom: 15px;
+  line-height: 1.6;
+  text-align: center;
+}
+
+.crop-details {
+  display: flex;
+  gap: 15px;
+  margin-bottom: 15px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.detail-tag {
+  background: linear-gradient(135deg, rgba(255, 215, 0, 0.1), rgba(0, 26, 77, 0.05));
+  border: 1px solid var(--accent-color);
+  color: var(--primary-color);
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.crop-score {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px;
+  background: linear-gradient(135deg, rgba(255, 215, 0, 0.08), rgba(74, 222, 128, 0.08));
+  border-radius: 10px;
+  margin-bottom: 15px;
+}
+
+.score-label {
+  color: var(--primary-color);
+  font-weight: 700;
+  font-size: 0.9rem;
+}
+
+.score-bar {
+  flex: 1;
+  height: 8px;
+  background: #e0e0e0;
+  border-radius: 4px;
+  margin: 0 15px;
+  overflow: hidden;
+}
+
+.score-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--accent-color), var(--accent-dark));
+  border-radius: 4px;
+}
+
+.crop-button {
+  width: 100%;
+  padding: 12px;
+  background: linear-gradient(135deg, var(--primary-color), var(--primary-light));
+  color: var(--accent-color);
+  border: none;
+  border-radius: 10px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: var(--transition);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.crop-button:hover {
+  transform: scale(1.02);
+}
+
+#chat-window {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 20px 30px;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  background: white;
+}
+
+#chat-window::-webkit-scrollbar {
+  width: 8px;
+}
+
+#chat-window::-webkit-scrollbar-thumb {
+  background: var(--accent-color);
+  border-radius: 4px;
+}
+
+.bubble-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.bubble-row.user {
+  justify-content: flex-end;
+}
+
+.avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  flex-shrink: 0;
+}
+
+.bubble {
+  max-width: 60%;
+  padding: 12px 16px;
+  border-radius: 16px;
+  word-wrap: break-word;
+  font-size: 0.95rem;
+  line-height: 1.5;
+}
+
+.bubble-row.user .bubble {
+  background: linear-gradient(135deg, var(--accent-color), var(--accent-dark));
+  color: var(--primary-color);
+  border-radius: 16px 4px 16px 16px;
+}
+
+.bubble-row.bot .bubble {
+  background: #e8ecf1;
+  color: var(--primary-color);
+  border-radius: 4px 16px 16px 16px;
+}
+
+.input-bar {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  padding: 20px 30px;
+  background: #f0f2f5;
+  border-top: 3px solid var(--accent-color);
+  flex-shrink: 0;
+}
+
+#user-input {
+  flex: 1;
+  border: 2px solid var(--accent-color);
+  border-radius: 10px;
+  padding: 11px 14px;
+  font-size: 0.9rem;
+  background: white;
+  color: var(--primary-color);
+  font-family: inherit;
+  transition: var(--transition);
+}
+
+#user-input:focus {
+  outline: none;
+  border-color: var(--accent-dark);
+}
+
+.icon-btn {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  transition: var(--transition);
+  flex-shrink: 0;
+  background: transparent;
+  color: var(--primary-color);
+}
+
+.icon-btn:hover {
+  background: var(--accent-color);
+}
+
+#send-btn {
+  background: linear-gradient(135deg, var(--accent-color), var(--accent-dark));
+  color: var(--primary-color);
+  font-weight: 700;
+}
+
+.hamburger {
+  display: none;
+  position: fixed;
+  top: 20px;
+  left: 20px;
+  background: var(--accent-color);
+  color: var(--primary-color);
+  border: none;
+  width: 50px;
+  height: 50px;
+  border-radius: 10px;
+  font-size: 1.5rem;
+  cursor: pointer;
+  z-index: 999;
+}
+
+.overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  z-index: 100;
+}
+
+.overlay.active {
+  display: block;
+}
+
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(30px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slideUpForm {
+  from { opacity: 0; transform: translateY(50px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@media (max-width: 768px) {
+  .sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 100vh;
+    z-index: 1000;
+    transform: translateX(-100%);
+    transition: transform 0.3s ease;
+    width: 250px;
+  }
+
+  .sidebar.mobile-visible {
+    transform: translateX(0);
+  }
+
+  .hamburger {
+    display: block;
+  }
+
+  #dashboard {
+    flex-direction: column;
+  }
+
+  .crops-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .main-header h1 {
+    font-size: 1.8rem;
+  }
+
+  .landing-header {
+    font-size: 2.5rem;
+  }
+
+  .form-container {
+    padding: 35px 25px;
+  }
+}
+
+@media (max-width: 480px) {
+  .landing-header {
+    font-size: 2rem;
+  }
+
+  .landing-buttons {
+    gap: 10px;
+  }
+
+  .btn-landing {
+    padding: 12px 25px;
+    font-size: 0.9rem;
+  }
+}
+</style>
+</head>
+<body>
+
+<!-- LANDING PAGE -->
+<div id="landing-page" class="page-section active">
+  <div class="landing-content">
+    <div class="landing-logo">🌾</div>
+    <h1 class="landing-header">Fahamu Shamba</h1>
+    <p class="landing-tagline">Your Farming Advisor</p>
+    <p style="font-size: 1.2rem; color: var(--text-secondary); margin-bottom: 40px;">Empowering farmers through technology</p>
+    
+    <div class="landing-buttons">
+      <button class="btn-landing btn-login" onclick="showPage('login-page')">Login</button>
+      <button class="btn-landing btn-register" onclick="showPage('register-page')">Register</button>
+    </div>
+  </div>
+</div>
+
+<!-- REGISTRATION PAGE -->
+<div id="register-page" class="page-section form-page">
+  <button class="back-button" onclick="showPage('landing-page')">←</button>
+  
+  <div class="form-container">
+    <div class="form-header">
+      <h2>Create Account</h2>
+      <p>Join thousands of farmers using Fahamu Shamba</p>
+    </div>
+
+    <form id="registerForm" onsubmit="handleRegister(event)">
+      <div class="form-group">
+        <label class="form-label">Full Name</label>
+        <input type="text" class="form-input" id="regName" placeholder="Your name" required/>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Phone Number</label>
+        <input type="tel" class="form-input" id="regPhone" placeholder="+254..." required/>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Email Address</label>
+        <input type="email" class="form-input" id="regEmail" placeholder="your@email.com" required/>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Soil Type</label>
+        <select class="form-select" id="regSoilType" required>
+          <option value="">Select soil type</option>
+          <option value="clay">Clay</option>
+          <option value="sandy">Sandy</option>
+          <option value="loam">Loam</option>
+          <option value="unknown">Unknown (Auto-detect via location)</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Farm Size (Acres)</label>
+        <input type="number" class="form-input" id="regAcres" placeholder="e.g., 2.5" min="0.1" step="0.1" required/>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Profile Photo (Optional)</label>
+        <input type="file" class="form-input" id="regPhoto" accept="image/*"/>
+      </div>
+
+      <button type="submit" class="btn-submit">Create Account</button>
+    </form>
+
+    <div class="form-footer">
+      Already have an account? <a onclick="showPage('login-page')">Sign In</a>
+    </div>
+  </div>
+</div>
+
+<!-- LOGIN PAGE -->
+<div id="login-page" class="page-section form-page">
+  <button class="back-button" onclick="showPage('landing-page')">←</button>
+  
+  <div class="form-container">
+    <div class="form-header">
+      <h2>Welcome Back</h2>
+      <p>Sign in to your Fahamu Shamba account</p>
+    </div>
+
+    <form id="loginForm" onsubmit="handleLogin(event)">
+      <div class="form-group">
+        <label class="form-label">Email or Phone</label>
+        <input type="text" class="form-input" id="loginEmail" placeholder="email@example.com or +254..." required/>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Password</label>
+        <input type="password" class="form-input" id="loginPassword" placeholder="••••••••" required/>
+      </div>
+
+      <div class="form-checkbox">
+        <input type="checkbox" id="rememberMe" />
+        <label for="rememberMe">Remember me</label>
+      </div>
+
+      <div class="forgot-password">
+        <a href="#">Forgot Password?</a>
+      </div>
+
+      <button type="submit" class="btn-submit">Sign In</button>
+    </form>
+
+    <div class="form-footer">
+      Don't have an account? <a onclick="showPage('register-page')">Register Here</a>
+    </div>
+  </div>
+</div>
+
+<!-- DASHBOARD -->
+<div id="dashboard" class="page-section">
+  <button class="hamburger" id="hamburger" onclick="toggleMobileSidebar()">☰</button>
+  <div class="overlay" id="overlay" onclick="closeMobileSidebar()"></div>
+
+  <div class="sidebar" id="sidebar">
+    <div class="farmer-profile">
+      <h3 id="farmerName">John Madumo</h3>
+      <p id="farmerLocation">📍 Nakuru, Kenya</p>
+      <p id="farmerSoil">🌱 Loam Soil</p>
+      <p id="farmerAcres">📐 2.5 Acres</p>
+    </div>
+
+    <div class="sidebar-menu">
+      <div class="menu-item active" data-menu="crops" onclick="selectMenu(this)">
+        <span class="menu-icon">🌾</span>
+        <span>Best Crops</span>
+      </div>
+      <div class="menu-item" data-menu="weather" onclick="selectMenu(this)">
+        <span class="menu-icon">☀️</span>
+        <span>Weather</span>
+      </div>
+      <div class="menu-item" data-menu="pest" onclick="selectMenu(this)">
+        <span class="menu-icon">🐛</span>
+        <span>Pest & Disease</span>
+      </div>
+      <div class="menu-item" data-menu="prices" onclick="selectMenu(this)">
+        <span class="menu-icon">📈</span>
+        <span>Market Prices</span>
+      </div>
+      <div class="menu-item" data-menu="yields" onclick="selectMenu(this)">
+        <span class="menu-icon">📊</span>
+        <span>Report Yields</span>
+      </div>
+    </div>
+
+    <button class="new-chat-btn" onclick="newChat()">+ New Chat</button>
+  </div>
+
+  <div class="main-panel">
+    <div class="main-header">
+      <h1>WELCOME FAHAMU-SHAMBA_ASSISTANT</h1>
+      <p>I am your Fahamu-Shamba — How can I assist you today?</p>
+      <div class="language-toggle">
+        <button class="lang-btn active" data-lang="en" onclick="setLanguage('en')">English</button>
+        <button class="lang-btn" data-lang="sw" onclick="setLanguage('sw')">Kiswahili</button>
+        <button class="lang-btn" data-lang="luo" onclick="setLanguage('luo')">Luo</button>
+      </div>
+    </div>
+
+    <div class="content-area" id="crops-section">
+      <h2 class="section-title">Top Crop Recommendations</h2>
+      <div class="crops-grid" id="cropsGrid"></div>
+    </div>
+
+    <div id="chat-window"></div>
+    <div class="input-bar">
+      <input type="text" id="user-input" placeholder="Ask me anything about farming..." />
+      <button class="icon-btn" id="mic-btn" title="Voice input">🎤</button>
+      <button class="icon-btn" id="send-btn" title="Send message">➤</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const crops = [
+  {
+    name: 'Maize',
+    emoji: '🌽',
+    description: 'Ideal for your region. High yield potential with proper management.',
+    season: 'March - August',
+    yield: '85',
+    waterNeeded: 'Medium',
+    daysToMaturity: '120-150'
+  },
+  {
+    name: 'Beans',
+    emoji: '🫘',
+    description: 'Nitrogen-fixing crop. Perfect for crop rotation with maize.',
+    season: 'February - July',
+    yield: '78',
+    waterNeeded: 'Low',
+    daysToMaturity: '90-120'
+  },
+  {
+    name: 'Tomatoes',
+    emoji: '🍅',
+    description: 'High market demand. Great for supplementary income.',
+    season: 'Year-round',
+    yield: '92',
+    waterNeeded: 'High',
+    daysToMaturity: '70-85'
+  },
+  {
+    name: 'Kale',
+    emoji: '🥬',
+    description: 'Nutritious and sells well. Quick harvest cycles.',
+    season: 'Year-round',
+    yield: '88',
+    waterNeeded: 'Medium',
+    daysToMaturity: '45-60'
+  }
+];
+
+let currentLang = 'en';
+
+function showPage(pageId) {
+  document.querySelectorAll('.page-section').forEach(page => page.classList.remove('active'));
+  document.getElementById(pageId).classList.add('active');
+  closeMobileSidebar();
+}
+
+function toggleMobileSidebar() {
+  document.getElementById('sidebar').classList.toggle('mobile-visible');
+  document.getElementById('overlay').classList.toggle('active');
+}
+
+function closeMobileSidebar() {
+  document.getElementById('sidebar').classList.remove('mobile-visible');
+  document.getElementById('overlay').classList.remove('active');
+}
+
+function handleRegister(event) {
+  event.preventDefault();
+  const name = document.getElementById('regName').value;
+  const phone = document.getElementById('regPhone').value;
+  const email = document.getElementById('regEmail').value;
+  const soilType = document.getElementById('regSoilType').value;
+  const acres = document.getElementById('regAcres').value;
+  
+  localStorage.setItem('farmerData', JSON.stringify({ name, phone, email, soilType, acres, location: 'Nakuru, Kenya' }));
+  alert(`Welcome ${name}! Your farm profile is ready.`);
+  updateFarmerProfile(name, soilType, acres);
+  showPage('dashboard');
+}
+
+function handleLogin(event) {
+  event.preventDefault();
+  const email = document.getElementById('loginEmail').value;
+  const rememberMe = document.getElementById('rememberMe').checked;
+  localStorage.setItem('isLoggedIn', 'true');
+  if (rememberMe) localStorage.setItem('rememberMe', 'true');
+  showPage('dashboard');
+}
+
+function updateFarmerProfile(name, soilType, acres) {
+  document.getElementById('farmerName').textContent = name;
+  document.getElementById('farmerAcres').textContent = '📐 ' + acres + ' Acres';
+  document.getElementById('farmerSoil').textContent = '🌱 ' + soilType.charAt(0).toUpperCase() + soilType.slice(1) + ' Soil';
+}
+
+function selectMenu(element) {
+  document.querySelectorAll('.menu-item').forEach(item => item.classList.remove('active'));
+  element.classList.add('active');
+  closeMobileSidebar();
+}
+
+function setLanguage(lang) {
+  currentLang = lang;
+  document.querySelectorAll('.lang-btn').forEach(btn => btn.classList.remove('active'));
+  document.querySelector(`[data-lang="${lang}"]`).classList.add('active');
+}
+
+function displayCrops() {
+  const grid = document.getElementById('cropsGrid');
+  grid.innerHTML = crops.map(crop => `
+    <div class="crop-card">
+      <div class="crop-emoji">${crop.emoji}</div>
+      <div class="crop-name">${crop.name}</div>
+      <div class="crop-description">${crop.description}</div>
+      <div class="crop-details">
+        <div class="detail-tag">🌍 ${crop.season}</div>
+        <div class="detail-tag">💧 ${crop.waterNeeded}</div>
+        <div class="detail-tag">📅 ${crop.daysToMaturity}d</div>
+      </div>
+      <div class="crop-score">
+        <span class="score-label">Suitability</span>
+        <div class="score-bar">
+          <div class="score-fill" style="width: ${crop.yield}%"></div>
+        </div>
+        <span class="score-label">${crop.yield}%</span>
+      </div>
+      <button class="crop-button" onclick="selectCrop('${crop.name}')">Learn More</button>
+    </div>
+  `).join('');
+}
+
+function selectCrop(cropName) {
+  const chatWindow = document.getElementById('chat-window');
+  addBubble(`You selected ${cropName}. Tell me more about planting this crop.`, 'user');
+  addBubble(`Great choice! ${cropName} is excellent for your region. Here's what you need to know...`, 'bot');
+  document.getElementById('crops-section').style.display = 'none';
+  chatWindow.style.display = 'flex';
+}
+
+function addBubble(text, role) {
+  const chatWindow = document.getElementById('chat-window');
+  const row = document.createElement('div');
+  row.className = `bubble-row ${role}`;
+  row.innerHTML = `<div class="avatar">${role === 'bot' ? '🌾' : '👨🌾'}</div><div class="bubble">${text}</div>`;
+  chatWindow.appendChild(row);
+  chatWindow.scrollTop = chatWindow.scrollHeight;
+}
+
+function newChat() {
+  document.getElementById('chat-window').innerHTML = '';
+  document.getElementById('crops-section').style.display = 'block';
+  addBubble('Welcome! Let me show you the best crops for your farm.', 'bot');
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  displayCrops();
+  addBubble('Welcome to Fahamu Shamba! How can I assist you today?', 'bot');
+  
+  document.getElementById('send-btn').addEventListener('click', () => {
+    const input = document.getElementById('user-input');
+    if (input.value.trim()) {
+      addBubble(input.value, 'user');
+      input.value = '';
+      setTimeout(() => addBubble('I understand. Let me help you with that...', 'bot'), 500);
+    }
+  });
+  
+  document.getElementById('user-input').addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') document.getElementById('send-btn').click();
+  });
+});
+</script>
+
+</body>
+</html>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <meta name="description" content="Fahamu Shamba AI - Intelligent AI-powered farming assistant providing personalized crop recommendations, weather insights, pest management, and market prices for African farmers."/>
 <title>WELCOME FAHAMU-SHAMBA_ASSISTANT</title>
 <style>
