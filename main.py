@@ -22,6 +22,13 @@ GROQ_API_KEY = os.environ.get("GROQ_API_KEY")
 OPENWEATHER_API_KEY = os.environ.get("OPENWEATHER_API_KEY")
 MARKET_API_URL = os.environ.get("MARKET_API_URL")
 MARKET_API_KEY = os.environ.get("MARKET_API_KEY")
+KMD_API_URL = os.environ.get("KMD_API_URL", "")
+KMD_API_KEY = os.environ.get("KMD_API_KEY", "")
+NASA_POWER_API_URL = os.environ.get("NASA_POWER_API_URL", "https://power.larc.nasa.gov/api/temporal/daily/point")
+KNBS_MARKET_API_URL = os.environ.get("KNBS_MARKET_API_URL", "")
+KNBS_API_KEY = os.environ.get("KNBS_API_KEY", "")
+MINISTRY_MARKET_API_URL = os.environ.get("MINISTRY_MARKET_API_URL", "")
+MINISTRY_MARKET_API_KEY = os.environ.get("MINISTRY_MARKET_API_KEY", "")
 VOICE_PHONE_NUMBER = os.environ.get("VOICE_PHONE_NUMBER", "")
 
 if not OPENAI_API_KEY and not GROQ_API_KEY:
@@ -90,35 +97,58 @@ def get_client():
     return Groq(api_key=GROQ_API_KEY)
 
 
+def fetch_json(url: str, timeout: int = 15, headers: dict | None = None) -> dict | list | None:
+    request = urllib.request.Request(url, headers=headers or {})
+    with urllib.request.urlopen(request, timeout=timeout) as resp:
+        return json.load(resp)
+
+
 def geocode_location(location: str) -> dict | None:
     if not OPENWEATHER_API_KEY or not location:
         return None
     try:
         query = urllib.parse.urlencode({"q": location, "limit": 1, "appid": OPENWEATHER_API_KEY})
         url = f"https://api.openweathermap.org/geo/1.0/direct?{query}"
-        with urllib.request.urlopen(url, timeout=15) as resp:
-            data = json.load(resp)
-            if isinstance(data, list) and data:
-                return data[0]
+        data = fetch_json(url, timeout=15)
+        if isinstance(data, list) and data:
+            return data[0]
     except Exception as e:
         logger.warning("Geocoding failed for %s: %s", location, sanitize(str(e)))
     return None
 
 
-def fetch_weather(location: str) -> dict | None:
-    geo = geocode_location(location)
-    if not geo:
+def reverse_geocode(lat: float, lon: float) -> dict | None:
+    if not OPENWEATHER_API_KEY:
         return None
     try:
         query = urllib.parse.urlencode({
-            "lat": geo.get("lat"),
-            "lon": geo.get("lon"),
+            "lat": lat,
+            "lon": lon,
+            "limit": 1,
+            "appid": OPENWEATHER_API_KEY,
+        })
+        url = f"https://api.openweathermap.org/geo/1.0/reverse?{query}"
+        data = fetch_json(url, timeout=15)
+        if isinstance(data, list) and data:
+            return data[0]
+    except Exception as e:
+        logger.warning("Reverse geocoding failed for %.4f, %.4f: %s", lat, lon, sanitize(str(e)))
+    return None
+
+
+def fetch_openweather(lat: float, lon: float, location: str) -> dict | None:
+    if not OPENWEATHER_API_KEY:
+        return None
+    try:
+        query = urllib.parse.urlencode({
+            "lat": lat,
+            "lon": lon,
             "units": "metric",
             "appid": OPENWEATHER_API_KEY,
         })
         url = f"https://api.openweathermap.org/data/2.5/weather?{query}"
-        with urllib.request.urlopen(url, timeout=15) as resp:
-            data = json.load(resp)
+        data = fetch_json(url, timeout=15)
+        if isinstance(data, dict):
             return {
                 "source": "OpenWeather",
                 "location": location,
@@ -131,21 +161,107 @@ def fetch_weather(location: str) -> dict | None:
                 "clouds": data.get("clouds", {}).get("all"),
             }
     except Exception as e:
-        logger.warning("Weather fetch failed for %s: %s", location, sanitize(str(e)))
+        logger.warning("OpenWeather fetch failed for %s: %s", location, sanitize(str(e)))
     return None
 
 
-def get_market_data() -> dict:
-    if MARKET_API_URL and MARKET_API_KEY:
+def fetch_nasa_power(lat: float, lon: float) -> dict | None:
+    try:
+        today = datetime.now(timezone.utc).strftime("%Y%m%d")
+        query = urllib.parse.urlencode({
+            "parameters": "T2M,PRECTOTCORR,RH2M,WS2M",
+            "community": "AG",
+            "longitude": lon,
+            "latitude": lat,
+            "start": today,
+            "end": today,
+            "format": "JSON",
+        })
+        url = f"{NASA_POWER_API_URL}?{query}"
+        data = fetch_json(url, timeout=20)
+        if not isinstance(data, dict):
+            return None
+        params = data.get("properties", {}).get("parameter", {})
+        return {
+            "source": "NASA POWER",
+            "temperature_c": next(iter(params.get("T2M", {}).values()), None),
+            "precipitation_mm": next(iter(params.get("PRECTOTCORR", {}).values()), None),
+            "humidity": next(iter(params.get("RH2M", {}).values()), None),
+            "wind_speed_m_s": next(iter(params.get("WS2M", {}).values()), None),
+        }
+    except Exception as e:
+        logger.warning("NASA POWER fetch failed for %.4f, %.4f: %s", lat, lon, sanitize(str(e)))
+    return None
+
+
+def fetch_kmd_weather(lat: float, lon: float, county: str) -> dict | None:
+    if not KMD_API_URL:
+        return None
+    try:
+        query = urllib.parse.urlencode({"lat": lat, "lon": lon, "county": county})
+        headers = {"Authorization": f"Bearer {KMD_API_KEY}"} if KMD_API_KEY else {}
+        data = fetch_json(f"{KMD_API_URL}?{query}", timeout=20, headers=headers)
+        if isinstance(data, dict):
+            data["source"] = data.get("source") or "Kenya Meteorological Department"
+            return data
+    except Exception as e:
+        logger.warning("KMD weather fetch failed for %s: %s", county, sanitize(str(e)))
+    return None
+
+
+def fetch_weather(location: str, county: str = "", lat: float | None = None, lon: float | None = None) -> dict | None:
+    geo = None
+    if lat is None or lon is None:
+        geo = geocode_location(location)
+        if not geo:
+            return None
+        lat = geo.get("lat")
+        lon = geo.get("lon")
+    if lat is None or lon is None:
+        return None
+    location_label = location or county or "Kenya"
+    kmd_data = fetch_kmd_weather(lat, lon, county or location_label)
+    openweather_data = fetch_openweather(lat, lon, location_label)
+    nasa_data = fetch_nasa_power(lat, lon)
+    if not any([kmd_data, openweather_data, nasa_data]):
+        return None
+    return {
+        "location": location_label,
+        "latitude": lat,
+        "longitude": lon,
+        "sources": [v for v in [kmd_data, openweather_data, nasa_data] if v],
+        "current": kmd_data or openweather_data or nasa_data,
+        "openweather": openweather_data,
+        "nasa_power": nasa_data,
+        "kmd": kmd_data,
+    }
+
+
+def get_market_data(county: str = "", sublocation: str = "") -> dict:
+    params = {"county": county, "sublocation": sublocation}
+    external_sources = [
+        ("ministry", MINISTRY_MARKET_API_URL, MINISTRY_MARKET_API_KEY),
+        ("knbs", KNBS_MARKET_API_URL, KNBS_API_KEY),
+        ("market", MARKET_API_URL, MARKET_API_KEY),
+    ]
+    for source_name, base_url, api_key in external_sources:
+        if not base_url:
+            continue
         try:
-            query = urllib.parse.urlencode({"apikey": MARKET_API_KEY})
-            url = f"{MARKET_API_URL}?{query}"
-            with urllib.request.urlopen(url, timeout=15) as resp:
-                data = json.load(resp)
-                if isinstance(data, dict):
-                    return {"source": "external", "timestamp": datetime.now(timezone.utc).isoformat(), "prices": data}
+            query_data = {k: v for k, v in params.items() if v}
+            if api_key:
+                query_data["apikey"] = api_key
+            query = urllib.parse.urlencode(query_data)
+            url = f"{base_url}?{query}" if query else base_url
+            data = fetch_json(url, timeout=15)
+            if isinstance(data, dict):
+                return {
+                    "source": source_name,
+                    "timestamp": datetime.now(timezone.utc).isoformat(),
+                    "prices": data,
+                }
         except Exception as e:
-            logger.warning("External market fetch failed: %s", sanitize(str(e)))
+            logger.warning("%s market fetch failed: %s", source_name, sanitize(str(e)))
     return {
         "source": "internal",
         "timestamp": datetime.now(timezone.utc).isoformat(),
@@ -375,6 +491,8 @@ class ChatRequest(BaseModel):
     context:     str  = "general"
     language:    str  = "en"
     village:     str  = ""
+    latitude:    float | None = None
+    longitude:   float | None = None
 
     @field_validator("message")
     @classmethod
@@ -417,6 +535,11 @@ class ChatRequest(BaseModel):
     def validate_language(cls, v):
         return v if v in ALLOWED_LANGUAGES else "en"
 
+    @field_validator("latitude", "longitude")
+    @classmethod
+    def validate_coordinates(cls, v):
+        return v if v is None else float(v)
+
 # ── ENDPOINTS ─────────────────────────────────────────────────────────────────
 @app.get("/health")
 async def health():
@@ -427,6 +550,7 @@ async def app_config():
     return {
         "voice_number": VOICE_PHONE_NUMBER,
         "voice_call_enabled": bool(VOICE_PHONE_NUMBER),
+        "geolocation_enabled": True,
     }
 
 @app.post("/chat")
@@ -440,16 +564,22 @@ async def chat(req: ChatRequest, request: Request):
     msg_lower = req.message.lower()
 
     weather_data = None
-    market_data = get_market_data()
+    market_data = get_market_data(req.county, req.sublocation)
 
     if req.county:
         location_text = f"{req.sublocation}, {req.county}".strip(', ')
+        if (req.latitude is not None and req.longitude is not None) and not req.sublocation:
+            reverse_geo = reverse_geocode(req.latitude, req.longitude)
+            if reverse_geo:
+                location_text = f"{reverse_geo.get('name', req.county)}, {req.county}"
         context_data = {
             "location":       location_text,
             "village":        req.village or "Unknown",
             "county":         req.county,
             "sublocation":    req.sublocation,
-            "weather_data":   fetch_weather(location_text),
+            "latitude":       req.latitude,
+            "longitude":      req.longitude,
+            "weather_data":   fetch_weather(location_text, req.county, req.latitude, req.longitude),
             "market_data":    market_data,
         }
         weather_data = context_data["weather_data"]
