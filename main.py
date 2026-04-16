@@ -22,6 +22,7 @@ GROQ_API_KEY = os.environ.get("GROQ_API_KEY")
 OPENWEATHER_API_KEY = os.environ.get("OPENWEATHER_API_KEY")
 MARKET_API_URL = os.environ.get("MARKET_API_URL")
 MARKET_API_KEY = os.environ.get("MARKET_API_KEY")
+VOICE_PHONE_NUMBER = os.environ.get("VOICE_PHONE_NUMBER", "")
 
 if not OPENAI_API_KEY and not GROQ_API_KEY:
     raise RuntimeError("OPENAI_API_KEY or GROQ_API_KEY must be set. App cannot start.")
@@ -420,6 +421,13 @@ class ChatRequest(BaseModel):
 @app.get("/health")
 async def health():
     return {"status": "ok"}
+
+@app.get("/app-config")
+async def app_config():
+    return {
+        "voice_number": VOICE_PHONE_NUMBER,
+        "voice_call_enabled": bool(VOICE_PHONE_NUMBER),
+    }
 
 @app.post("/chat")
 async def chat(req: ChatRequest, request: Request):
