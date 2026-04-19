@@ -162,6 +162,20 @@ button{border:0;background:none;color:inherit}
   gap:10px;
   margin-top:18px;
 }
+.function-list{
+  display:grid;
+  gap:8px;
+  margin-top:18px;
+}
+.function-chip{
+  padding:10px 12px;
+  border-radius:14px;
+  background:rgba(63,107,62,.08);
+  border:1px solid rgba(63,107,62,.14);
+  color:var(--green-deep);
+  font-size:.88rem;
+  font-weight:600;
+}
 .subbtn{
   padding:12px 14px;
   border-radius:14px;
@@ -262,7 +276,7 @@ button{border:0;background:none;color:inherit}
   font-variant-numeric:tabular-nums;
 }
 .stack{
-  padding:12px 6px 0;
+  padding:8px 6px 0;
   flex-shrink:0;
 }
 .brand{
@@ -308,7 +322,7 @@ button{border:0;background:none;color:inherit}
 }
 .assistant{
   width:max-content;
-  margin:12px auto 0;
+  margin:8px auto 0;
   display:flex;
   align-items:center;
   gap:8px;
@@ -320,15 +334,15 @@ button{border:0;background:none;color:inherit}
   font-weight:700;
 }
 .hero-q{
-  margin-top:12px;
+  margin-top:9px;
   text-align:center;
   font-family:var(--display);
-  font-size:clamp(1.7rem, 3vw, 2.35rem);
+  font-size:clamp(1.55rem, 2.6vw, 2.05rem);
   line-height:1.06;
   letter-spacing:-.04em;
 }
 .hero-note{
-  margin-top:8px;
+  margin-top:6px;
   text-align:center;
   color:var(--muted);
   font-size:.95rem;
@@ -354,6 +368,7 @@ button{border:0;background:none;color:inherit}
   display:grid;
   grid-template-columns:repeat(2, minmax(0, 1fr));
   gap:10px;
+  margin-top:2px;
 }
 .prompt{
   min-height:58px;
@@ -636,10 +651,17 @@ button{border:0;background:none;color:inherit}
         <h1>Direct farm advice without a login wall.</h1>
         <p class="lead">Open the project and go straight into the chatbot. Weather, market prices, crop recommendations, pest guidance, and profile tools stay available, with a calmer farm-inspired interface that gives the conversation more room.</p>
         <div class="badge-row">
-          <div class="badge">Crop recommendations</div>
+          <div class="badge">Twilio voice access</div>
           <div class="badge">Live weather by location</div>
           <div class="badge">Market prices</div>
-          <div class="badge">Pest and crop advisory</div>
+          <div class="badge">Soil-aware crop advice</div>
+        </div>
+        <div class="function-list">
+          <div class="function-chip">🌾 Best Crop</div>
+          <div class="function-chip">☀️ Weather</div>
+          <div class="function-chip">🐛 Pests</div>
+          <div class="function-chip">📈 Market Prices</div>
+          <div class="function-chip">📊 Report Yields</div>
         </div>
       </div>
 
@@ -702,7 +724,7 @@ button{border:0;background:none;color:inherit}
               <button class="subbtn" type="button" onclick="newChat()">New chat</button>
               <button class="subbtn secondary" type="button" onclick="clearStoredProfile()">Clear saved profile</button>
               <div class="voice-call" id="voice-call-box">
-                <span id="voice-call-label">Phone consultation</span>
+                <span id="voice-call-label">Twilio phone consultation</span>
                 <a id="voice-call-link" href="#" target="_self">Call now</a>
               </div>
             </div>
@@ -735,6 +757,9 @@ button{border:0;background:none;color:inherit}
               </button>
               <button class="prompt" type="button" data-context="market" data-prompt="Show me current market prices and the best time to sell my produce.">
                 <span class="ico">4</span><span>Check market prices and demand</span>
+              </button>
+              <button class="prompt" type="button" data-context="general" data-prompt="Help me report yields from my farm and explain what the harvest means for next season planning, soil care, and selling strategy.">
+                <span class="ico">5</span><span>Report yields and next steps</span>
               </button>
             </div>
           </div>
@@ -1472,7 +1497,7 @@ function newChat() {
   state.context = "general";
   clearAttachment();
   closePanel();
-  bubble("Welcome to Fahamu Shamba. Ask about crops, weather, pests, market prices, or your farm profile.", "bot");
+  bubble("Welcome to Fahamu Shamba. Ask about crops, weather, pests, market prices, yields, or your farm profile. You can also call the Twilio voice line for hands-free support.", "bot");
 }
 
 async function loadAppConfig() {
@@ -1485,7 +1510,7 @@ async function loadAppConfig() {
     const number = state.appConfig.voice_number;
     if (number) {
       $("#voice-call-link").href = `tel:${number}`;
-      $("#voice-call-label").textContent = `Phone consultation: ${number}`;
+      $("#voice-call-label").textContent = `Twilio phone consultation: ${number}`;
       $("#voice-call-box").classList.add("show");
     }
     ensureGeolocation();
@@ -1498,7 +1523,7 @@ async function ask(message, contextOverride) {
   const sublocation = profile.subcounty;
   const detectedLanguage = detectConversationLanguage(message);
   setCurrentLanguage(detectedLanguage);
-  const profileNote = `Farmer profile context: county ${profile.county}; subcounty ${profile.subcounty}; soil type ${profile.soilType}.`;
+  const profileNote = `Farmer profile context: county ${profile.county}; subcounty ${profile.subcounty}; soil selection ${profile.soilSelection}; resolved soil type ${profile.soilType}.`;
   const response = await fetch("/chat", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -1509,6 +1534,7 @@ async function ask(message, contextOverride) {
       sublocation,
       context: contextOverride || state.context,
       language: detectedLanguage,
+      soil_type: profile.soilSelection,
       latitude: profile.latitude ?? state.geo?.latitude ?? null,
       longitude: profile.longitude ?? state.geo?.longitude ?? null
     })

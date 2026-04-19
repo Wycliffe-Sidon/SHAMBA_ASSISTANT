@@ -10,7 +10,8 @@ from collections import namedtuple
 from datetime import datetime, timezone
 
 import openai
-from fastapi import FastAPI, Form, Request
+from fastapi import FastAPI, Form, Request, WebSocket, WebSocketDisconnect
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse, JSONResponse, PlainTextResponse, Response
 from fastapi.staticfiles import StaticFiles
 from groq import Groq
@@ -29,7 +30,9 @@ KNBS_MARKET_API_URL = os.environ.get("KNBS_MARKET_API_URL", "")
 KNBS_API_KEY = os.environ.get("KNBS_API_KEY", "")
 MINISTRY_MARKET_API_URL = os.environ.get("MINISTRY_MARKET_API_URL", "")
 MINISTRY_MARKET_API_KEY = os.environ.get("MINISTRY_MARKET_API_KEY", "")
-VOICE_PHONE_NUMBER = os.environ.get("VOICE_PHONE_NUMBER", "")
+VOICE_PHONE_NUMBER = os.environ.get("VOICE_PHONE_NUMBER", "+13204313553")
+PUBLIC_BASE_URL = os.environ.get("PUBLIC_BASE_URL", "")
+TWILIO_CONVERSATION_RELAY_ENABLED = os.environ.get("TWILIO_CONVERSATION_RELAY_ENABLED", "true").lower() == "true"
 
 if not OPENAI_API_KEY and not GROQ_API_KEY:
     raise RuntimeError("OPENAI_API_KEY or GROQ_API_KEY must be set. App cannot start.")
@@ -41,6 +44,13 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 app = FastAPI()
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
 # ── IN-MEMORY STORES ──────────────────────────────────────────────────────────
@@ -79,8 +89,18 @@ def detect_language(text: str) -> str:
         'nunua','nini','vipi','wapi','lini','ndiyo','hapana','asante',
         'tafadhali','saidia','nataka','nina','ninataka'
     }
-    count = sum(1 for w in sw_words if w in text.lower())
-    return 'sw' if count >= 2 else 'en'
+    luo_words = {
+        'ber','puonj','cham','pacho','ngima','chiemo','dala','koth',
+        'puodho','yath','kinde','mor','iyie','wan'
+    }
+    lowered = text.lower()
+    sw_count = sum(1 for w in sw_words if w in lowered)
+    luo_count = sum(1 for w in luo_words if w in lowered)
+    if luo_count >= 2:
+        return 'luo'
+    if sw_count >= 2:
+        return 'sw'
+    return 'en'
 
 def extract_farmer_name(text: str):
     patterns = [
@@ -95,6 +115,53 @@ def extract_farmer_name(text: str):
 
 def get_client():
     return Groq(api_key=GROQ_API_KEY)
+
+
+def normalize_soil_selection(soil_type: str, county: str) -> tuple[dict, str]:
+    county_soil = SOIL_DATA.get(county, {"type":"Loam","ph":6.5,"fertility":"Medium","drainage":"Good"})
+    if not soil_type or soil_type.lower() in {"unknown", "auto", "i do not know", "use location soil map"}:
+        return county_soil, "county_soil_map"
+    return {
+        "type": soil_type,
+        "ph": county_soil["ph"],
+        "fertility": county_soil["fertility"],
+        "drainage": county_soil["drainage"],
+    }, "farmer_selected"
+
+
+def to_twilio_lang(language: str) -> str:
+    return {"en": "en-US", "sw": "sw-KE", "luo": "en-KE"}.get(language, "en-US")
+
+
+def from_twilio_lang(language: str) -> str:
+    lowered = (language or "").lower()
+    if lowered.startswith("sw"):
+        return "sw"
+    if lowered.startswith("luo") or lowered == "x-luo":
+        return "luo"
+    return "en"
+
+
+def build_public_base_url(request: Request) -> str:
+    if PUBLIC_BASE_URL:
+        return PUBLIC_BASE_URL.rstrip("/")
+    forwarded_proto = request.headers.get("x-forwarded-proto")
+    scheme = forwarded_proto or request.url.scheme
+    host = request.headers.get("x-forwarded-host") or request.headers.get("host") or request.url.netloc
+    return f"{scheme}://{host}".rstrip("/")
+
+
+def build_ws_url(request: Request, path: str) -> str:
+    base = build_public_base_url(request)
+    if base.startswith("https://"):
+        ws_base = "wss://" + base[len("https://"):]
+    elif base.startswith("http://"):
+        ws_base = "ws://" + base[len("http://"):]
+    elif base.startswith(("ws://", "wss://")):
+        ws_base = base
+    else:
+        ws_base = f"wss://{base}"
+    return f"{ws_base.rstrip('/')}{path}"
 
 
 def fetch_json(url: str, timeout: int = 15, headers: dict | None = None) -> dict | list | None:
@@ -378,8 +445,8 @@ def calculate_crop_score(crop_name, crop_data, soil_info, season):
 
 CropResult = namedtuple("CropResult", ["recommendations","soil","season","season_desc"])
 
-def get_crop_recommendations(county: str, sublocation: str) -> CropResult:
-    soil   = SOIL_DATA.get(county, {"type":"Loam","ph":6.5,"fertility":"Medium","drainage":"Good"})
+def get_crop_recommendations(county: str, sublocation: str, soil_type: str = "") -> CropResult:
+    soil, _ = normalize_soil_selection(soil_type, county)
     season, season_desc = get_current_season()
     recs = []
     for name, data in CROP_DATABASE.items():
@@ -393,6 +460,49 @@ def get_crop_recommendations(county: str, sublocation: str) -> CropResult:
         })
     recs.sort(key=lambda x: x["score"], reverse=True)
     return CropResult(recs[:3], soil, season, season_desc)
+
+
+def build_farming_context(
+    county: str,
+    sublocation: str,
+    latitude: float | None = None,
+    longitude: float | None = None,
+    village: str = "",
+    soil_type: str = "",
+) -> tuple[dict | None, list | None]:
+    if not county:
+        return None, None
+
+    location_text = f"{sublocation}, {county}".strip(", ")
+    if (latitude is not None and longitude is not None) and not sublocation:
+        reverse_geo = reverse_geocode(latitude, longitude)
+        if reverse_geo:
+            location_text = f"{reverse_geo.get('name', county)}, {county}"
+
+    weather_data = fetch_weather(location_text, county, latitude, longitude)
+    market_data = get_market_data(county, sublocation)
+    soil_info, soil_source = normalize_soil_selection(soil_type, county)
+    recommendations = get_crop_recommendations(county, sublocation, soil_type)
+
+    context_data = {
+        "location": location_text,
+        "village": village or "Unknown",
+        "county": county,
+        "sublocation": sublocation,
+        "latitude": latitude,
+        "longitude": longitude,
+        "soil_data": soil_info,
+        "soil_source": soil_source,
+        "weather_data": weather_data,
+        "market_data": market_data,
+        "current_season": recommendations.season,
+        "season_desc": recommendations.season_desc,
+        "top_3_crops": [
+            {"rank": i + 1, "name": rec["name"], "score": rec["score"], "details": rec["detail"]}
+            for i, rec in enumerate(recommendations.recommendations)
+        ],
+    }
+    return context_data, recommendations.recommendations
 
 # ── SYSTEM PROMPT ─────────────────────────────────────────────────────────────
 SYSTEM_PROMPT = """You are "Fahamu Shamba," an AI agricultural assistant for Kenyan farmers.
@@ -491,6 +601,7 @@ class ChatRequest(BaseModel):
     context:     str  = "general"
     language:    str  = "en"
     village:     str  = ""
+    soil_type:   str  = ""
     latitude:    float | None = None
     longitude:   float | None = None
 
@@ -525,6 +636,11 @@ class ChatRequest(BaseModel):
     def validate_village(cls, v):
         return v.strip()[:100]
 
+    @field_validator("soil_type")
+    @classmethod
+    def validate_soil_type(cls, v):
+        return v.strip()[:100]
+
     @field_validator("context")
     @classmethod
     def validate_context(cls, v):
@@ -551,6 +667,8 @@ async def app_config():
         "voice_number": VOICE_PHONE_NUMBER,
         "voice_call_enabled": bool(VOICE_PHONE_NUMBER),
         "geolocation_enabled": True,
+        "twilio_conversation_relay_enabled": TWILIO_CONVERSATION_RELAY_ENABLED,
+        "rest_api_enabled": True,
     }
 
 @app.post("/chat")
@@ -562,43 +680,24 @@ async def chat(req: ChatRequest, request: Request):
     context_data  = None
     recommendations = None
     msg_lower = req.message.lower()
-
-    weather_data = None
-    market_data = get_market_data(req.county, req.sublocation)
-
     if req.county:
-        location_text = f"{req.sublocation}, {req.county}".strip(', ')
-        if (req.latitude is not None and req.longitude is not None) and not req.sublocation:
-            reverse_geo = reverse_geocode(req.latitude, req.longitude)
-            if reverse_geo:
-                location_text = f"{reverse_geo.get('name', req.county)}, {req.county}"
-        context_data = {
-            "location":       location_text,
-            "village":        req.village or "Unknown",
-            "county":         req.county,
-            "sublocation":    req.sublocation,
-            "latitude":       req.latitude,
-            "longitude":      req.longitude,
-            "weather_data":   fetch_weather(location_text, req.county, req.latitude, req.longitude),
-            "market_data":    market_data,
-        }
-        weather_data = context_data["weather_data"]
+        context_data, recommendations = build_farming_context(
+            county=req.county,
+            sublocation=req.sublocation,
+            latitude=req.latitude,
+            longitude=req.longitude,
+            village=req.village,
+            soil_type=req.soil_type,
+        )
 
     if req.context == "crops" or any(k in msg_lower for k in ["best crop","what to plant","recommend","top 3","mazao","panda","kilimo","crop"]):
-        if req.county:
-            result = get_crop_recommendations(req.county, req.sublocation)
-            recommendations = result.recommendations
+        if req.county and context_data:
+            soil_data = context_data.get("soil_data") or {}
             context_data.update({
-                "soil_type":      result.soil["type"],
-                "soil_ph":        result.soil["ph"],
-                "soil_fertility": result.soil["fertility"],
-                "soil_drainage":  result.soil["drainage"],
-                "current_season": result.season,
-                "season_desc":    result.season_desc,
-                "top_3_crops": [
-                    {"rank": i+1, "name": r["name"], "score": r["score"], "details": r["detail"]}
-                    for i, r in enumerate(result.recommendations)
-                ],
+                "soil_type": soil_data.get("type"),
+                "soil_ph": soil_data.get("ph"),
+                "soil_fertility": soil_data.get("fertility"),
+                "soil_drainage": soil_data.get("drainage"),
             })
 
     reply = ask_ai(req.message, req.session_id, context_data, req.context, req.language)
@@ -649,8 +748,25 @@ async def ussd(
     return f"END {advice[:160]}"
 
 @app.post("/voice/incoming")
-async def voice_incoming():
-    """Twilio voice call entry point — greet and prompt the farmer."""
+async def voice_incoming(request: Request):
+    if TWILIO_CONVERSATION_RELAY_ENABLED:
+        relay_url = build_ws_url(request, "/voice/relay")
+        action_url = f"{build_public_base_url(request)}/voice/connect-action"
+        twiml = f"""<?xml version="1.0" encoding="UTF-8"?>
+<Response>
+  <Connect action="{html.escape(action_url)}" method="POST">
+    <ConversationRelay
+      url="{html.escape(relay_url)}"
+      welcomeGreeting="Welcome to Fahamu Shamba on +1 320 431 3553. Ask about crops, weather, pests, market prices, or yields."
+      welcomeGreetingInterruptible="speech"
+      interruptible="speech"
+      language="en-US"
+      ttsProvider="Google">
+      <Parameter name="assistant" value="fahamu-shamba" />
+    </ConversationRelay>
+  </Connect>
+</Response>"""
+        return Response(content=twiml, media_type="application/xml")
     twiml = """<?xml version="1.0" encoding="UTF-8"?>
 <Response>
   <Say voice="alice" language="en-KE">
@@ -663,6 +779,16 @@ async def voice_incoming():
     <Say voice="alice" language="en-KE">Go ahead, I am listening.</Say>
   </Gather>
   <Say voice="alice" language="en-KE">I did not hear anything. Please call again. Goodbye.</Say>
+</Response>"""
+    return Response(content=twiml, media_type="application/xml")
+
+
+@app.post("/voice/connect-action")
+async def voice_connect_action():
+    twiml = """<?xml version="1.0" encoding="UTF-8"?>
+<Response>
+  <Say voice="alice" language="en-KE">Thank you for calling Fahamu Shamba. Goodbye and happy farming.</Say>
+  <Hangup />
 </Response>"""
     return Response(content=twiml, media_type="application/xml")
 
@@ -709,6 +835,50 @@ async def voice_respond(
   <Say voice="alice" language="{voice_lang}">Thank you for using Fahamu Shamba. Goodbye and happy farming!</Say>
 </Response>"""
     return Response(content=twiml, media_type="application/xml")
+
+
+@app.websocket("/voice/relay")
+async def voice_relay(websocket: WebSocket):
+    await websocket.accept()
+    session_id = "voice_default"
+    try:
+        while True:
+            payload = await websocket.receive_text()
+            message = json.loads(payload)
+            msg_type = message.get("type", "")
+
+            if msg_type == "setup":
+                call_sid = re.sub(r"[^a-zA-Z0-9_\-]", "", message.get("callSid", "voice_default"))[:80]
+                session_id = f"voice_{call_sid or 'default'}"
+                continue
+
+            if msg_type == "interrupt":
+                logger.info("Caller interrupted voice playback for %s", session_id)
+                continue
+
+            if msg_type == "prompt":
+                spoken = (message.get("voicePrompt") or "").strip()[:MAX_MESSAGE_LEN]
+                if not spoken:
+                    continue
+                language = from_twilio_lang(message.get("lang", "")) or detect_language(spoken)
+                reply = ask_ai(spoken, session_id, tab_context="general", language=language)
+                voice_reply = re.sub(r"[*_#`>\.]{1,3}", "", reply).strip()[:700]
+                await websocket.send_text(json.dumps({
+                    "type": "text",
+                    "token": voice_reply,
+                    "last": True,
+                    "interruptible": True,
+                    "preemptible": True,
+                    "lang": to_twilio_lang(language),
+                }))
+                continue
+
+            if msg_type == "error":
+                logger.warning("ConversationRelay error for %s: %s", session_id, sanitize(message.get("description", "")))
+    except WebSocketDisconnect:
+        logger.info("ConversationRelay socket closed for %s", session_id)
+    except Exception as exc:
+        logger.exception("ConversationRelay socket failure for %s: %s", session_id, sanitize(str(exc)))
 
 
 @app.get("/", response_class=HTMLResponse)
