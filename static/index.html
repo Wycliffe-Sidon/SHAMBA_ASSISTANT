@@ -2,191 +2,767 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Fahamu Shamba</title>
 <style>
-:root{--txt:#f7eef3;--muted:rgba(247,238,243,.72);--glass:rgba(255,255,255,.08);--line:rgba(255,255,255,.16);--shadow:0 24px 70px rgba(8,9,20,.45);--display:"Segoe UI",sans-serif;--body:"Segoe UI",sans-serif}*{box-sizing:border-box;margin:0;padding:0}body{font-family:var(--body);color:var(--txt);background:radial-gradient(circle at 10% 8%,rgba(255,255,255,.45),transparent 18%),radial-gradient(circle at 90% 92%,rgba(60,129,255,.28),transparent 22%),linear-gradient(135deg,#ddd5de 0,#191945 36%,#5d173d 68%,#c91f2f 100%);min-height:100vh}button,input,select{font:inherit}button{border:0;background:none;color:inherit}.page{display:none;min-height:100vh;width:100%}.page.active{display:flex}.auth{padding:22px;align-items:center;justify-content:center}.auth-shell{width:min(1080px,100%);display:grid;grid-template-columns:1.1fr .9fr;gap:24px}.glass{border:1px solid var(--line);border-radius:30px;background:linear-gradient(180deg,rgba(13,15,40,.8),rgba(100,20,53,.45));backdrop-filter:blur(16px);box-shadow:var(--shadow)}.hero{padding:34px;display:flex;flex-direction:column;justify-content:space-between}.pill{display:inline-flex;gap:8px;align-items:center;padding:10px 14px;border-radius:999px;border:1px solid var(--line);background:var(--glass);color:var(--muted);font-size:.9rem}.hero h1,.phone-title,.hero-q{font-family:var(--display);letter-spacing:-.05em}.hero h1{font-size:clamp(2.3rem,4vw,4rem);line-height:.96;margin-top:18px}.hero p,.desc{margin-top:16px;color:var(--muted);line-height:1.7}.badge-row{display:flex;flex-wrap:wrap;gap:10px;margin-top:20px}.badge{padding:10px 14px;border-radius:999px;background:var(--glass);border:1px solid var(--line);font-size:.9rem}.card{padding:28px}.tabs{display:flex;gap:8px;background:rgba(255,255,255,.06);padding:6px;border-radius:16px;margin-bottom:20px}.tab{flex:1;padding:12px;border-radius:12px;cursor:pointer;color:var(--muted)}.tab.active{background:rgba(255,255,255,.1);color:var(--txt)}.form{display:none}.form.active{display:block}.form h2{font-size:2rem;letter-spacing:-.05em}.grid{display:grid;gap:14px;margin-top:18px}.grid.two{grid-template-columns:repeat(2,minmax(0,1fr))}.field{display:grid;gap:6px}.field label{font-size:.84rem;color:var(--muted)}.field input,.field select{padding:14px 15px;border-radius:15px;border:1px solid var(--line);background:rgba(255,255,255,.08);color:var(--txt)}.field input::placeholder{color:rgba(247,238,243,.45)}.row{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:14px;color:var(--muted);font-size:.88rem}.btn{width:100%;margin-top:18px;padding:15px;border-radius:16px;cursor:pointer;background:linear-gradient(135deg,#ff5e7f,#ff8a44);font-weight:700;color:#fff}.dash{padding:18px;align-items:center;justify-content:center}.stage{width:min(1280px,100%);display:grid;grid-template-columns:420px 1fr;gap:26px}.side{padding:30px;display:flex;flex-direction:column;justify-content:space-between}.side h1{font-size:clamp(2.3rem,4vw,4.1rem);line-height:.95;max-width:10ch}.profile{margin-top:26px;padding:18px;border-radius:22px;border:1px solid var(--line);background:var(--glass)}.profile-top{display:flex;gap:14px;align-items:center}.avatar{width:54px;height:54px;border-radius:50%;overflow:hidden;border:1px solid rgba(255,255,255,.2);display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,rgba(255,84,114,.4),rgba(51,99,255,.4));font-weight:700}.avatar img{width:100%;height:100%;object-fit:cover}.name{font-weight:700}.mini{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:12px}.mini div{padding:13px;border-radius:16px;border:1px solid var(--line);background:rgba(255,255,255,.05)}.mini span{display:block;color:var(--muted);font-size:.8rem}.mini strong{display:block;margin-top:7px}.phone{max-width:430px;width:100%;height:min(900px,calc(100vh - 36px));margin:0 auto;padding:10px;border-radius:38px;background:linear-gradient(180deg,rgba(255,255,255,.55),rgba(255,255,255,.12));box-shadow:var(--shadow);position:relative}.phone:before{content:"";position:absolute;inset:12px;border-radius:30px;border:1px solid rgba(255,255,255,.18)}.phone:after{content:"";position:absolute;left:50%;top:8px;transform:translateX(-50%);width:34%;height:22px;border-radius:0 0 18px 18px;background:#111223}.screen{position:relative;height:100%;min-height:0;border-radius:30px;overflow:hidden;background:radial-gradient(circle at 68% 10%,rgba(52,95,255,.46),transparent 23%),radial-gradient(circle at 18% 26%,rgba(255,39,39,.58),transparent 28%),linear-gradient(180deg,#11133a 0,#5c173d 58%,#ca1e30 100%);display:flex;flex-direction:column}.inner{height:100%;min-height:0;padding:22px 14px 14px;display:flex;flex-direction:column;position:relative;z-index:1}.status{display:flex;justify-content:space-between;padding:8px 10px 0;font-size:.78rem}.stack{padding:18px 8px 0;flex-shrink:0}.brand{display:flex;align-items:center;justify-content:space-between;gap:12px}.phone-title{font-size:2rem;font-weight:700}.gear{width:42px;height:42px;border-radius:50%;display:grid;place-items:center;background:var(--glass);border:1px solid rgba(255,255,255,.2);cursor:pointer}.panel{display:none;position:absolute;right:18px;top:115px;width:min(280px,calc(100% - 36px));padding:15px;border-radius:18px;border:1px solid var(--line);background:rgba(14,15,36,.92)}.panel.show{display:grid;gap:10px}.panel p{font-size:.9rem;color:var(--muted);line-height:1.5}.subbtn{padding:12px 14px;border-radius:14px;background:rgba(255,255,255,.08);border:1px solid var(--line);cursor:pointer;text-align:left}.subbtn.out{background:rgba(255,83,114,.14)}.art{width:210px;max-width:70%;margin:18px auto 14px}.assistant{width:max-content;margin:0 auto;display:flex;gap:9px;align-items:center;padding:9px 16px;border-radius:999px;border:1px solid var(--line);background:var(--glass)}.hero-q{text-align:center;font-size:clamp(2rem,4vw,3rem);line-height:1.02;margin-top:16px}.actions{margin-top:18px;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.prompt{min-height:62px;padding:12px 14px;border-radius:18px;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.07);display:flex;gap:10px;align-items:center;cursor:pointer;text-align:left}.prompt.faded{opacity:.42}.ico{width:28px;height:28px;border-radius:50%;display:grid;place-items:center;background:rgba(8,9,26,.28);border:1px solid rgba(255,255,255,.12);flex-shrink:0}.prompt span:last-child{font-size:.86rem;line-height:1.25}.thread{flex:1;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:12px 4px 0;display:flex;flex-direction:column;gap:10px;scrollbar-width:none}.thread::-webkit-scrollbar{width:0;height:0}.msg{display:flex}.msg.user{justify-content:flex-end}.bubble{max-width:86%;padding:12px 14px;border-radius:18px;white-space:pre-wrap;line-height:1.5;font-size:.93rem}.msg.bot .bubble{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12)}.msg.user .bubble{background:linear-gradient(135deg,#ff6a86,#ff8a4a)}.bubble img{display:block;max-width:100%;border-radius:12px;margin-top:10px}.composer-wrap{padding:12px 2px 4px;flex-shrink:0}.composer{display:flex;gap:8px;align-items:center;padding:8px 8px 8px 12px;border-radius:999px;border:1px solid var(--line);background:rgba(18,15,31,.26)}.composer input{flex:1;min-width:0;background:transparent;border:0;outline:0;color:var(--txt)}.composer input::placeholder{color:rgba(247,238,243,.58)}.tool{width:38px;height:38px;border-radius:50%;display:grid;place-items:center;cursor:pointer;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12);flex-shrink:0}.tool.active{background:rgba(255,93,122,.25);border-color:rgba(255,133,133,.45)}.send{width:38px;height:38px;border-radius:50%;display:grid;place-items:center;cursor:pointer;background:linear-gradient(135deg,#ff5d7a,#ff8147);flex-shrink:0}.attach-chip{display:none;align-items:center;justify-content:space-between;gap:12px;margin:0 6px 8px;padding:8px 12px;border-radius:14px;border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.08);font-size:.82rem;color:var(--muted)}.attach-chip.show{display:flex}.attach-chip button{cursor:pointer;color:var(--txt)}.home{width:120px;height:5px;border-radius:999px;margin:10px auto 2px;background:rgba(255,255,255,.84)}.vh{position:absolute;width:1px;height:1px;margin:-1px;overflow:hidden;clip:rect(0,0,0,0)}@media(max-width:1100px){.auth-shell,.stage{grid-template-columns:1fr}.side{max-width:680px;margin:0 auto}}@media(max-width:720px){.auth,.dash{padding:0}.auth-shell{gap:0}.hero,.side{display:none}.card{min-height:100vh;border-radius:0;padding:24px 18px}.grid.two{grid-template-columns:1fr}.phone{height:100vh;max-width:100%;padding:0;border-radius:0;background:transparent;box-shadow:none}.phone:before,.phone:after{display:none}.screen{border-radius:0}}
-</style>
-<style>
-.mini{grid-template-columns:repeat(3,minmax(0,1fr))}
-.stack{flex:0 1 auto;min-height:0;overflow-y:auto;scrollbar-width:none}
-.stack::-webkit-scrollbar{display:none}
-.thread{min-height:140px}
-.composer-wrap{position:sticky;bottom:0;background:linear-gradient(180deg,rgba(17,19,58,0),rgba(58,18,49,.35) 25%,rgba(82,20,49,.75))}
-.composer{align-items:flex-end}
-.composer textarea{flex:1;min-width:0;max-height:120px;min-height:22px;background:transparent;border:0;outline:0;color:var(--txt);resize:none;overflow-y:auto;padding:8px 0 6px;line-height:1.45}
-.composer textarea::placeholder{color:rgba(247,238,243,.58)}
-.tool:disabled{opacity:.4;cursor:not-allowed}
-.voice-call{display:none;align-items:center;justify-content:space-between;gap:10px;margin-top:12px;padding:12px 14px;border-radius:16px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.14)}
-.voice-call.show{display:flex}
-.voice-call a{display:inline-flex;align-items:center;justify-content:center;padding:10px 14px;border-radius:12px;background:linear-gradient(135deg,#ff5d7a,#ff8147);color:#fff;text-decoration:none;font-weight:700}
-.editor-backdrop{display:none;position:fixed;inset:0;background:rgba(5,7,18,.62);backdrop-filter:blur(10px);z-index:40;padding:18px;align-items:center;justify-content:center}
-.editor-backdrop.show{display:flex}
-.editor-card{width:min(520px,100%);max-height:min(90vh,760px);overflow:auto;padding:24px}
-.editor-card h3{font-family:var(--display);font-size:1.6rem;letter-spacing:-.05em}
-.editor-card p{margin-top:8px;color:var(--muted);line-height:1.6}
-.editor-actions{display:flex;gap:10px;margin-top:18px}
-.editor-actions button{flex:1}
-.secondary{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12)}
-.status{font-variant-numeric:tabular-nums}
-.history{margin-top:16px;padding:18px;border-radius:22px;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.05)}
-.history h3{font-size:.95rem;letter-spacing:.04em;text-transform:uppercase;color:var(--muted);margin-bottom:10px}
-.history-list{display:grid;gap:10px;max-height:220px;overflow:auto;scrollbar-width:none}
+:root{
+  --bg:#efe6d0;
+  --bg-deep:#d8c4a0;
+  --panel:#f8f2e4;
+  --panel-strong:#f1e4c8;
+  --card:#fcf8ee;
+  --line:#cdbb98;
+  --ink:#2f2417;
+  --muted:#675842;
+  --green:#3f6b3e;
+  --green-deep:#2f5232;
+  --green-soft:#dae7d2;
+  --brown:#8a6039;
+  --brown-deep:#684623;
+  --beige:#f7edd8;
+  --accent:#c2873c;
+  --user:#577c45;
+  --shadow:0 22px 60px rgba(74, 57, 34, 0.18);
+  --radius:28px;
+  --display:"Trebuchet MS", "Segoe UI", sans-serif;
+  --body:"Segoe UI", Tahoma, sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{
+  font-family:var(--body);
+  color:var(--ink);
+  background:
+    radial-gradient(circle at top left, rgba(255,255,255,.65), transparent 22%),
+    radial-gradient(circle at bottom right, rgba(111,153,93,.2), transparent 24%),
+    linear-gradient(140deg, var(--bg) 0%, #e4d4b3 42%, var(--bg-deep) 100%);
+}
+button,input,select,textarea{font:inherit}
+button{border:0;background:none;color:inherit}
+.page{min-height:100vh;width:100%;display:flex;align-items:center;justify-content:center;padding:18px}
+.glass{
+  background:linear-gradient(180deg, rgba(252,248,238,.96), rgba(245,236,216,.92));
+  border:1px solid rgba(104,70,35,.12);
+  box-shadow:var(--shadow);
+}
+.stage{
+  width:min(1280px, 100%);
+  display:grid;
+  grid-template-columns:390px minmax(0, 1fr);
+  gap:22px;
+}
+.side{
+  border-radius:32px;
+  padding:28px;
+  display:flex;
+  flex-direction:column;
+  justify-content:space-between;
+  min-height:min(940px, calc(100vh - 36px));
+  background:
+    linear-gradient(180deg, rgba(252,248,238,.98), rgba(240,228,201,.94)),
+    linear-gradient(140deg, rgba(63,107,62,.08), rgba(138,96,57,.08));
+}
+.pill{
+  display:inline-flex;
+  align-items:center;
+  gap:8px;
+  padding:10px 15px;
+  border-radius:999px;
+  background:var(--green-soft);
+  border:1px solid rgba(63,107,62,.16);
+  color:var(--green-deep);
+  font-size:.88rem;
+  font-weight:600;
+}
+.side h1{
+  margin-top:16px;
+  font-family:var(--display);
+  font-size:clamp(2.4rem, 4vw, 4rem);
+  line-height:.95;
+  letter-spacing:-.05em;
+}
+.lead{
+  margin-top:16px;
+  color:var(--muted);
+  line-height:1.7;
+  font-size:1rem;
+}
+.badge-row{
+  display:flex;
+  flex-wrap:wrap;
+  gap:10px;
+  margin-top:20px;
+}
+.badge{
+  padding:10px 14px;
+  border-radius:999px;
+  background:rgba(63,107,62,.08);
+  border:1px solid rgba(63,107,62,.14);
+  color:var(--green-deep);
+  font-size:.86rem;
+}
+.profile,
+.history{
+  margin-top:18px;
+  padding:18px;
+  border-radius:22px;
+  background:rgba(255,255,255,.5);
+  border:1px solid rgba(104,70,35,.1);
+}
+.profile-top{
+  display:flex;
+  align-items:center;
+  gap:14px;
+}
+.avatar{
+  width:58px;
+  height:58px;
+  border-radius:50%;
+  overflow:hidden;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  background:linear-gradient(135deg, var(--green), var(--accent));
+  color:#fff;
+  font-weight:700;
+  border:2px solid rgba(255,255,255,.75);
+}
+.avatar img{width:100%;height:100%;object-fit:cover}
+.name{font-size:1.05rem;font-weight:700}
+.mini{
+  display:grid;
+  grid-template-columns:repeat(3, minmax(0, 1fr));
+  gap:10px;
+  margin-top:14px;
+}
+.mini div{
+  padding:12px;
+  border-radius:16px;
+  background:var(--beige);
+  border:1px solid rgba(104,70,35,.08);
+}
+.mini span{
+  display:block;
+  color:var(--muted);
+  font-size:.78rem;
+}
+.mini strong{
+  display:block;
+  margin-top:8px;
+  font-size:.96rem;
+}
+.location-note{
+  margin-top:12px;
+  color:var(--muted);
+  font-size:.86rem;
+  line-height:1.55;
+}
+.sidebar-actions{
+  display:grid;
+  gap:10px;
+  margin-top:18px;
+}
+.subbtn{
+  padding:12px 14px;
+  border-radius:14px;
+  background:rgba(63,107,62,.08);
+  border:1px solid rgba(63,107,62,.14);
+  color:var(--green-deep);
+  text-align:left;
+  cursor:pointer;
+  font-weight:600;
+}
+.subbtn.secondary{
+  background:rgba(138,96,57,.08);
+  border-color:rgba(138,96,57,.14);
+  color:var(--brown-deep);
+}
+.history h3{
+  font-size:.9rem;
+  letter-spacing:.05em;
+  text-transform:uppercase;
+  color:var(--muted);
+}
+.history-list{
+  display:grid;
+  gap:10px;
+  margin-top:12px;
+  max-height:220px;
+  overflow:auto;
+  scrollbar-width:none;
+}
 .history-list::-webkit-scrollbar{display:none}
-.history-item{padding:12px 14px;border-radius:14px;border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.06);font-size:.88rem;line-height:1.4;text-align:left;cursor:pointer}
-.location-note{margin-top:12px;color:var(--muted);font-size:.84rem;line-height:1.5}
-.voice-trigger{display:flex;justify-content:center;margin:12px 0 6px}
-.voice-trigger .tool{width:52px;height:52px;box-shadow:0 10px 24px rgba(0,0,0,.24)}
-@media (min-width:721px){
-  .phone{max-width:520px;width:min(100%,520px)}
-  .art{width:150px;margin:14px auto 10px}
-  .hero-q{font-size:2rem;margin-top:8px}
-  .actions{gap:8px}
-  .prompt{min-height:50px;padding:9px 12px}
-  .thread{padding-top:10px}
+.history-item{
+  padding:12px 14px;
+  border-radius:14px;
+  border:1px solid rgba(104,70,35,.08);
+  background:#fffdf7;
+  color:var(--ink);
+  text-align:left;
+  cursor:pointer;
+  line-height:1.4;
+}
+.phone{
+  width:min(100%, 580px);
+  margin:0 auto;
+  min-height:min(940px, calc(100vh - 36px));
+  padding:14px;
+  border-radius:40px;
+  background:linear-gradient(180deg, rgba(255,255,255,.78), rgba(255,255,255,.35));
+  border:1px solid rgba(255,255,255,.6);
+  box-shadow:var(--shadow);
+  position:relative;
+}
+.phone::before{
+  content:"";
+  position:absolute;
+  inset:12px;
+  border-radius:30px;
+  border:1px solid rgba(255,255,255,.55);
+}
+.phone::after{
+  content:"";
+  position:absolute;
+  left:50%;
+  top:8px;
+  transform:translateX(-50%);
+  width:34%;
+  height:22px;
+  border-radius:0 0 16px 16px;
+  background:#4a3d29;
+}
+.screen{
+  position:relative;
+  height:100%;
+  min-height:0;
+  border-radius:30px;
+  overflow:hidden;
+  display:flex;
+  flex-direction:column;
+  background:
+    radial-gradient(circle at top right, rgba(132,176,113,.22), transparent 22%),
+    radial-gradient(circle at top left, rgba(194,135,60,.22), transparent 25%),
+    linear-gradient(180deg, #fbf6ea 0%, #f1e3c6 56%, #e7d2ab 100%);
+}
+.inner{
+  flex:1;
+  min-height:0;
+  display:flex;
+  flex-direction:column;
+  padding:18px 16px 14px;
+  position:relative;
+  z-index:1;
+}
+.status{
+  display:flex;
+  justify-content:space-between;
+  padding:6px 8px 0;
+  font-size:.78rem;
+  color:var(--muted);
+  font-variant-numeric:tabular-nums;
+}
+.stack{
+  padding:12px 6px 0;
+  flex-shrink:0;
+}
+.brand{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+}
+.phone-title{
+  font-family:var(--display);
+  font-size:1.8rem;
+  letter-spacing:-.04em;
+}
+.gear{
+  width:42px;
+  height:42px;
+  display:grid;
+  place-items:center;
+  border-radius:50%;
+  background:rgba(63,107,62,.1);
+  border:1px solid rgba(63,107,62,.14);
+  color:var(--green-deep);
+  cursor:pointer;
+}
+.panel{
+  display:none;
+  position:absolute;
+  right:18px;
+  top:92px;
+  width:min(290px, calc(100% - 36px));
+  padding:16px;
+  border-radius:18px;
+  background:rgba(252,248,238,.98);
+  border:1px solid rgba(104,70,35,.12);
+  box-shadow:0 18px 44px rgba(74,57,34,.18);
+  z-index:10;
+}
+.panel.show{display:grid;gap:10px}
+.panel p{
+  color:var(--muted);
+  line-height:1.55;
+  font-size:.92rem;
+}
+.assistant{
+  width:max-content;
+  margin:12px auto 0;
+  display:flex;
+  align-items:center;
+  gap:8px;
+  padding:9px 15px;
+  border-radius:999px;
+  background:rgba(63,107,62,.1);
+  border:1px solid rgba(63,107,62,.14);
+  color:var(--green-deep);
+  font-weight:700;
+}
+.hero-q{
+  margin-top:12px;
+  text-align:center;
+  font-family:var(--display);
+  font-size:clamp(1.7rem, 3vw, 2.35rem);
+  line-height:1.06;
+  letter-spacing:-.04em;
+}
+.hero-note{
+  margin-top:8px;
+  text-align:center;
+  color:var(--muted);
+  font-size:.95rem;
+  line-height:1.55;
+}
+.voice-trigger{
+  display:flex;
+  justify-content:center;
+  margin:12px 0 10px;
+}
+.voice-trigger .tool{
+  width:60px;
+  height:60px;
+  box-shadow:0 14px 30px rgba(63,107,62,.18);
+}
+.voice-caption{
+  text-align:center;
+  color:var(--muted);
+  font-size:.84rem;
+  margin-bottom:6px;
+}
+.actions{
+  display:grid;
+  grid-template-columns:repeat(2, minmax(0, 1fr));
+  gap:10px;
+}
+.prompt{
+  min-height:58px;
+  padding:12px;
+  border-radius:18px;
+  background:rgba(255,255,255,.65);
+  border:1px solid rgba(104,70,35,.1);
+  display:flex;
+  gap:10px;
+  align-items:center;
+  text-align:left;
+  cursor:pointer;
+  transition:transform .18s ease, box-shadow .18s ease, border-color .18s ease;
+}
+.prompt:hover{
+  transform:translateY(-1px);
+  border-color:rgba(63,107,62,.26);
+  box-shadow:0 10px 18px rgba(74,57,34,.08);
+}
+.ico{
+  width:32px;
+  height:32px;
+  display:grid;
+  place-items:center;
+  border-radius:50%;
+  background:var(--green-soft);
+  color:var(--green-deep);
+  flex-shrink:0;
+}
+.prompt span:last-child{font-size:.88rem;line-height:1.35}
+.thread{
+  flex:1;
+  min-height:0;
+  overflow-y:auto;
+  padding:16px 4px 0;
+  display:flex;
+  flex-direction:column;
+  gap:14px;
+  scrollbar-width:none;
+}
+.thread::-webkit-scrollbar{display:none}
+.msg{display:flex}
+.msg.user{justify-content:flex-end}
+.bubble{
+  max-width:88%;
+  padding:15px 16px;
+  border-radius:22px;
+  white-space:pre-wrap;
+  line-height:1.7;
+  font-size:1rem;
+  box-shadow:0 10px 22px rgba(74,57,34,.08);
+}
+.msg.bot .bubble{
+  background:#fffdf8;
+  border:1px solid rgba(104,70,35,.1);
+  color:var(--ink);
+}
+.msg.user .bubble{
+  background:linear-gradient(135deg, var(--user), var(--green-deep));
+  color:#fff;
+}
+.bubble img{
+  display:block;
+  max-width:100%;
+  margin-top:10px;
+  border-radius:14px;
+}
+.composer-wrap{
+  flex-shrink:0;
+  padding:10px 2px 4px;
+  background:linear-gradient(180deg, rgba(248,242,228,0), rgba(248,242,228,.88) 26%, rgba(248,242,228,.98));
+}
+.attach-chip{
+  display:none;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  margin:0 6px 8px;
+  padding:10px 12px;
+  border-radius:14px;
+  background:rgba(63,107,62,.08);
+  border:1px solid rgba(63,107,62,.14);
+  color:var(--green-deep);
+  font-size:.84rem;
+}
+.attach-chip.show{display:flex}
+.attach-chip button{cursor:pointer}
+.composer{
+  display:flex;
+  align-items:flex-end;
+  gap:8px;
+  padding:8px;
+  border-radius:24px;
+  background:#fffdf7;
+  border:1px solid rgba(104,70,35,.12);
+  box-shadow:0 12px 26px rgba(74,57,34,.08);
+}
+.composer textarea{
+  flex:1;
+  min-width:0;
+  min-height:24px;
+  max-height:130px;
+  resize:none;
+  border:0;
+  outline:0;
+  background:transparent;
+  color:var(--ink);
+  padding:9px 4px 7px;
+  line-height:1.5;
+}
+.composer textarea::placeholder{color:#8d7c63}
+.tool,
+.send{
+  width:42px;
+  height:42px;
+  display:grid;
+  place-items:center;
+  border-radius:50%;
+  cursor:pointer;
+  flex-shrink:0;
+}
+.tool{
+  background:rgba(63,107,62,.08);
+  border:1px solid rgba(63,107,62,.14);
+  color:var(--green-deep);
+}
+.tool.active{
+  background:rgba(63,107,62,.18);
+  border-color:rgba(63,107,62,.28);
+}
+.tool:disabled{opacity:.4;cursor:not-allowed}
+.send{
+  background:linear-gradient(135deg, var(--accent), var(--brown));
+  color:#fff;
+}
+.voice-status{
+  margin-top:8px;
+  text-align:center;
+  color:var(--green-deep);
+  font-size:.84rem;
+  min-height:18px;
+}
+.voice-call{
+  display:none;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+  margin-top:4px;
+  padding:12px 14px;
+  border-radius:14px;
+  background:rgba(138,96,57,.08);
+  border:1px solid rgba(138,96,57,.14);
+}
+.voice-call.show{display:flex}
+.voice-call a{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  padding:10px 14px;
+  border-radius:12px;
+  background:linear-gradient(135deg, var(--accent), var(--brown));
+  color:#fff;
+  text-decoration:none;
+  font-weight:700;
+}
+.home{
+  width:120px;
+  height:5px;
+  margin:10px auto 2px;
+  border-radius:999px;
+  background:rgba(104,70,35,.25);
+}
+.editor-backdrop{
+  display:none;
+  position:fixed;
+  inset:0;
+  background:rgba(47,36,23,.42);
+  backdrop-filter:blur(10px);
+  align-items:center;
+  justify-content:center;
+  padding:18px;
+  z-index:50;
+}
+.editor-backdrop.show{display:flex}
+.editor-card{
+  width:min(540px, 100%);
+  max-height:min(90vh, 760px);
+  overflow:auto;
+  padding:24px;
+  border-radius:28px;
+}
+.editor-card h3{
+  font-family:var(--display);
+  font-size:1.75rem;
+  letter-spacing:-.04em;
+}
+.editor-card p{
+  margin-top:8px;
+  color:var(--muted);
+  line-height:1.6;
+}
+.grid{display:grid;gap:14px;margin-top:18px}
+.grid.two{grid-template-columns:repeat(2, minmax(0, 1fr))}
+.field{display:grid;gap:6px}
+.field label{font-size:.85rem;color:var(--muted)}
+.field input,
+.field select{
+  padding:14px 15px;
+  border-radius:15px;
+  border:1px solid rgba(104,70,35,.14);
+  background:#fffdf8;
+  color:var(--ink);
+}
+.field input::placeholder{color:#9e8f75}
+.editor-actions{
+  display:flex;
+  gap:10px;
+  margin-top:18px;
+}
+.btn{
+  flex:1;
+  padding:14px 16px;
+  border-radius:16px;
+  cursor:pointer;
+  font-weight:700;
+  color:#fff;
+  background:linear-gradient(135deg, var(--green), var(--brown));
+}
+.btn.secondary{
+  background:#fffdf7;
+  color:var(--brown-deep);
+  border:1px solid rgba(104,70,35,.14);
+}
+.vh{
+  position:absolute;
+  width:1px;
+  height:1px;
+  margin:-1px;
+  overflow:hidden;
+  clip:rect(0, 0, 0, 0);
+}
+@media (max-width:1100px){
+  .stage{grid-template-columns:1fr}
+  .side{min-height:auto}
 }
 @media (max-width:720px){
-  .composer textarea{font-size:16px;min-height:28px}
+  .page{padding:0}
+  .side{display:none}
+  .phone{
+    width:100%;
+    min-height:100vh;
+    border-radius:0;
+    padding:0;
+    box-shadow:none;
+    background:transparent;
+    border:0;
+  }
+  .phone::before,.phone::after{display:none}
+  .screen{border-radius:0;min-height:100vh}
+  .inner{padding:16px 14px 10px}
+  .actions{grid-template-columns:1fr 1fr}
+  .grid.two{grid-template-columns:1fr}
   .editor-backdrop{padding:0}
-  .editor-card{width:100%;max-height:100vh;border-radius:0;padding:22px 18px}
+  .editor-card{
+    width:100%;
+    max-height:100vh;
+    border-radius:0;
+    padding:22px 18px;
+  }
+  .composer textarea{font-size:16px}
 }
 </style>
 </head>
 <body>
-<div id="login-page" class="page auth active">
-  <div class="auth-shell">
-    <section class="glass hero">
-      <div>
-        <div class="pill"><span>Fahamu Shamba</span><span>•</span><span>AI for agriculture</span></div>
-        <h1>Crop strategy, weather insight, pest help, and market guidance in one assistant.</h1>
-        <p>Sign in to open the redesigned AI.FarmGPT chatbot. The post-login screen now follows the supplied image style and keeps the assistant focused on agricultural questions only.</p>
-        <div class="badge-row">
-          <div class="badge">Find the Best Crop</div>
-          <div class="badge">Find Your Weather</div>
-          <div class="badge">Get Pest Insight</div>
-          <div class="badge">Market Guidance</div>
-        </div>
-      </div>
-    </section>
-    <section class="glass card">
-      <div class="tabs">
-        <button class="tab active" type="button" data-target="login-form">Login</button>
-        <button class="tab" type="button" data-target="register-form">Register</button>
-      </div>
-      <form id="login-form" class="form active">
-        <h2>Welcome back</h2>
-        <p class="desc">Sign in to continue to the redesigned chatbot interface after login.</p>
-        <div class="grid">
-          <div class="field"><label for="loginEmail">Email</label><input id="loginEmail" type="email" placeholder="farmer@example.com" required></div>
-          <div class="field"><label for="loginPassword">Password</label><input id="loginPassword" type="password" placeholder="Enter password" required></div>
-        </div>
-        <div class="row">
-          <label><input id="rememberMe" type="checkbox"> Remember me</label>
-          <span style="cursor:pointer" onclick="setAuth('register-form')">Create account</span>
-        </div>
-        <button class="btn" type="submit">Login to AI.FarmGPT</button>
-      </form>
-      <form id="register-form" class="form">
-        <h2>Create your farm profile</h2>
-        <p class="desc">Your profile helps the chatbot answer with better county, soil, crop, and market context.</p>
-        <div class="grid two">
-          <div class="field"><label for="regName">Full name</label><input id="regName" type="text" placeholder="Wycliffe Sidon" required></div>
-          <div class="field"><label for="regPhone">Phone</label><input id="regPhone" type="tel" placeholder="+254..." required></div>
-          <div class="field"><label for="regEmail">Email</label><input id="regEmail" type="email" placeholder="farmer@example.com" required></div>
-          <div class="field"><label for="regCounty">County</label><select id="regCounty" required></select></div>
-          <div class="field"><label for="regSubcounty">Subcounty</label><select id="regSubcounty" required></select></div>
-          <div class="field"><label for="regSoilType">Soil type</label><select id="regSoilType" required><option value="auto">I don't know, use location soil map</option><option>Loam</option><option>Clay loam</option><option>Clay</option><option>Sandy loam</option><option>Red volcanic</option><option>Volcanic loam</option><option>Sandy clay</option><option>Sandy</option></select></div>
-          <div class="field"><label for="regAcres">Farm size (acres)</label><input id="regAcres" type="number" min="0.25" step="0.25" placeholder="2.5" required></div>
-          <div class="field"><label for="regPhoto">Profile photo</label><input id="regPhoto" type="file" accept="image/*"></div>
-        </div>
-        <button class="btn" type="submit">Create profile and continue</button>
-      </form>
-    </section>
-  </div>
-</div>
-
-<div id="dashboard" class="page dash">
+<div id="dashboard" class="page">
   <div class="stage">
     <aside class="glass side">
       <div>
-        <div class="pill"><span>Post-login chatbot</span><span>•</span><span>Matched to supplied image</span></div>
-        <h1>AI.FarmGPT for every farming decision.</h1>
-        <p>The mobile interface on the right now follows the same visual direction as the screenshot: floating gradient background, central AI artwork, rounded quick actions, and a soft message composer.</p>
-      </div>
-      <div class="profile">
-        <div class="profile-top">
-          <div class="avatar" id="avatarWrap"><img id="profilePhoto" alt="Profile" style="display:none"><span id="profileInitials">FS</span></div>
-          <div><div class="name" id="profileName">Farmer</div><div class="desc" id="profileLocation" style="margin-top:4px">Nakuru, Kenya</div></div>
+        <div class="pill"><span>Fahamu Shamba</span><span>|</span><span>AI for farmers</span></div>
+        <h1>Direct farm advice without a login wall.</h1>
+        <p class="lead">Open the project and go straight into the chatbot. Weather, market prices, crop recommendations, pest guidance, and profile tools stay available, with a calmer farm-inspired interface that gives the conversation more room.</p>
+        <div class="badge-row">
+          <div class="badge">Crop recommendations</div>
+          <div class="badge">Live weather by location</div>
+          <div class="badge">Market prices</div>
+          <div class="badge">Pest and crop advisory</div>
         </div>
-        <div class="mini">
-          <div><span>Subcounty</span><strong id="profileSubcounty">Naivasha</strong></div>
-          <div><span>Soil Type</span><strong id="profileSoil">Loam</strong></div>
-          <div><span>Farm Size</span><strong id="profileAcres">2.5 acres</strong></div>
-        </div>
-        <div class="location-note" id="location-note">Auto location will be used when available for weather and market updates.</div>
       </div>
-      <div class="history">
-        <h3>Chat History</h3>
-        <div class="history-list" id="history-list">
-          <button class="history-item" type="button" onclick="newChat()">Start a new chat</button>
+
+      <div>
+        <div class="profile">
+          <div class="profile-top">
+            <div class="avatar" id="avatarWrap">
+              <img id="profilePhoto" alt="Profile" style="display:none">
+              <span id="profileInitials">FS</span>
+            </div>
+            <div>
+              <div class="name" id="profileName">Farmer</div>
+              <div class="lead" id="profileLocation" style="margin-top:4px;font-size:.92rem">Naivasha, Nakuru, Kenya</div>
+            </div>
+          </div>
+          <div class="mini">
+            <div><span>Subcounty</span><strong id="profileSubcounty">Naivasha</strong></div>
+            <div><span>Soil Type</span><strong id="profileSoil">Clay</strong></div>
+            <div><span>Farm Size</span><strong id="profileAcres">2.5 acres</strong></div>
+          </div>
+          <div class="location-note" id="location-note">Live location will be used when available so weather and market updates stay relevant to where the farmer is.</div>
+          <div class="sidebar-actions">
+            <button class="subbtn" type="button" onclick="openSetupModal()">Create or update farm profile</button>
+            <button class="subbtn secondary" type="button" onclick="newChat()">Start a fresh chat</button>
+          </div>
+        </div>
+
+        <div class="history">
+          <h3>Chat History</h3>
+          <div class="history-list" id="history-list">
+            <button class="history-item" type="button" onclick="newChat()">Start a new chat</button>
+          </div>
         </div>
       </div>
     </aside>
+
     <section class="phone">
       <div class="screen">
         <div class="inner">
-          <div class="status"><span id="live-time">9:41</span><div></div></div>
+          <div class="status">
+            <span id="live-time">9:41</span>
+            <span id="voice-language">English</span>
+          </div>
+
           <div class="stack">
             <div class="brand">
-              <h2 class="phone-title">AI.FarmGPT</h2>
-              <button class="gear" type="button" onclick="togglePanel()" aria-label="Open settings">
-                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3.5"></circle><path d="M19.4 15a1 1 0 0 0 .2 1.1l.1.1a1.8 1.8 0 0 1-2.6 2.6l-.1-.1a1 1 0 0 0-1.1-.2 1 1 0 0 0-.6.9V20a1.8 1.8 0 0 1-3.6 0v-.2a1 1 0 0 0-.7-.9 1 1 0 0 0-1.1.2l-.1.1a1.8 1.8 0 1 1-2.6-2.6l.1-.1a1 1 0 0 0 .2-1.1 1 1 0 0 0-.9-.6H4a1.8 1.8 0 0 1 0-3.6h.2a1 1 0 0 0 .9-.7 1 1 0 0 0-.2-1.1l-.1-.1a1.8 1.8 0 0 1 2.6-2.6l.1.1a1 1 0 0 0 1.1.2h.1a1 1 0 0 0 .6-.9V4a1.8 1.8 0 0 1 3.6 0v.2a1 1 0 0 0 .7.9 1 1 0 0 0 1.1-.2l.1-.1a1.8 1.8 0 0 1 2.6 2.6l-.1.1a1 1 0 0 0-.2 1.1v.1a1 1 0 0 0 .9.6h.2a1.8 1.8 0 0 1 0 3.6h-.2a1 1 0 0 0-.9.7Z"></path></svg>
+              <h2 class="phone-title">Fahamu Shamba</h2>
+              <button class="gear" type="button" onclick="togglePanel()" aria-label="Open assistant settings">
+                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                  <circle cx="12" cy="12" r="3.5"></circle>
+                  <path d="M19.4 15a1 1 0 0 0 .2 1.1l.1.1a1.8 1.8 0 0 1-2.6 2.6l-.1-.1a1 1 0 0 0-1.1-.2 1 1 0 0 0-.6.9V20a1.8 1.8 0 0 1-3.6 0v-.2a1 1 0 0 0-.7-.9 1 1 0 0 0-1.1.2l-.1.1a1.8 1.8 0 1 1-2.6-2.6l.1-.1a1 1 0 0 0 .2-1.1 1 1 0 0 0-.9-.6H4a1.8 1.8 0 0 1 0-3.6h.2a1 1 0 0 0 .9-.7 1 1 0 0 0-.2-1.1l-.1-.1a1.8 1.8 0 0 1 2.6-2.6l.1.1a1 1 0 0 0 1.1.2h.1a1 1 0 0 0 .6-.9V4a1.8 1.8 0 0 1 3.6 0v.2a1 1 0 0 0 .7.9 1 1 0 0 0 1.1-.2l.1-.1a1.8 1.8 0 0 1 2.6 2.6l-.1.1a1 1 0 0 0-.2 1.1v.1a1 1 0 0 0 .9.6h.2a1.8 1.8 0 0 1 0 3.6h-.2a1 1 0 0 0-.9.7Z"></path>
+                </svg>
               </button>
             </div>
+
             <div id="panel" class="panel">
               <p id="panelSummary">Agricultural assistant focused on crops, weather, pests, and market support.</p>
-              <button class="subbtn" type="button" onclick="openProfileEditor()">Edit location profile</button>
+              <button class="subbtn" type="button" onclick="openProfileEditor()">Edit farm profile</button>
               <button class="subbtn" type="button" id="voice-mode-btn" onclick="toggleVoiceConsultation()">Start voice consultation</button>
               <button class="subbtn" type="button" onclick="newChat()">New chat</button>
-              <button class="subbtn out" type="button" onclick="logout()">Log out</button>
+              <button class="subbtn secondary" type="button" onclick="clearStoredProfile()">Clear saved profile</button>
               <div class="voice-call" id="voice-call-box">
-                <span id="voice-call-label">Phone call consultation</span>
+                <span id="voice-call-label">Phone consultation</span>
                 <a id="voice-call-link" href="#" target="_self">Call now</a>
               </div>
             </div>
-            <div class="art">
-              <svg viewBox="0 0 240 240" width="100%" height="100%">
-                <defs><radialGradient id="g1" cx="50%" cy="50%" r="60%"><stop offset="0%" stop-color="#ffae45" stop-opacity=".95"></stop><stop offset="45%" stop-color="#ff6d35" stop-opacity=".72"></stop><stop offset="100%" stop-color="#ff6d35" stop-opacity="0"></stop></radialGradient><linearGradient id="g2" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#6de3ff"></stop><stop offset="40%" stop-color="#5f82ff"></stop><stop offset="100%" stop-color="#281f4d"></stop></linearGradient><linearGradient id="g3" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#ffcf94"></stop><stop offset="100%" stop-color="#d75a4d"></stop></linearGradient></defs>
-                <ellipse cx="122" cy="122" rx="86" ry="96" fill="url(#g2)" opacity=".95"></ellipse><circle cx="120" cy="114" r="58" fill="#1d1f4d" opacity=".95"></circle><ellipse cx="126" cy="107" rx="66" ry="72" fill="url(#g2)" opacity=".84"></ellipse><ellipse cx="144" cy="110" rx="46" ry="32" fill="url(#g1)"></ellipse><path d="M85 116c6-26 29-46 56-46 17 0 34 8 45 22-9 9-16 20-20 33-9 4-18 5-30 4-18-1-35-6-51-13Z" fill="rgba(36,18,62,.72)"></path><path d="M99 92c12-8 35-8 48 4 5 4 8 8 11 13-10 6-23 11-39 12-10 1-22-1-33-5 3-11 7-18 13-24Z" fill="#ff7a35" opacity=".9"></path><path d="M108 105c12 0 24 2 34 6-3 9-8 16-16 23-8 7-19 12-31 12-5 0-10-1-14-2 2-18 10-31 27-39Z" fill="url(#g3)"></path><path d="M112 135c9 2 22 1 31-3 3 10 2 19-4 28-7 11-18 17-31 18-9 1-17-1-24-5 5-20 11-30 28-38Z" fill="#f4a1a0" opacity=".82"></path><path d="M148 122c10 7 18 18 22 31-9 8-19 13-32 15 0-15 3-30 10-46Z" fill="#5b3b90" opacity=".65"></path><circle cx="67" cy="116" r="27" fill="#151735"></circle><circle cx="67" cy="116" r="17" fill="#0f1025"></circle><path d="M54 100c-8-2-16 2-20 8-7 10-7 26-2 38 2 4 4 7 8 8-4-17-1-37 14-54Z" fill="#202442"></path><path d="M63 157c9 11 23 18 37 20-8 8-19 13-31 13-24 0-44-16-51-38 2 1 5 2 7 2 11 3 23 3 38 3Z" fill="#2b2256" opacity=".72"></path>
-              </svg>
-            </div>
-            <div class="assistant"><span>✧</span><span>AI Assistant</span></div>
+
+            <div class="assistant"><span>AI</span><span>Conversational farm guide</span></div>
             <h3 class="hero-q">How may I assist you today?</h3>
+            <p class="hero-note">Ask by text or speak below. If you tap the microphone while the assistant is talking, speech stops and listening starts again right away.</p>
             <div class="voice-trigger">
-              <button class="tool" id="hero-mic-btn" type="button" aria-label="Speak with AI assistant"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1a3 3 0 0 1 3 3v8a3 3 0 0 1-6 0V4a3 3 0 0 1 3-3Z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path><path d="M12 19v4"></path><path d="M8 23h8"></path></svg></button>
+              <button class="tool" id="hero-mic-btn" type="button" aria-label="Speak with Fahamu Shamba">
+                <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M12 1a3 3 0 0 1 3 3v8a3 3 0 0 1-6 0V4a3 3 0 0 1 3-3Z"></path>
+                  <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
+                  <path d="M12 19v4"></path>
+                  <path d="M8 23h8"></path>
+                </svg>
+              </button>
             </div>
+            <div class="voice-caption">Microphone</div>
+            <div class="voice-status" id="voice-status">Voice ready for English, Kiswahili, and Luo.</div>
+
             <div class="actions">
-              <button class="prompt" type="button" data-context="crops" data-prompt="Find the best crop for my farm based on my county, soil, season, and market demand."><span class="ico">🌾</span><span>Find the Best Crop</span></button>
-              <button class="prompt" type="button" data-context="weather" data-prompt="Find my weather and tell me how it affects planting, irrigation, and harvesting."><span class="ico">☁</span><span>Find Your Weather</span></button>
-              <button class="prompt" type="button" data-context="pests" data-prompt="Give me pest insight for my crops, including signs, prevention, and treatment."><span class="ico">🛡</span><span>Get Pest Insight</span></button>
-              <button class="prompt" type="button" data-context="general" data-prompt="Answer my agricultural question clearly and keep the advice focused on farming."><span class="ico">❔</span><span>Ask AI anything</span></button>
-              <button class="prompt faded" type="button" data-context="market" data-prompt="Show me current market prices and the best time to sell my produce."><span class="ico">📈</span><span>Market</span></button>
-              <button class="prompt faded" type="button" data-context="market" data-prompt="Analyze market demand and suggest the best crops to sell this season."><span class="ico">📊</span><span>Market analysis</span></button>
+              <button class="prompt" type="button" data-context="crops" data-prompt="Find the best crop for my farm based on my county, soil, season, and market demand.">
+                <span class="ico">1</span><span>Find the best crop for my farm</span>
+              </button>
+              <button class="prompt" type="button" data-context="weather" data-prompt="Find my weather and tell me how it affects planting, irrigation, and harvesting.">
+                <span class="ico">2</span><span>Find my weather and farm timing</span>
+              </button>
+              <button class="prompt" type="button" data-context="pests" data-prompt="Give me pest insight for my crops, including signs, prevention, and treatment.">
+                <span class="ico">3</span><span>Get pest and disease insight</span>
+              </button>
+              <button class="prompt" type="button" data-context="market" data-prompt="Show me current market prices and the best time to sell my produce.">
+                <span class="ico">4</span><span>Check market prices and demand</span>
+              </button>
             </div>
           </div>
+
           <div id="thread" class="thread"></div>
+
           <div class="composer-wrap">
             <div id="attach-chip" class="attach-chip">
               <span id="attach-name">Attached image</span>
               <button type="button" onclick="clearAttachment()">Remove</button>
             </div>
             <div class="composer">
-              <label class="vh" for="user-input">Message AI.FarmGPT</label>
+              <label class="vh" for="user-input">Ask Fahamu Shamba</label>
               <input id="image-input" type="file" accept="image/*" class="vh">
-              <button class="tool" id="attach-btn" type="button" aria-label="Upload image"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><path d="M7 10 12 5l5 5"></path><path d="M12 5v12"></path></svg></button>
-              <textarea id="user-input" rows="1" placeholder="Message an agent"></textarea>
-              <button class="tool" id="mic-btn" type="button" aria-label="Speak question"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1a3 3 0 0 1 3 3v8a3 3 0 0 1-6 0V4a3 3 0 0 1 3-3Z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path><path d="M12 19v4"></path><path d="M8 23h8"></path></svg></button>
-              <button class="send" id="send-btn" type="button" aria-label="Send message"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 2 11 13"></path><path d="M22 2 15 22 11 13 2 9 22 2Z"></path></svg></button>
+              <button class="tool" id="attach-btn" type="button" aria-label="Upload farm image">
+                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                  <path d="M7 10 12 5l5 5"></path>
+                  <path d="M12 5v12"></path>
+                </svg>
+              </button>
+              <textarea id="user-input" rows="1" placeholder="Ask about crops, weather, pests, markets, or your farm"></textarea>
+              <button class="send" id="send-btn" type="button" aria-label="Send message">
+                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M22 2 11 13"></path>
+                  <path d="M22 2 15 22 11 13 2 9 22 2Z"></path>
+                </svg>
+              </button>
             </div>
             <div class="home"></div>
           </div>
@@ -196,15 +772,40 @@
   </div>
 </div>
 
+<div class="editor-backdrop" id="setup-modal">
+  <div class="glass editor-card">
+    <h3>Create your farm profile</h3>
+    <p>Registration stays available, but it is now a profile setup step instead of a login page. Add your county, subcounty, soil choice, and farm size so crop advice, weather, and market data stay relevant.</p>
+    <div class="grid two" style="margin-top:18px">
+      <div class="field"><label for="regName">Full name</label><input id="regName" type="text" placeholder="Wycliffe Sidon"></div>
+      <div class="field"><label for="regPhone">Phone</label><input id="regPhone" type="tel" placeholder="+254..."></div>
+      <div class="field"><label for="regEmail">Email</label><input id="regEmail" type="email" placeholder="farmer@example.com"></div>
+      <div class="field"><label for="regCounty">County</label><select id="regCounty"></select></div>
+      <div class="field"><label for="regSubcounty">Subcounty</label><select id="regSubcounty"></select></div>
+      <div class="field"><label for="regSoilType">Soil type</label><select id="regSoilType"><option value="auto">I do not know, use location soil map</option><option>Loam</option><option>Clay loam</option><option>Clay</option><option>Sandy loam</option><option>Red volcanic</option><option>Volcanic loam</option><option>Sandy clay</option><option>Sandy</option></select></div>
+      <div class="field"><label for="regAcres">Farm size (acres)</label><input id="regAcres" type="number" min="0.25" step="0.25" placeholder="2.5"></div>
+      <div class="field"><label for="regPhoto">Profile photo</label><input id="regPhoto" type="file" accept="image/*"></div>
+    </div>
+    <div class="editor-actions">
+      <button class="btn secondary" type="button" onclick="closeSetupModal()">Continue without saving</button>
+      <button class="btn" type="button" onclick="saveSetupProfile()">Save profile</button>
+    </div>
+  </div>
+</div>
+
 <div class="editor-backdrop" id="profile-editor">
   <div class="glass editor-card">
-    <h3>Edit farmer profile</h3>
-    <p>Update your county, subcounty, farm size, and soil preference. If you do not know the soil, Fahamu Shamba will use the county soil map automatically.</p>
-    <div class="grid" style="margin-top:18px">
+    <h3>Edit farm profile</h3>
+    <p>Update your saved county, subcounty, soil preference, farm size, or contact details without leaving the chat.</p>
+    <div class="grid two" style="margin-top:18px">
+      <div class="field"><label for="editName">Full name</label><input id="editName" type="text"></div>
+      <div class="field"><label for="editPhone">Phone</label><input id="editPhone" type="tel"></div>
+      <div class="field"><label for="editEmail">Email</label><input id="editEmail" type="email"></div>
       <div class="field"><label for="editCounty">County</label><select id="editCounty"></select></div>
       <div class="field"><label for="editSubcounty">Subcounty</label><select id="editSubcounty"></select></div>
       <div class="field"><label for="editSoilType">Soil type</label><select id="editSoilType"><option value="auto">Auto detect from location soil map</option><option>Loam</option><option>Clay loam</option><option>Clay</option><option>Sandy loam</option><option>Red volcanic</option><option>Volcanic loam</option><option>Sandy clay</option><option>Sandy</option></select></div>
       <div class="field"><label for="editAcres">Farm size (acres)</label><input id="editAcres" type="number" min="0.25" step="0.25"></div>
+      <div class="field"><label for="editPhoto">Profile photo</label><input id="editPhoto" type="file" accept="image/*"></div>
     </div>
     <div class="editor-actions">
       <button class="btn secondary" type="button" onclick="closeProfileEditor()">Cancel</button>
@@ -214,90 +815,846 @@
 </div>
 
 <script>
-const COUNTY_DATA={
-  "Nairobi":{soil:"Clay loam",subcounties:["Westlands","Kasarani","Embakasi","Lang'ata"]},
-  "Kiambu":{soil:"Red volcanic",subcounties:["Thika","Ruiru","Kiambu Town","Limuru"]},
-  "Nakuru":{soil:"Clay",subcounties:["Naivasha","Nakuru Town East","Molo","Gilgil"]},
-  "Kisumu":{soil:"Sandy loam",subcounties:["Kisumu East","Nyando","Muhoroni","Seme"]},
-  "Siaya":{soil:"Sandy clay",subcounties:["Bondo","Ugunja","Ugenya","Rarieda"]},
-  "Kakamega":{soil:"Clay loam",subcounties:["Lurambi","Mumias East","Malava","Navakholo"]},
-  "Bungoma":{soil:"Loam",subcounties:["Webuye East","Kimilili","Mt. Elgon","Kanduyi"]},
-  "Meru":{soil:"Volcanic loam",subcounties:["Imenti North","Tigania East","Buuri","Igembe South"]},
-  "Embu":{soil:"Red volcanic",subcounties:["Manyatta","Runyenjes","Mbeere South","Mbeere North"]},
-  "Machakos":{soil:"Sandy loam",subcounties:["Machakos Town","Mwala","Yatta","Masinga"]},
-  "Kitui":{soil:"Sandy",subcounties:["Kitui Central","Mwingi North","Mwingi West","Kitui South"]},
-  "Nyeri":{soil:"Volcanic loam",subcounties:["Nyeri Town","Othaya","Kieni","Mathira East"]},
-  "Murang'a":{soil:"Red volcanic",subcounties:["Kandara","Maragua","Kigumo","Kangema"]},
-  "Kirinyaga":{soil:"Clay loam",subcounties:["Mwea East","Gichugu","Kirinyaga Central","Ndia"]},
-  "Uasin Gishu":{soil:"Clay",subcounties:["Ainabkoi","Soy","Turbo","Kapseret"]}
+const COUNTY_DATA = {
+  "Nairobi": { soil: "Clay loam", subcounties: ["Westlands", "Kasarani", "Embakasi", "Langata"] },
+  "Kiambu": { soil: "Red volcanic", subcounties: ["Thika", "Ruiru", "Kiambu Town", "Limuru"] },
+  "Nakuru": { soil: "Clay", subcounties: ["Naivasha", "Nakuru Town East", "Molo", "Gilgil"] },
+  "Kisumu": { soil: "Sandy loam", subcounties: ["Kisumu East", "Nyando", "Muhoroni", "Seme"] },
+  "Siaya": { soil: "Sandy clay", subcounties: ["Bondo", "Ugunja", "Ugenya", "Rarieda"] },
+  "Kakamega": { soil: "Clay loam", subcounties: ["Lurambi", "Mumias East", "Malava", "Navakholo"] },
+  "Bungoma": { soil: "Loam", subcounties: ["Webuye East", "Kimilili", "Mt. Elgon", "Kanduyi"] },
+  "Meru": { soil: "Volcanic loam", subcounties: ["Imenti North", "Tigania East", "Buuri", "Igembe South"] },
+  "Embu": { soil: "Red volcanic", subcounties: ["Manyatta", "Runyenjes", "Mbeere South", "Mbeere North"] },
+  "Machakos": { soil: "Sandy loam", subcounties: ["Machakos Town", "Mwala", "Yatta", "Masinga"] },
+  "Kitui": { soil: "Sandy", subcounties: ["Kitui Central", "Mwingi North", "Mwingi West", "Kitui South"] },
+  "Nyeri": { soil: "Volcanic loam", subcounties: ["Nyeri Town", "Othaya", "Kieni", "Mathira East"] },
+  "Murang'a": { soil: "Red volcanic", subcounties: ["Kandara", "Maragua", "Kigumo", "Kangema"] },
+  "Kirinyaga": { soil: "Clay loam", subcounties: ["Mwea East", "Gichugu", "Kirinyaga Central", "Ndia"] },
+  "Uasin Gishu": { soil: "Clay", subcounties: ["Ainabkoi", "Soy", "Turbo", "Kapseret"] }
 };
-const COUNTY_COORDS={
-  "Nairobi":[-1.286389,36.817223],
-  "Kiambu":[-1.17139,36.83556],
-  "Nakuru":[-0.303099,36.08],
-  "Kisumu":[-0.091702,34.767956],
-  "Siaya":[0.061453,34.288061],
-  "Kakamega":[0.282731,34.751968],
-  "Bungoma":[0.5635,34.56055],
-  "Meru":[0.04626,37.65587],
-  "Embu":[-0.539275,37.457024],
-  "Machakos":[-1.517683,37.263414],
-  "Kitui":[-1.374073,38.010553],
-  "Nyeri":[-0.42013,36.94759],
-  "Murang'a":[-0.72131,37.15259],
-  "Kirinyaga":[-0.659056,37.382723],
-  "Uasin Gishu":[0.514277,35.269779]
+
+const COUNTY_COORDS = {
+  "Nairobi": [-1.286389, 36.817223],
+  "Kiambu": [-1.17139, 36.83556],
+  "Nakuru": [-0.303099, 36.08],
+  "Kisumu": [-0.091702, 34.767956],
+  "Siaya": [0.061453, 34.288061],
+  "Kakamega": [0.282731, 34.751968],
+  "Bungoma": [0.5635, 34.56055],
+  "Meru": [0.04626, 37.65587],
+  "Embu": [-0.539275, 37.457024],
+  "Machakos": [-1.517683, 37.263414],
+  "Kitui": [-1.374073, 38.010553],
+  "Nyeri": [-0.42013, 36.94759],
+  "Murang'a": [-0.72131, 37.15259],
+  "Kirinyaga": [-0.659056, 37.382723],
+  "Uasin Gishu": [0.514277, 35.269779]
 };
-const state={context:"general",sending:false,attachment:null,recognition:null,listening:false,timeTimer:null,voiceMode:false,speaking:false,appConfig:null,geo:null,chatHistory:[]};
-const $=s=>document.querySelector(s);
-function show(id){document.querySelectorAll(".page").forEach(p=>p.classList.remove("active"));document.getElementById(id).classList.add("active")}
-function setAuth(id){document.querySelectorAll(".tab").forEach(t=>t.classList.toggle("active",t.dataset.target===id));document.querySelectorAll(".form").forEach(f=>f.classList.toggle("active",f.id===id))}
-function initials(name){return(name||"Farmer").trim().split(/\s+/).slice(0,2).map(v=>v[0].toUpperCase()).join("")||"FS"}
-function getProfile(){try{return JSON.parse(localStorage.getItem("farmerData")||"{}")}catch(e){return {}}}
-function getDefaultCounty(){return "Nakuru"}
-function getDefaultSubcounty(county){const data=COUNTY_DATA[county]||COUNTY_DATA[getDefaultCounty()];return data.subcounties[0]}
-function distance(aLat,aLon,bLat,bLon){const toRad=v=>v*Math.PI/180;const dLat=toRad(bLat-aLat);const dLon=toRad(bLon-aLon);const sa=Math.sin(dLat/2)**2+Math.cos(toRad(aLat))*Math.cos(toRad(bLat))*Math.sin(dLon/2)**2;return 6371*2*Math.atan2(Math.sqrt(sa),Math.sqrt(1-sa))}
-function inferCountyFromCoords(lat,lon){let best=getDefaultCounty(),bestDistance=Infinity;Object.entries(COUNTY_COORDS).forEach(([county,[cLat,cLon]])=>{const d=distance(lat,lon,cLat,cLon);if(d<bestDistance){bestDistance=d;best=county}});return best}
-function resolveSoilType(profile){const county=profile.county||getDefaultCounty();if(!profile.soilType||profile.soilType==="auto")return(COUNTY_DATA[county]||COUNTY_DATA[getDefaultCounty()]).soil;return profile.soilType}
-function normalizeProfile(profile){const county=profile.county&&COUNTY_DATA[profile.county]?profile.county:getDefaultCounty();const subcounty=profile.subcounty&&COUNTY_DATA[county].subcounties.includes(profile.subcounty)?profile.subcounty:getDefaultSubcounty(county);const acres=profile.acres||"2.5";const soilSelection=profile.soilSelection||profile.soilType||"auto";const soilType=resolveSoilType({county,soilType:soilSelection});return{name:profile.name||"Farmer",phone:profile.phone||"",email:profile.email||"",county,subcounty,location:`${subcounty}, ${county}, Kenya`,soilSelection,soilType,acres,photo:profile.photo||"",latitude:profile.latitude??null,longitude:profile.longitude??null}}
-function updateSubcountyOptions(countySelectId,subcountySelectId,selected){const county=document.getElementById(countySelectId).value;const sub=document.getElementById(subcountySelectId);const options=(COUNTY_DATA[county]||COUNTY_DATA[getDefaultCounty()]).subcounties;sub.innerHTML=options.map(v=>`<option value="${v}">${v}</option>`).join("");sub.value=options.includes(selected)?selected:options[0]}
-function populateCountySelects(){const options=Object.keys(COUNTY_DATA).map(v=>`<option value="${v}">${v}</option>`).join("");["regCounty","editCounty"].forEach(id=>{const el=document.getElementById(id);if(el)el.innerHTML=options});updateSubcountyOptions("regCounty","regSubcounty");updateSubcountyOptions("editCounty","editSubcounty")}
-function updateProfile(p){p=normalizeProfile(p);$("#profileName").textContent=p.name;$("#profileLocation").textContent=p.location;$("#profileSubcounty").textContent=p.subcounty;$("#profileSoil").textContent=p.soilType;$("#profileAcres").textContent=`${p.acres} acres`;$("#panelSummary").textContent=`Profile: ${p.name} • ${p.subcounty}, ${p.county} • ${p.soilType} soil • ${p.acres} acres`;$("#profileInitials").textContent=initials(p.name);$("#location-note").textContent=p.latitude!==null&&p.longitude!==null?`Live location enabled near ${p.subcounty}, ${p.county} for weather and market updates.`:"Auto location will be used when available for weather and market updates.";const img=$("#profilePhoto"),init=$("#profileInitials");if(p.photo){img.src=p.photo;img.style.display="block";init.style.display="none"}else{img.removeAttribute("src");img.style.display="none";init.style.display="inline"}}
-function saveProfile(p){const normalized=normalizeProfile(p);localStorage.setItem("farmerData",JSON.stringify(normalized));updateProfile(normalized)}
-function loadChatHistory(){try{state.chatHistory=JSON.parse(localStorage.getItem("chatHistory")||"[]")}catch(e){state.chatHistory=[]}}
-function persistChatHistory(){localStorage.setItem("chatHistory",JSON.stringify(state.chatHistory.slice(0,12)))}
-function renderChatHistory(){const list=$("#history-list");if(!list)return;if(!state.chatHistory.length){list.innerHTML='<button class="history-item" type="button" onclick="newChat()">Start a new chat</button>';return}list.innerHTML=state.chatHistory.map((item,index)=>`<button class="history-item" type="button" onclick="restoreChatHistory(${index})">${item.preview}</button>`).join("")}
-function storeHistoryPreview(text){const preview=(text||"New chat").replace(/\s+/g," ").trim().slice(0,80)||"New chat";state.chatHistory.unshift({preview,timestamp:Date.now()});state.chatHistory=state.chatHistory.slice(0,12);persistChatHistory();renderChatHistory()}
-function restoreChatHistory(index){const item=state.chatHistory[index];if(!item)return;$("#user-input").value=item.preview;autoGrowInput();show("dashboard")}
-function ensureGeolocation(){if(!navigator.geolocation||state.appConfig&&state.appConfig.geolocation_enabled===false)return;navigator.geolocation.getCurrentPosition(pos=>{const lat=pos.coords.latitude,lon=pos.coords.longitude;state.geo={latitude:lat,longitude:lon};const profile=normalizeProfile(getProfile());if(profile.latitude===null||profile.longitude===null){const county=inferCountyFromCoords(lat,lon);const updated={...profile,county,subcounty:getDefaultSubcounty(county),latitude:lat,longitude:lon};saveProfile(updated)}else{$("#location-note").textContent=`Live location enabled near ${profile.subcounty}, ${profile.county} for weather and market updates.`}},()=>{}, {enableHighAccuracy:true,timeout:9000,maximumAge:300000})}
-function sessionId(){let id=localStorage.getItem("sessionId");if(!id){id=`session_${Date.now()}`;localStorage.setItem("sessionId",id)}return id}
-function togglePanel(){document.getElementById("panel").classList.toggle("show")}
-function closePanel(){document.getElementById("panel").classList.remove("show")}
-function bubble(text,role,options={}){const row=document.createElement("div");row.className=`msg ${role}`;const b=document.createElement("div");b.className="bubble";b.textContent=text;if(options.image){const img=document.createElement("img");img.src=options.image;img.alt=options.imageName||"Attached image";b.appendChild(img)}row.appendChild(b);$("#thread").appendChild(row);$("#thread").scrollTop=$("#thread").scrollHeight}
-function refreshAttachmentChip(){const chip=$("#attach-chip"),name=$("#attach-name"),btn=$("#attach-btn"),input=$("#image-input");if(state.attachment){name.textContent=`Image: ${state.attachment.name}`;chip.classList.add("show");btn.classList.add("active")}else{chip.classList.remove("show");btn.classList.remove("active");input.value=""}}
-function clearAttachment(){state.attachment=null;refreshAttachmentChip()}
-function setLiveTime(){const now=new Date();$("#live-time").textContent=now.toLocaleTimeString([], {hour:"2-digit",minute:"2-digit"})}
-function initClock(){setLiveTime();if(state.timeTimer)clearInterval(state.timeTimer);state.timeTimer=setInterval(setLiveTime,1000)}
-function autoGrowInput(){const input=$("#user-input");if(!input)return;input.style.height="auto";input.style.height=`${Math.min(input.scrollHeight,120)}px`}
-function guessSpeechLang(text){const lower=(text||"").toLowerCase();if(/\b(habari|shamba|mazao|mbolea|mvua|bei|wakulima|asante|tafadhali)\b/.test(lower))return"sw-KE";if(/\b(ber|puonj|cham|pacho|ngima|chiemo)\b/.test(lower))return"luo";return"en-US"}
-function stopSpeaking(){if("speechSynthesis" in window){window.speechSynthesis.cancel();state.speaking=false}}
-function speakReply(text){if(!state.voiceMode||!("speechSynthesis" in window))return Promise.resolve();stopSpeaking();const clean=text.replace(/[*_#`>]/g," ").trim();return new Promise(resolve=>{const utterance=new SpeechSynthesisUtterance(clean);utterance.lang=guessSpeechLang(clean);utterance.rate=.96;utterance.onstart=()=>{state.speaking=true};utterance.onend=()=>{state.speaking=false;resolve()};utterance.onerror=()=>{state.speaking=false;resolve()};window.speechSynthesis.speak(utterance)})}
-function restartVoiceIfNeeded(){if(state.voiceMode&&state.recognition&&!state.listening&&!state.speaking){try{state.recognition.start()}catch(e){}}}
-function updateVoiceButton(){const btn=$("#voice-mode-btn"),mic=$("#mic-btn"),hero=$("#hero-mic-btn");const label=state.voiceMode?"Stop voice consultation":"Start voice consultation";if(btn)btn.textContent=label;[mic,hero].forEach(el=>{if(el)el.classList.toggle("active",state.listening||state.voiceMode)})}
-function initVoice(){const SpeechRecognition=window.SpeechRecognition||window.webkitSpeechRecognition;if(!SpeechRecognition){$("#mic-btn").disabled=true;$("#hero-mic-btn").disabled=true;$("#voice-mode-btn").disabled=true;$("#mic-btn").title="Voice input is not supported in this browser";$("#voice-mode-btn").textContent="Voice consultation unavailable";return}const recognition=new SpeechRecognition();recognition.continuous=false;recognition.interimResults=true;recognition.lang="en-US";recognition.onstart=()=>{state.listening=true;stopSpeaking();updateVoiceButton()};recognition.onend=()=>{state.listening=false;updateVoiceButton();if(state.voiceMode&&!state.speaking)restartVoiceIfNeeded()};recognition.onerror=()=>{state.listening=false;updateVoiceButton()};recognition.onresult=async e=>{const transcript=Array.from(e.results).map(r=>r[0].transcript).join(" ").trim();if(!transcript)return;$("#user-input").value=transcript;autoGrowInput();const last=e.results[e.results.length-1];if(last&&last.isFinal){await send(transcript,undefined,true);$("#user-input").value="";autoGrowInput()}};state.recognition=recognition;updateVoiceButton()}
-function toggleVoice(){if(!state.recognition)return;stopSpeaking();if(state.listening){state.recognition.stop();return}state.recognition.start()}
-function toggleVoiceConsultation(){state.voiceMode=!state.voiceMode;stopSpeaking();if(!state.voiceMode&&state.listening&&state.recognition)state.recognition.stop();updateVoiceButton();if(state.voiceMode)restartVoiceIfNeeded()}
-function openProfileEditor(){const profile=normalizeProfile(getProfile());$("#editCounty").value=profile.county;updateSubcountyOptions("editCounty","editSubcounty",profile.subcounty);$("#editSoilType").value=profile.soilSelection||"auto";$("#editAcres").value=profile.acres;$("#profile-editor").classList.add("show");closePanel()}
-function closeProfileEditor(){$("#profile-editor").classList.remove("show")}
-function saveProfileEditor(){const profile=normalizeProfile({...getProfile(),county:$("#editCounty").value,subcounty:$("#editSubcounty").value,soilSelection:$("#editSoilType").value,soilType:$("#editSoilType").value,acres:$("#editAcres").value||"2.5"});saveProfile(profile);closeProfileEditor()}
-function newChat(){$("#thread").innerHTML="";state.context="general";clearAttachment();closePanel()}
-async function loadAppConfig(){try{const res=await fetch("/app-config");if(!res.ok)return;state.appConfig=await res.json();const number=state.appConfig.voice_number;if(number){$("#voice-call-link").href=`tel:${number}`;$("#voice-call-label").textContent=`Phone consultation: ${number}`;$("#voice-call-box").classList.add("show")}ensureGeolocation()}catch(e){}}
-async function ask(message,context){const p=normalizeProfile(getProfile()),county=p.county,sublocation=p.subcounty,profileNote=`Farmer profile context: county ${p.county}; subcounty ${p.subcounty}; soil type ${p.soilType}.`;const res=await fetch("/chat",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({message:`${message}\n\n${profileNote}`,session_id:sessionId(),county,sublocation,context:context||state.context,language:"en",latitude:p.latitude??state.geo?.latitude??null,longitude:p.longitude??state.geo?.longitude??null})});const data=await res.json();return data.reply||"Sorry, I could not connect. Please try again."}
-async function send(message,context,fromVoice=false){const text=message.trim();const attachment=state.attachment;if((!text&&!attachment)||state.sending)return;state.sending=true;state.context=context||state.context;let outbound=text;if(attachment&&!outbound)outbound="Please help me with the farming issue shown in my uploaded image.";if(attachment)outbound=`${outbound}\n\nAttached image: ${attachment.name}. I uploaded a farm image in the chat UI, so please answer based on my written description and tell me what details to inspect in the photo.`;bubble(text||"Uploaded a farm image for review.","user",attachment?{image:attachment.dataUrl,imageName:attachment.name}:{});if(text)storeHistoryPreview(text);try{const reply=await ask(outbound,context);bubble(reply,"bot");if(state.voiceMode||fromVoice)await speakReply(reply)}catch(e){bubble("Sorry, I could not connect. Please try again.","bot")}finally{state.sending=false;clearAttachment();if(state.voiceMode)restartVoiceIfNeeded()}}
-function login(e){e.preventDefault();const existing=getProfile();if(!existing.name){saveProfile({name:"Farmer",email:$("#loginEmail").value.trim(),county:getDefaultCounty(),subcounty:getDefaultSubcounty(getDefaultCounty()),soilSelection:"auto",soilType:"auto",acres:"2.5"})}else updateProfile(existing);localStorage.setItem("isLoggedIn","true");document.getElementById("rememberMe").checked?localStorage.setItem("rememberMe","true"):localStorage.removeItem("rememberMe");sessionId();show("dashboard")}
-function register(e){e.preventDefault();const p={name:$("#regName").value.trim(),phone:$("#regPhone").value.trim(),email:$("#regEmail").value.trim(),county:$("#regCounty").value,subcounty:$("#regSubcounty").value,soilSelection:$("#regSoilType").value,soilType:$("#regSoilType").value,acres:$("#regAcres").value.trim()},file=$("#regPhoto");const finish=photo=>{if(photo)p.photo=photo;saveProfile(p);localStorage.setItem("isLoggedIn","true");sessionId();show("dashboard");newChat()};if(file.files&&file.files[0]){const r=new FileReader();r.onload=e2=>finish(e2.target.result);r.readAsDataURL(file.files[0]);return}finish("")}
-function logout(){localStorage.removeItem("isLoggedIn");localStorage.removeItem("rememberMe");localStorage.removeItem("sessionId");show("login-page");setAuth("login-form");newChat();closePanel()}
-document.addEventListener("DOMContentLoaded",()=>{document.querySelectorAll(".tab").forEach(t=>t.addEventListener("click",()=>setAuth(t.dataset.target)));populateCountySelects();$("#regCounty").addEventListener("change",()=>updateSubcountyOptions("regCounty","regSubcounty"));$("#editCounty").addEventListener("change",()=>updateSubcountyOptions("editCounty","editSubcounty"));$("#login-form").addEventListener("submit",login);$("#register-form").addEventListener("submit",register);document.querySelectorAll(".prompt").forEach(p=>p.addEventListener("click",()=>send(p.dataset.prompt,p.dataset.context)));$("#send-btn").addEventListener("click",async()=>{const i=$("#user-input"),m=i.value;i.value="";autoGrowInput();await send(m)});$("#user-input").addEventListener("input",autoGrowInput);$("#user-input").addEventListener("keydown",async e=>{if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();const i=$("#user-input"),m=i.value;i.value="";autoGrowInput();await send(m)}});$("#attach-btn").addEventListener("click",()=>$("#image-input").click());$("#image-input").addEventListener("change",e=>{const file=e.target.files&&e.target.files[0];if(!file)return;const reader=new FileReader();reader.onload=e2=>{state.attachment={name:file.name,dataUrl:e2.target.result};refreshAttachmentChip()};reader.readAsDataURL(file)});$("#mic-btn").addEventListener("click",toggleVoice);$("#hero-mic-btn").addEventListener("click",toggleVoiceConsultation);$("#profile-editor").addEventListener("click",e=>{if(e.target.id==="profile-editor")closeProfileEditor()});loadChatHistory();renderChatHistory();updateProfile(getProfile());refreshAttachmentChip();autoGrowInput();initClock();initVoice();loadAppConfig();if(localStorage.getItem("isLoggedIn")==="true"){sessionId();show("dashboard")}document.addEventListener("click",e=>{const panel=$("#panel"),gear=document.querySelector(".gear");if(panel&&!panel.contains(e.target)&&gear&&!gear.contains(e.target))closePanel()})});
+
+const SPEECH_LANG_META = {
+  en: { label: "English", recognition: "en-KE", synthesis: ["en-KE", "en-GB", "en-US"] },
+  sw: { label: "Kiswahili", recognition: "sw-KE", synthesis: ["sw-KE", "sw", "en-KE"] },
+  luo: { label: "Luo", recognition: "en-KE", synthesis: ["x-luo", "luo", "en-KE", "en-GB"] }
+};
+
+const state = {
+  context: "general",
+  sending: false,
+  attachment: null,
+  recognition: null,
+  listening: false,
+  timeTimer: null,
+  voiceMode: false,
+  speaking: false,
+  appConfig: null,
+  geo: null,
+  chatHistory: [],
+  currentUtterance: null,
+  currentLanguage: "en"
+};
+
+const $ = selector => document.querySelector(selector);
+
+function initials(name) {
+  return (name || "Farmer").trim().split(/\s+/).slice(0, 2).map(part => part[0].toUpperCase()).join("") || "FS";
+}
+
+function getDefaultCounty() {
+  return "Nakuru";
+}
+
+function getDefaultSubcounty(county) {
+  const data = COUNTY_DATA[county] || COUNTY_DATA[getDefaultCounty()];
+  return data.subcounties[0];
+}
+
+function getProfile() {
+  try {
+    return JSON.parse(localStorage.getItem("farmerData") || "{}");
+  } catch (error) {
+    return {};
+  }
+}
+
+function distance(aLat, aLon, bLat, bLon) {
+  const toRad = value => value * Math.PI / 180;
+  const dLat = toRad(bLat - aLat);
+  const dLon = toRad(bLon - aLon);
+  const hav = Math.sin(dLat / 2) ** 2 + Math.cos(toRad(aLat)) * Math.cos(toRad(bLat)) * Math.sin(dLon / 2) ** 2;
+  return 6371 * 2 * Math.atan2(Math.sqrt(hav), Math.sqrt(1 - hav));
+}
+
+function inferCountyFromCoords(lat, lon) {
+  let best = getDefaultCounty();
+  let bestDistance = Infinity;
+  Object.entries(COUNTY_COORDS).forEach(([county, coords]) => {
+    const value = distance(lat, lon, coords[0], coords[1]);
+    if (value < bestDistance) {
+      bestDistance = value;
+      best = county;
+    }
+  });
+  return best;
+}
+
+function resolveSoilType(profile) {
+  const county = profile.county || getDefaultCounty();
+  if (!profile.soilType || profile.soilType === "auto") {
+    return (COUNTY_DATA[county] || COUNTY_DATA[getDefaultCounty()]).soil;
+  }
+  return profile.soilType;
+}
+
+function normalizeProfile(profile) {
+  const county = profile.county && COUNTY_DATA[profile.county] ? profile.county : getDefaultCounty();
+  const subcounty = profile.subcounty && COUNTY_DATA[county].subcounties.includes(profile.subcounty)
+    ? profile.subcounty
+    : getDefaultSubcounty(county);
+  const soilSelection = profile.soilSelection || profile.soilType || "auto";
+  const soilType = resolveSoilType({ county, soilType: soilSelection });
+  return {
+    name: profile.name || "Farmer",
+    phone: profile.phone || "",
+    email: profile.email || "",
+    county,
+    subcounty,
+    location: `${subcounty}, ${county}, Kenya`,
+    soilSelection,
+    soilType,
+    acres: profile.acres || "2.5",
+    photo: profile.photo || "",
+    latitude: profile.latitude ?? null,
+    longitude: profile.longitude ?? null
+  };
+}
+
+function updateSubcountyOptions(countySelectId, subcountySelectId, selectedValue) {
+  const county = document.getElementById(countySelectId).value;
+  const subcountySelect = document.getElementById(subcountySelectId);
+  const options = (COUNTY_DATA[county] || COUNTY_DATA[getDefaultCounty()]).subcounties;
+  subcountySelect.innerHTML = options.map(option => `<option value="${option}">${option}</option>`).join("");
+  subcountySelect.value = options.includes(selectedValue) ? selectedValue : options[0];
+}
+
+function populateCountySelects() {
+  const options = Object.keys(COUNTY_DATA).map(county => `<option value="${county}">${county}</option>`).join("");
+  ["regCounty", "editCounty"].forEach(id => {
+    const element = document.getElementById(id);
+    if (element) {
+      element.innerHTML = options;
+    }
+  });
+  updateSubcountyOptions("regCounty", "regSubcounty");
+  updateSubcountyOptions("editCounty", "editSubcounty");
+}
+
+function setVoiceStatus(message) {
+  $("#voice-status").textContent = message;
+}
+
+function setCurrentLanguage(language) {
+  state.currentLanguage = SPEECH_LANG_META[language] ? language : "en";
+  $("#voice-language").textContent = SPEECH_LANG_META[state.currentLanguage].label;
+}
+
+function detectConversationLanguage(text) {
+  const lower = (text || "").toLowerCase();
+  const swPattern = /\b(habari|shamba|mazao|mbolea|mvua|bei|wakulima|asante|tafadhali|msaada|kilimo|panda|vuna|udongo|soko)\b/;
+  const luoPattern = /\b(ber|puonj|cham|pacho|ngima|chiemo|dala|puodho|koth|yath|nyithindo)\b/;
+  if (luoPattern.test(lower)) {
+    return "luo";
+  }
+  if (swPattern.test(lower)) {
+    return "sw";
+  }
+  return "en";
+}
+
+function updateProfile(profile) {
+  const normalized = normalizeProfile(profile);
+  $("#profileName").textContent = normalized.name;
+  $("#profileLocation").textContent = normalized.location;
+  $("#profileSubcounty").textContent = normalized.subcounty;
+  $("#profileSoil").textContent = normalized.soilType;
+  $("#profileAcres").textContent = `${normalized.acres} acres`;
+  $("#panelSummary").textContent = `Profile: ${normalized.name} | ${normalized.subcounty}, ${normalized.county} | ${normalized.soilType} soil | ${normalized.acres} acres`;
+  $("#profileInitials").textContent = initials(normalized.name);
+  $("#location-note").textContent = normalized.latitude !== null && normalized.longitude !== null
+    ? `Live location enabled near ${normalized.subcounty}, ${normalized.county} for weather and market updates.`
+    : "Live location will be used when available so weather and market updates stay relevant to where the farmer is.";
+
+  const img = $("#profilePhoto");
+  const initialsWrap = $("#profileInitials");
+  if (normalized.photo) {
+    img.src = normalized.photo;
+    img.style.display = "block";
+    initialsWrap.style.display = "none";
+  } else {
+    img.removeAttribute("src");
+    img.style.display = "none";
+    initialsWrap.style.display = "inline";
+  }
+}
+
+function saveProfile(profile) {
+  const normalized = normalizeProfile(profile);
+  localStorage.setItem("farmerData", JSON.stringify(normalized));
+  updateProfile(normalized);
+}
+
+function clearStoredProfile() {
+  localStorage.removeItem("farmerData");
+  updateProfile({});
+  closePanel();
+  openSetupModal();
+}
+
+function loadChatHistory() {
+  try {
+    state.chatHistory = JSON.parse(localStorage.getItem("chatHistory") || "[]");
+  } catch (error) {
+    state.chatHistory = [];
+  }
+}
+
+function persistChatHistory() {
+  localStorage.setItem("chatHistory", JSON.stringify(state.chatHistory.slice(0, 12)));
+}
+
+function renderChatHistory() {
+  const list = $("#history-list");
+  if (!state.chatHistory.length) {
+    list.innerHTML = '<button class="history-item" type="button" onclick="newChat()">Start a new chat</button>';
+    return;
+  }
+  list.innerHTML = state.chatHistory.map((item, index) => (
+    `<button class="history-item" type="button" onclick="restoreChatHistory(${index})">${item.preview}</button>`
+  )).join("");
+}
+
+function storeHistoryPreview(text) {
+  const preview = (text || "New chat").replace(/\s+/g, " ").trim().slice(0, 80) || "New chat";
+  state.chatHistory.unshift({ preview, timestamp: Date.now() });
+  state.chatHistory = state.chatHistory.slice(0, 12);
+  persistChatHistory();
+  renderChatHistory();
+}
+
+function restoreChatHistory(index) {
+  const item = state.chatHistory[index];
+  if (!item) {
+    return;
+  }
+  $("#user-input").value = item.preview;
+  autoGrowInput();
+}
+
+function ensureGeolocation() {
+  if (!navigator.geolocation || (state.appConfig && state.appConfig.geolocation_enabled === false)) {
+    return;
+  }
+  navigator.geolocation.getCurrentPosition(position => {
+    const latitude = position.coords.latitude;
+    const longitude = position.coords.longitude;
+    state.geo = { latitude, longitude };
+    const profile = normalizeProfile(getProfile());
+    if (profile.latitude === null || profile.longitude === null) {
+      const county = inferCountyFromCoords(latitude, longitude);
+      saveProfile({
+        ...profile,
+        county,
+        subcounty: getDefaultSubcounty(county),
+        latitude,
+        longitude
+      });
+    } else {
+      $("#location-note").textContent = `Live location enabled near ${profile.subcounty}, ${profile.county} for weather and market updates.`;
+    }
+  }, () => {}, { enableHighAccuracy: true, timeout: 9000, maximumAge: 300000 });
+}
+
+function sessionId() {
+  let id = localStorage.getItem("sessionId");
+  if (!id) {
+    id = `session_${Date.now()}`;
+    localStorage.setItem("sessionId", id);
+  }
+  return id;
+}
+
+function togglePanel() {
+  $("#panel").classList.toggle("show");
+}
+
+function closePanel() {
+  $("#panel").classList.remove("show");
+}
+
+function bubble(text, role, options = {}) {
+  const row = document.createElement("div");
+  row.className = `msg ${role}`;
+  const container = document.createElement("div");
+  container.className = "bubble";
+  container.textContent = text;
+  if (options.image) {
+    const img = document.createElement("img");
+    img.src = options.image;
+    img.alt = options.imageName || "Attached image";
+    container.appendChild(img);
+  }
+  row.appendChild(container);
+  $("#thread").appendChild(row);
+  $("#thread").scrollTop = $("#thread").scrollHeight;
+}
+
+function refreshAttachmentChip() {
+  const chip = $("#attach-chip");
+  const name = $("#attach-name");
+  const button = $("#attach-btn");
+  const input = $("#image-input");
+  if (state.attachment) {
+    name.textContent = `Image: ${state.attachment.name}`;
+    chip.classList.add("show");
+    button.classList.add("active");
+  } else {
+    chip.classList.remove("show");
+    button.classList.remove("active");
+    input.value = "";
+  }
+}
+
+function clearAttachment() {
+  state.attachment = null;
+  refreshAttachmentChip();
+}
+
+function setLiveTime() {
+  const now = new Date();
+  $("#live-time").textContent = now.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+}
+
+function initClock() {
+  setLiveTime();
+  if (state.timeTimer) {
+    clearInterval(state.timeTimer);
+  }
+  state.timeTimer = setInterval(setLiveTime, 1000);
+}
+
+function autoGrowInput() {
+  const input = $("#user-input");
+  input.style.height = "auto";
+  input.style.height = `${Math.min(input.scrollHeight, 130)}px`;
+}
+
+function getSpeechMeta(language) {
+  return SPEECH_LANG_META[language] || SPEECH_LANG_META.en;
+}
+
+function getVoices() {
+  return window.speechSynthesis ? window.speechSynthesis.getVoices() : [];
+}
+
+function chooseVoice(language) {
+  const voices = getVoices();
+  const meta = getSpeechMeta(language);
+  const priorities = meta.synthesis.map(code => code.toLowerCase());
+  return voices.find(voice => priorities.includes((voice.lang || "").toLowerCase()))
+    || voices.find(voice => priorities.some(code => (voice.lang || "").toLowerCase().startsWith(code.split("-")[0])))
+    || voices.find(voice => /kenya|afrika|african/i.test(`${voice.name} ${voice.lang}`))
+    || null;
+}
+
+function stopSpeaking() {
+  if (!("speechSynthesis" in window)) {
+    state.speaking = false;
+    state.currentUtterance = null;
+    return;
+  }
+  window.speechSynthesis.cancel();
+  state.speaking = false;
+  state.currentUtterance = null;
+}
+
+function startListening() {
+  if (!state.recognition || state.listening) {
+    return;
+  }
+  const meta = getSpeechMeta(state.currentLanguage);
+  state.recognition.lang = meta.recognition;
+  stopSpeaking();
+  try {
+    state.recognition.start();
+  } catch (error) {}
+}
+
+function stopListening() {
+  if (state.recognition && state.listening) {
+    state.recognition.stop();
+  }
+}
+
+function updateVoiceButton() {
+  const buttons = [$("#hero-mic-btn"), $("#voice-mode-btn")];
+  buttons.forEach(button => {
+    if (!button) {
+      return;
+    }
+    if (button.id === "voice-mode-btn") {
+      button.textContent = state.voiceMode ? "Stop voice consultation" : "Start voice consultation";
+    } else {
+      button.classList.toggle("active", state.listening || state.voiceMode || state.speaking);
+    }
+  });
+}
+
+function restartVoiceIfNeeded() {
+  if (state.voiceMode && !state.sending && !state.listening) {
+    startListening();
+  }
+}
+
+function speakReply(text, language) {
+  if (!("speechSynthesis" in window) || (!state.voiceMode && !language)) {
+    return Promise.resolve();
+  }
+  const resolvedLanguage = language || state.currentLanguage || detectConversationLanguage(text);
+  setCurrentLanguage(resolvedLanguage);
+  stopSpeaking();
+  const cleaned = text.replace(/[*_#`>]/g, " ").replace(/\s+/g, " ").trim();
+  if (!cleaned) {
+    return Promise.resolve();
+  }
+  return new Promise(resolve => {
+    const utterance = new SpeechSynthesisUtterance(cleaned);
+    const meta = getSpeechMeta(resolvedLanguage);
+    utterance.lang = meta.synthesis[0];
+    utterance.rate = 0.96;
+    utterance.pitch = 1;
+    const voice = chooseVoice(resolvedLanguage);
+    if (voice) {
+      utterance.voice = voice;
+      utterance.lang = voice.lang;
+    }
+    utterance.onstart = () => {
+      state.speaking = true;
+      state.currentUtterance = utterance;
+      setVoiceStatus(`Speaking in ${getSpeechMeta(resolvedLanguage).label}. Tap the microphone to interrupt.`);
+      updateVoiceButton();
+    };
+    utterance.onend = () => {
+      state.speaking = false;
+      state.currentUtterance = null;
+      updateVoiceButton();
+      setVoiceStatus(state.voiceMode ? "Listening for the next farming question." : "Voice ready for English, Kiswahili, and Luo.");
+      resolve();
+      restartVoiceIfNeeded();
+    };
+    utterance.onerror = () => {
+      state.speaking = false;
+      state.currentUtterance = null;
+      updateVoiceButton();
+      setVoiceStatus("Voice output is available when the browser has a matching speech voice.");
+      resolve();
+      restartVoiceIfNeeded();
+    };
+    window.speechSynthesis.speak(utterance);
+  });
+}
+
+function initVoice() {
+  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SpeechRecognition) {
+    $("#hero-mic-btn").disabled = true;
+    $("#voice-mode-btn").disabled = true;
+    setVoiceStatus("Voice input is not supported in this browser.");
+    return;
+  }
+
+  const recognition = new SpeechRecognition();
+  recognition.continuous = false;
+  recognition.interimResults = true;
+  recognition.lang = getSpeechMeta(state.currentLanguage).recognition;
+
+  recognition.onstart = () => {
+    state.listening = true;
+    stopSpeaking();
+    setVoiceStatus(`Listening in ${getSpeechMeta(state.currentLanguage).label}.`);
+    updateVoiceButton();
+  };
+
+  recognition.onend = () => {
+    state.listening = false;
+    updateVoiceButton();
+    if (!state.sending) {
+      setVoiceStatus(state.voiceMode ? "Voice mode is on. Waiting to listen again." : "Voice ready for English, Kiswahili, and Luo.");
+    }
+    if (state.voiceMode && !state.speaking && !state.sending) {
+      setTimeout(restartVoiceIfNeeded, 150);
+    }
+  };
+
+  recognition.onerror = () => {
+    state.listening = false;
+    updateVoiceButton();
+    setVoiceStatus("Voice input had trouble hearing that. Try again.");
+  };
+
+  recognition.onresult = async event => {
+    const transcript = Array.from(event.results).map(result => result[0].transcript).join(" ").trim();
+    if (!transcript) {
+      return;
+    }
+    $("#user-input").value = transcript;
+    autoGrowInput();
+    const detectedLanguage = detectConversationLanguage(transcript);
+    setCurrentLanguage(detectedLanguage);
+    const last = event.results[event.results.length - 1];
+    if (last && last.isFinal) {
+      setVoiceStatus("Question captured. Sending to the assistant.");
+      await send(transcript, undefined, true);
+      $("#user-input").value = "";
+      autoGrowInput();
+    }
+  };
+
+  state.recognition = recognition;
+  updateVoiceButton();
+
+  if ("speechSynthesis" in window) {
+    window.speechSynthesis.onvoiceschanged = () => {
+      chooseVoice(state.currentLanguage);
+    };
+  }
+}
+
+function handleMicPress() {
+  if (!state.recognition) {
+    return;
+  }
+  if (state.speaking) {
+    stopSpeaking();
+    startListening();
+    return;
+  }
+  if (state.listening) {
+    stopListening();
+    return;
+  }
+  startListening();
+}
+
+function toggleVoiceConsultation() {
+  state.voiceMode = !state.voiceMode;
+  updateVoiceButton();
+  closePanel();
+  if (state.voiceMode) {
+    setVoiceStatus("Voice mode is on. Speak your farming question.");
+    startListening();
+  } else {
+    stopSpeaking();
+    stopListening();
+    setVoiceStatus("Voice consultation stopped.");
+  }
+}
+
+function openSetupModal(prefill = {}) {
+  const profile = normalizeProfile({ ...getProfile(), ...prefill });
+  $("#regName").value = profile.name === "Farmer" ? "" : profile.name;
+  $("#regPhone").value = profile.phone;
+  $("#regEmail").value = profile.email;
+  $("#regCounty").value = profile.county;
+  updateSubcountyOptions("regCounty", "regSubcounty", profile.subcounty);
+  $("#regSoilType").value = profile.soilSelection || "auto";
+  $("#regAcres").value = profile.acres;
+  $("#regPhoto").value = "";
+  $("#setup-modal").classList.add("show");
+}
+
+function closeSetupModal() {
+  $("#setup-modal").classList.remove("show");
+}
+
+function openProfileEditor() {
+  const profile = normalizeProfile(getProfile());
+  $("#editName").value = profile.name === "Farmer" ? "" : profile.name;
+  $("#editPhone").value = profile.phone;
+  $("#editEmail").value = profile.email;
+  $("#editCounty").value = profile.county;
+  updateSubcountyOptions("editCounty", "editSubcounty", profile.subcounty);
+  $("#editSoilType").value = profile.soilSelection || "auto";
+  $("#editAcres").value = profile.acres;
+  $("#editPhoto").value = "";
+  $("#profile-editor").classList.add("show");
+  closePanel();
+}
+
+function closeProfileEditor() {
+  $("#profile-editor").classList.remove("show");
+}
+
+function readImageFile(file) {
+  return new Promise(resolve => {
+    if (!file) {
+      resolve("");
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = event => resolve(event.target.result || "");
+    reader.onerror = () => resolve("");
+    reader.readAsDataURL(file);
+  });
+}
+
+async function saveSetupProfile() {
+  const photo = await readImageFile($("#regPhoto").files && $("#regPhoto").files[0]);
+  const profile = {
+    ...getProfile(),
+    name: $("#regName").value.trim() || "Farmer",
+    phone: $("#regPhone").value.trim(),
+    email: $("#regEmail").value.trim(),
+    county: $("#regCounty").value,
+    subcounty: $("#regSubcounty").value,
+    soilSelection: $("#regSoilType").value,
+    soilType: $("#regSoilType").value,
+    acres: $("#regAcres").value.trim() || "2.5"
+  };
+  if (photo) {
+    profile.photo = photo;
+  }
+  saveProfile(profile);
+  closeSetupModal();
+}
+
+async function saveProfileEditor() {
+  const current = normalizeProfile(getProfile());
+  const photo = await readImageFile($("#editPhoto").files && $("#editPhoto").files[0]);
+  const profile = {
+    ...current,
+    name: $("#editName").value.trim() || "Farmer",
+    phone: $("#editPhone").value.trim(),
+    email: $("#editEmail").value.trim(),
+    county: $("#editCounty").value,
+    subcounty: $("#editSubcounty").value,
+    soilSelection: $("#editSoilType").value,
+    soilType: $("#editSoilType").value,
+    acres: $("#editAcres").value.trim() || "2.5"
+  };
+  if (photo) {
+    profile.photo = photo;
+  }
+  saveProfile(profile);
+  closeProfileEditor();
+}
+
+function newChat() {
+  $("#thread").innerHTML = "";
+  state.context = "general";
+  clearAttachment();
+  closePanel();
+  bubble("Welcome to Fahamu Shamba. Ask about crops, weather, pests, market prices, or your farm profile.", "bot");
+}
+
+async function loadAppConfig() {
+  try {
+    const response = await fetch("/app-config");
+    if (!response.ok) {
+      return;
+    }
+    state.appConfig = await response.json();
+    const number = state.appConfig.voice_number;
+    if (number) {
+      $("#voice-call-link").href = `tel:${number}`;
+      $("#voice-call-label").textContent = `Phone consultation: ${number}`;
+      $("#voice-call-box").classList.add("show");
+    }
+    ensureGeolocation();
+  } catch (error) {}
+}
+
+async function ask(message, contextOverride) {
+  const profile = normalizeProfile(getProfile());
+  const county = profile.county;
+  const sublocation = profile.subcounty;
+  const detectedLanguage = detectConversationLanguage(message);
+  setCurrentLanguage(detectedLanguage);
+  const profileNote = `Farmer profile context: county ${profile.county}; subcounty ${profile.subcounty}; soil type ${profile.soilType}.`;
+  const response = await fetch("/chat", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      message: `${message}\n\n${profileNote}`,
+      session_id: sessionId(),
+      county,
+      sublocation,
+      context: contextOverride || state.context,
+      language: detectedLanguage,
+      latitude: profile.latitude ?? state.geo?.latitude ?? null,
+      longitude: profile.longitude ?? state.geo?.longitude ?? null
+    })
+  });
+  const data = await response.json();
+  return { reply: data.reply || "Sorry, I could not connect. Please try again.", language: data.language || detectedLanguage };
+}
+
+async function send(message, contextOverride, fromVoice = false) {
+  const text = (message || "").trim();
+  const attachment = state.attachment;
+  if ((!text && !attachment) || state.sending) {
+    return;
+  }
+
+  state.sending = true;
+  state.context = contextOverride || state.context;
+  stopSpeaking();
+  stopListening();
+
+  let outbound = text;
+  if (attachment && !outbound) {
+    outbound = "Please help me with the farming issue shown in my uploaded image.";
+  }
+  if (attachment) {
+    outbound = `${outbound}\n\nAttached image: ${attachment.name}. I uploaded a farm image in the chat UI, so please answer based on my written description and tell me what details to inspect in the photo.`;
+  }
+
+  bubble(text || "Uploaded a farm image for review.", "user", attachment ? { image: attachment.dataUrl, imageName: attachment.name } : {});
+  if (text) {
+    storeHistoryPreview(text);
+  }
+
+  try {
+    const result = await ask(outbound, contextOverride);
+    bubble(result.reply, "bot");
+    if (state.voiceMode || fromVoice) {
+      await speakReply(result.reply, result.language);
+    }
+  } catch (error) {
+    bubble("Sorry, I could not connect. Please try again.", "bot");
+    setVoiceStatus("The chat request failed. You can try again.");
+  } finally {
+    state.sending = false;
+    clearAttachment();
+    if (!state.voiceMode) {
+      setVoiceStatus("Voice ready for English, Kiswahili, and Luo.");
+    } else if (!state.speaking) {
+      restartVoiceIfNeeded();
+    }
+  }
+}
+
+function primeProfileIfMissing() {
+  const stored = getProfile();
+  if (!stored || Object.keys(stored).length === 0) {
+    saveProfile({});
+    openSetupModal();
+  } else {
+    updateProfile(stored);
+  }
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+  populateCountySelects();
+  $("#regCounty").addEventListener("change", () => updateSubcountyOptions("regCounty", "regSubcounty"));
+  $("#editCounty").addEventListener("change", () => updateSubcountyOptions("editCounty", "editSubcounty"));
+
+  document.querySelectorAll(".prompt").forEach(prompt => {
+    prompt.addEventListener("click", () => send(prompt.dataset.prompt, prompt.dataset.context));
+  });
+
+  $("#send-btn").addEventListener("click", async () => {
+    const input = $("#user-input");
+    const message = input.value;
+    input.value = "";
+    autoGrowInput();
+    await send(message);
+  });
+
+  $("#user-input").addEventListener("input", autoGrowInput);
+  $("#user-input").addEventListener("keydown", async event => {
+    if (event.key === "Enter" && !event.shiftKey) {
+      event.preventDefault();
+      const input = $("#user-input");
+      const message = input.value;
+      input.value = "";
+      autoGrowInput();
+      await send(message);
+    }
+  });
+
+  $("#attach-btn").addEventListener("click", () => $("#image-input").click());
+  $("#image-input").addEventListener("change", event => {
+    const file = event.target.files && event.target.files[0];
+    if (!file) {
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = loadEvent => {
+      state.attachment = { name: file.name, dataUrl: loadEvent.target.result };
+      refreshAttachmentChip();
+    };
+    reader.readAsDataURL(file);
+  });
+
+  $("#hero-mic-btn").addEventListener("click", handleMicPress);
+  $("#hero-mic-btn").addEventListener("pointerdown", () => {
+    if (state.speaking) {
+      stopSpeaking();
+      setVoiceStatus("Assistant speech interrupted. Listening now.");
+    }
+  });
+
+  $("#setup-modal").addEventListener("click", event => {
+    if (event.target.id === "setup-modal") {
+      closeSetupModal();
+    }
+  });
+
+  $("#profile-editor").addEventListener("click", event => {
+    if (event.target.id === "profile-editor") {
+      closeProfileEditor();
+    }
+  });
+
+  loadChatHistory();
+  renderChatHistory();
+  updateProfile(getProfile());
+  refreshAttachmentChip();
+  autoGrowInput();
+  initClock();
+  setCurrentLanguage("en");
+  initVoice();
+  loadAppConfig();
+  primeProfileIfMissing();
+  newChat();
+
+  document.addEventListener("click", event => {
+    const panel = $("#panel");
+    const gear = document.querySelector(".gear");
+    if (panel && !panel.contains(event.target) && gear && !gear.contains(event.target)) {
+      closePanel();
+    }
+  });
+});
 </script>
 </body>
 </html>
