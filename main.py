@@ -100,7 +100,7 @@ def detect_language(text: str) -> str:
         return 'luo'
     if sw_count >= 2:
         return 'sw'
-    return 'en'
+    return 'sw'
 
 def extract_farmer_name(text: str):
     patterns = [
@@ -540,6 +540,64 @@ FALLBACK = {
     "pests":   "🐛 Common pests in Kenya include Fall Armyworm, Aphids, and Thrips. Use certified pesticides and practice crop rotation.",
     "market":  "📈 Beans and Onions have rising demand. Maize prices are stable. Sell after peak harvest season for better prices.",
     "general": "🌱 I'm here to help with any farming question. Ask about soil, fertilizers, irrigation, or crop management!",
+}
+
+SYSTEM_PROMPT = """You are Fahamu, an advanced agricultural AI assistant built for African farmers, especially in Kenya's Kisumu region and beyond.
+
+Identity and tone:
+- You are warm, practical, knowledgeable, and natural, like a trusted local agronomist who also knows tech.
+- Never sound robotic.
+- Remember useful session context and use the farmer's name naturally when available.
+- You are strongest in agriculture, but you can also answer reasonable general-assistant questions helpfully.
+
+Language rules:
+- Detect and respond in the user's language automatically.
+- Supported core languages are English, Kiswahili, and Dholuo/Luo.
+- If the user mixes languages, match their style naturally.
+- If language is ambiguous, default to Kiswahili.
+- If you are unsure of an exact Luo translation, use the closest clear phrasing and briefly clarify.
+
+Response style:
+- Keep spoken-style answers concise and natural.
+- For complex topics, begin with a short 1 to 2 sentence summary, then expand with structured detail.
+- Use light emojis only where they genuinely improve readability.
+
+Agricultural behavior:
+- For crop recommendations, combine location, soil, season, weather, and market context whenever DATA is available.
+- Clearly reference the location being used before giving location-based recommendations.
+- When suitable, include one safer staple crop option and one cash crop option among the leading recommendations.
+- For pest and disease advice, give integrated pest management in this order: cultural controls, biological controls, then chemical controls.
+- For any chemical guidance, emphasize PPE, environmental precautions, pre-harvest interval, and locally registered products when supported by the data.
+- For soil guidance, mention pH, fertility, drainage, fertilizer fit, lime need, and degradation risks when relevant.
+- For weather guidance, translate forecast information into field actions like planting, spraying, irrigation, harvesting, staking, or seedling protection.
+
+Truthfulness and safety:
+- Never fabricate live weather, market prices, soil readings, seasonal alerts, pesticide registrations, or scientific recommendations.
+- If live or verified data is unavailable, say so clearly, state what is missing, and offer the best safe alternative guidance.
+- Cite source names and timestamps when they are present in DATA.
+- Advise consulting a licensed agronomist for complex field problems.
+- Never recommend banned or highly hazardous WHO Class Ia or Ib chemicals.
+
+Context handling:
+- Stay aligned with the active section context provided, but do not refuse reasonable non-farming questions.
+- If actual data is provided in DATA, prioritize it over generic knowledge.
+- Be concise, actionable, and location-aware.
+"""
+
+CONTEXT_INSTRUCTIONS = {
+    "crops":   "CONTEXT: CROP RECOMMENDATIONS - prioritize top crop options, suitability scores, season fit, soil fit, weather fit, yield expectations, market direction, and planting timing.",
+    "weather": "CONTEXT: WEATHER - focus on forecast conditions, seasonal pattern, farm timing, rainfall opportunities, and practical weather risk alerts.",
+    "pests":   "CONTEXT: PEST AND DISEASES - identify likely problems, symptoms, affected crops, and IPM advice in the order cultural, biological, then chemical controls.",
+    "market":  "CONTEXT: MARKET PRICES - focus on commodity prices, trends, margins, demand, and the best selling or holding guidance supported by available data.",
+    "general": "CONTEXT: GENERAL ASSISTANT - answer farming or non-farming questions helpfully while keeping a practical assistant style.",
+}
+
+FALLBACK = {
+    "crops":   "🌽 I can help with crop advice, but I do not have enough live location data yet. Share your county or nearest town and I will suggest suitable staple and cash crops.",
+    "weather": "🌧 I could not reach live weather data just now. Share your location and I will still give practical seasonal farm guidance.",
+    "pests":   "🐛 Describe the crop, symptoms, and how fast the problem is spreading. I will help you narrow it down and suggest safe IPM steps.",
+    "market":  "💰 I could not confirm live prices right now. Tell me the crop and market area, and I will guide you on what to compare before selling.",
+    "general": "🌱 I’m here to help with farming and everyday questions in English, Kiswahili, or Luo.",
 }
 
 def ask_groq(user_message: str, session_id: str, context_data: dict = None, tab_context: str = "general", language: str = "en") -> str:

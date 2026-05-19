@@ -353,10 +353,130 @@ button{border:0;background:none;color:inherit}
   justify-content:center;
   margin:12px 0 10px;
 }
+.voice-shell{
+  display:grid;
+  justify-items:center;
+  gap:10px;
+}
 .voice-trigger .tool{
   width:60px;
   height:60px;
   box-shadow:0 14px 30px rgba(63,107,62,.18);
+}
+.voice-visual{
+  position:relative;
+  width:124px;
+  height:124px;
+  display:grid;
+  place-items:center;
+}
+.voice-ring,
+.voice-ring::before,
+.voice-ring::after{
+  content:"";
+  position:absolute;
+  border-radius:50%;
+}
+.voice-ring{
+  inset:18px;
+  border:1px solid rgba(63,107,62,.18);
+  background:radial-gradient(circle, rgba(255,255,255,.8), rgba(218,231,210,.2));
+}
+.voice-ring::before{
+  inset:-12px;
+  border:1px solid rgba(63,107,62,.14);
+}
+.voice-ring::after{
+  inset:-24px;
+  border:1px solid rgba(194,135,60,.12);
+}
+.waveform{
+  display:flex;
+  align-items:flex-end;
+  justify-content:center;
+  gap:5px;
+  height:28px;
+}
+.waveform span{
+  width:6px;
+  height:10px;
+  border-radius:999px;
+  background:linear-gradient(180deg, var(--accent), var(--green));
+  opacity:.55;
+  transform-origin:center bottom;
+}
+.voice-prompt-badge{
+  display:none;
+  padding:8px 14px;
+  border-radius:999px;
+  background:rgba(138,96,57,.1);
+  border:1px solid rgba(138,96,57,.14);
+  color:var(--brown-deep);
+  font-size:.8rem;
+  font-weight:700;
+}
+.farm-alert{
+  margin-top:12px;
+  padding:14px 16px;
+  border-radius:18px;
+  background:linear-gradient(135deg, rgba(63,107,62,.12), rgba(194,135,60,.12));
+  border:1px solid rgba(63,107,62,.14);
+}
+.farm-alert strong{
+  display:block;
+  font-size:.88rem;
+  color:var(--green-deep);
+  text-transform:uppercase;
+  letter-spacing:.04em;
+}
+.farm-alert p{
+  margin-top:8px;
+  line-height:1.55;
+  font-size:.92rem;
+}
+.farm-alert small{
+  display:block;
+  margin-top:8px;
+  color:var(--muted);
+}
+.screen[data-voice-state="listening"] .voice-ring{
+  animation:pulse-listen 1.4s ease-in-out infinite;
+}
+.screen[data-voice-state="listening"] .waveform span:nth-child(1),
+.screen[data-voice-state="listening"] .waveform span:nth-child(3),
+.screen[data-voice-state="listening"] .waveform span:nth-child(5){
+  animation:wave-listen .9s ease-in-out infinite;
+}
+.screen[data-voice-state="listening"] .waveform span:nth-child(2),
+.screen[data-voice-state="listening"] .waveform span:nth-child(4){
+  animation:wave-listen 1.1s ease-in-out infinite .15s;
+}
+.screen[data-voice-state="speaking"] .voice-ring{
+  animation:pulse-speak 1.1s ease-in-out infinite;
+}
+.screen[data-voice-state="speaking"] .waveform span:nth-child(1){animation:wave-speak .7s ease-in-out infinite}
+.screen[data-voice-state="speaking"] .waveform span:nth-child(2){animation:wave-speak .8s ease-in-out infinite .08s}
+.screen[data-voice-state="speaking"] .waveform span:nth-child(3){animation:wave-speak .6s ease-in-out infinite .14s}
+.screen[data-voice-state="speaking"] .waveform span:nth-child(4){animation:wave-speak .9s ease-in-out infinite .2s}
+.screen[data-voice-state="speaking"] .waveform span:nth-child(5){animation:wave-speak .75s ease-in-out infinite .12s}
+.screen[data-voice-state="speaking"] .voice-prompt-badge{
+  display:inline-flex;
+}
+@keyframes pulse-listen{
+  0%,100%{transform:scale(1); box-shadow:0 0 0 0 rgba(63,107,62,.16)}
+  50%{transform:scale(1.05); box-shadow:0 0 0 18px rgba(63,107,62,0)}
+}
+@keyframes pulse-speak{
+  0%,100%{transform:scale(1); box-shadow:0 0 0 0 rgba(194,135,60,.16)}
+  50%{transform:scale(1.08); box-shadow:0 0 0 20px rgba(194,135,60,0)}
+}
+@keyframes wave-listen{
+  0%,100%{height:10px;opacity:.55}
+  50%{height:24px;opacity:1}
+}
+@keyframes wave-speak{
+  0%,100%{height:8px;opacity:.6}
+  50%{height:28px;opacity:1}
 }
 .voice-caption{
   text-align:center;
@@ -647,9 +767,9 @@ button{border:0;background:none;color:inherit}
   <div class="stage">
     <aside class="glass side">
       <div>
-        <div class="pill"><span>Fahamu Shamba</span><span>|</span><span>AI for farmers</span></div>
-        <h1>Direct farm advice without a login wall.</h1>
-        <p class="lead">Open the project and go straight into the chatbot. Weather, market prices, crop recommendations, pest guidance, and profile tools stay available, with a calmer farm-inspired interface that gives the conversation more room.</p>
+        <div class="pill"><span>Fahamu</span><span>|</span><span>Agricultural AI agent</span></div>
+        <h1>One farm assistant for advice, alerts, prices, and everyday questions.</h1>
+        <p class="lead">Fahamu now starts like a farm-first Siri for Kenya and beyond: multilingual, location-aware, interruption-friendly, and ready for crop advice, pest help, market checks, weather guidance, and general support in one place.</p>
         <div class="badge-row">
           <div class="badge">Twilio voice access</div>
           <div class="badge">Live weather by location</div>
@@ -657,11 +777,11 @@ button{border:0;background:none;color:inherit}
           <div class="badge">Soil-aware crop advice</div>
         </div>
         <div class="function-list">
-          <div class="function-chip">🌾 Best Crop</div>
-          <div class="function-chip">☀️ Weather</div>
-          <div class="function-chip">🐛 Pests</div>
-          <div class="function-chip">📈 Market Prices</div>
-          <div class="function-chip">📊 Report Yields</div>
+          <div class="function-chip">🌽 Crop advice</div>
+          <div class="function-chip">🌧 Weather</div>
+          <div class="function-chip">🐛 Pest help</div>
+          <div class="function-chip">💰 Market prices</div>
+          <div class="function-chip">🧠 Ask anything</div>
         </div>
       </div>
 
@@ -729,37 +849,51 @@ button{border:0;background:none;color:inherit}
               </div>
             </div>
 
-            <div class="assistant"><span>AI</span><span>Conversational farm guide</span></div>
-            <h3 class="hero-q">How may I assist you today?</h3>
-            <p class="hero-note">Ask by text or speak below. If you tap the microphone while the assistant is talking, speech stops and listening starts again right away.</p>
-            <div class="voice-trigger">
-              <button class="tool" id="hero-mic-btn" type="button" aria-label="Speak with Fahamu Shamba">
-                <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <path d="M12 1a3 3 0 0 1 3 3v8a3 3 0 0 1-6 0V4a3 3 0 0 1 3-3Z"></path>
-                  <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
-                  <path d="M12 19v4"></path>
-                  <path d="M8 23h8"></path>
-                </svg>
-              </button>
+            <div class="assistant"><span>AI</span><span>Farm advisor, market guide, and general assistant</span></div>
+            <h3 class="hero-q">Hello. Habari. Misawa. I am Fahamu.</h3>
+            <p class="hero-note">Share your location or allow GPS, choose your language, then ask by text or voice. If you interrupt while Fahamu is speaking, speech stops immediately and listening starts again.</p>
+            <div class="farm-alert" id="farm-alert">
+              <strong>Today's farm alert</strong>
+              <p id="farm-alert-text">Set your county or allow GPS so Fahamu can tailor weather, crop, and market guidance to your farm.</p>
+              <small id="farm-alert-meta">Source: session profile. Updated just now.</small>
             </div>
-            <div class="voice-caption">Microphone</div>
+            <div class="voice-shell">
+              <div class="voice-trigger">
+                <div class="voice-visual" aria-hidden="true">
+                  <div class="voice-ring"></div>
+                  <button class="tool" id="hero-mic-btn" type="button" aria-label="Speak with Fahamu Shamba">
+                    <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M12 1a3 3 0 0 1 3 3v8a3 3 0 0 1-6 0V4a3 3 0 0 1 3-3Z"></path>
+                      <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
+                      <path d="M12 19v4"></path>
+                      <path d="M8 23h8"></path>
+                    </svg>
+                  </button>
+                </div>
+              </div>
+              <div class="waveform" aria-hidden="true">
+                <span></span><span></span><span></span><span></span><span></span>
+              </div>
+              <div class="voice-caption">Microphone and live voice feedback</div>
+              <div class="voice-prompt-badge" id="interrupt-indicator">Tap to interrupt</div>
+            </div>
             <div class="voice-status" id="voice-status">Voice ready for English, Kiswahili, and Luo.</div>
 
             <div class="actions">
-              <button class="prompt" type="button" data-context="crops" data-prompt="Find the best crop for my farm based on my county, soil, season, and market demand.">
-                <span class="ico">1</span><span>Find the best crop for my farm</span>
+              <button class="prompt" type="button" data-context="crops" data-prompt="Give me crop advice for my farm using my location, soil, season, weather, and market demand.">
+                <span class="ico">1</span><span>Crop Advice</span>
               </button>
-              <button class="prompt" type="button" data-context="weather" data-prompt="Find my weather and tell me how it affects planting, irrigation, and harvesting.">
-                <span class="ico">2</span><span>Find my weather and farm timing</span>
+              <button class="prompt" type="button" data-context="market" data-prompt="Show me current market prices, trends, and where demand is strongest for my crops.">
+                <span class="ico">2</span><span>Market Prices</span>
               </button>
-              <button class="prompt" type="button" data-context="pests" data-prompt="Give me pest insight for my crops, including signs, prevention, and treatment.">
-                <span class="ico">3</span><span>Get pest and disease insight</span>
+              <button class="prompt" type="button" data-context="pests" data-prompt="Help me identify a pest or disease and give me safe IPM advice in steps.">
+                <span class="ico">3</span><span>Pest Help</span>
               </button>
-              <button class="prompt" type="button" data-context="market" data-prompt="Show me current market prices and the best time to sell my produce.">
-                <span class="ico">4</span><span>Check market prices and demand</span>
+              <button class="prompt" type="button" data-context="weather" data-prompt="Check my farm weather, rain outlook, and what it means for planting, spraying, and harvesting.">
+                <span class="ico">4</span><span>Weather</span>
               </button>
-              <button class="prompt" type="button" data-context="general" data-prompt="Help me report yields from my farm and explain what the harvest means for next season planning, soil care, and selling strategy.">
-                <span class="ico">5</span><span>Report yields and next steps</span>
+              <button class="prompt" type="button" data-context="general" data-prompt="Ask anything about farming or everyday life, and answer in my preferred language.">
+                <span class="ico">5</span><span>Ask Anything</span>
               </button>
             </div>
           </div>
@@ -800,13 +934,14 @@ button{border:0;background:none;color:inherit}
 <div class="editor-backdrop" id="setup-modal">
   <div class="glass editor-card">
     <h3>Create your farm profile</h3>
-    <p>Registration stays available, but it is now a profile setup step instead of a login page. Add your county, subcounty, soil choice, and farm size so crop advice, weather, and market data stay relevant.</p>
+    <p>Start by confirming your location and preferred language so Fahamu can greet you properly, tailor farm alerts, and respond the way you naturally speak.</p>
     <div class="grid two" style="margin-top:18px">
       <div class="field"><label for="regName">Full name</label><input id="regName" type="text" placeholder="Wycliffe Sidon"></div>
       <div class="field"><label for="regPhone">Phone</label><input id="regPhone" type="tel" placeholder="+254..."></div>
       <div class="field"><label for="regEmail">Email</label><input id="regEmail" type="email" placeholder="farmer@example.com"></div>
       <div class="field"><label for="regCounty">County</label><select id="regCounty"></select></div>
       <div class="field"><label for="regSubcounty">Subcounty</label><select id="regSubcounty"></select></div>
+      <div class="field"><label for="regLanguage">Preferred language</label><select id="regLanguage"><option value="sw">Kiswahili</option><option value="en">English</option><option value="luo">Dholuo / Luo</option></select></div>
       <div class="field"><label for="regSoilType">Soil type</label><select id="regSoilType"><option value="auto">I do not know, use location soil map</option><option>Loam</option><option>Clay loam</option><option>Clay</option><option>Sandy loam</option><option>Red volcanic</option><option>Volcanic loam</option><option>Sandy clay</option><option>Sandy</option></select></div>
       <div class="field"><label for="regAcres">Farm size (acres)</label><input id="regAcres" type="number" min="0.25" step="0.25" placeholder="2.5"></div>
       <div class="field"><label for="regPhoto">Profile photo</label><input id="regPhoto" type="file" accept="image/*"></div>
@@ -821,13 +956,14 @@ button{border:0;background:none;color:inherit}
 <div class="editor-backdrop" id="profile-editor">
   <div class="glass editor-card">
     <h3>Edit farm profile</h3>
-    <p>Update your saved county, subcounty, soil preference, farm size, or contact details without leaving the chat.</p>
+    <p>Update your saved county, subcounty, preferred language, soil preference, farm size, or contact details without leaving the chat.</p>
     <div class="grid two" style="margin-top:18px">
       <div class="field"><label for="editName">Full name</label><input id="editName" type="text"></div>
       <div class="field"><label for="editPhone">Phone</label><input id="editPhone" type="tel"></div>
       <div class="field"><label for="editEmail">Email</label><input id="editEmail" type="email"></div>
       <div class="field"><label for="editCounty">County</label><select id="editCounty"></select></div>
       <div class="field"><label for="editSubcounty">Subcounty</label><select id="editSubcounty"></select></div>
+      <div class="field"><label for="editLanguage">Preferred language</label><select id="editLanguage"><option value="sw">Kiswahili</option><option value="en">English</option><option value="luo">Dholuo / Luo</option></select></div>
       <div class="field"><label for="editSoilType">Soil type</label><select id="editSoilType"><option value="auto">Auto detect from location soil map</option><option>Loam</option><option>Clay loam</option><option>Clay</option><option>Sandy loam</option><option>Red volcanic</option><option>Volcanic loam</option><option>Sandy clay</option><option>Sandy</option></select></div>
       <div class="field"><label for="editAcres">Farm size (acres)</label><input id="editAcres" type="number" min="0.25" step="0.25"></div>
       <div class="field"><label for="editPhoto">Profile photo</label><input id="editPhoto" type="file" accept="image/*"></div>
@@ -895,7 +1031,7 @@ const state = {
   geo: null,
   chatHistory: [],
   currentUtterance: null,
-  currentLanguage: "en"
+  currentLanguage: "sw"
 };
 
 const $ = selector => document.querySelector(selector);
@@ -961,6 +1097,7 @@ function normalizeProfile(profile) {
     name: profile.name || "Farmer",
     phone: profile.phone || "",
     email: profile.email || "",
+    preferredLanguage: SPEECH_LANG_META[profile.preferredLanguage] ? profile.preferredLanguage : "sw",
     county,
     subcounty,
     location: `${subcounty}, ${county}, Kenya`,
@@ -997,8 +1134,15 @@ function setVoiceStatus(message) {
   $("#voice-status").textContent = message;
 }
 
+function setVoiceUiState(mode) {
+  const screen = document.querySelector(".screen");
+  if (screen) {
+    screen.dataset.voiceState = mode || "idle";
+  }
+}
+
 function setCurrentLanguage(language) {
-  state.currentLanguage = SPEECH_LANG_META[language] ? language : "en";
+  state.currentLanguage = SPEECH_LANG_META[language] ? language : "sw";
   $("#voice-language").textContent = SPEECH_LANG_META[state.currentLanguage].label;
 }
 
@@ -1012,7 +1156,41 @@ function detectConversationLanguage(text) {
   if (swPattern.test(lower)) {
     return "sw";
   }
-  return "en";
+  return "sw";
+}
+
+function interruptionAcknowledgement(language) {
+  if (language === "luo") {
+    return "Ee, winjo iweyo. Wuok anyisa.";
+  }
+  if (language === "en") {
+    return "Yes, go on.";
+  }
+  return "Ndio, nakusikiliza.";
+}
+
+function currentSeasonName() {
+  const month = new Date().getMonth() + 1;
+  if ([3, 4, 5].includes(month)) {
+    return "Long Rains";
+  }
+  if ([10, 11, 12].includes(month)) {
+    return "Short Rains";
+  }
+  return "Dry season";
+}
+
+function refreshFarmAlert(profile = getProfile()) {
+  const normalized = normalizeProfile(profile);
+  const season = currentSeasonName();
+  const now = new Date();
+  const locationLabel = `${normalized.subcounty}, ${normalized.county}`;
+  let text = `Seasonal alert for ${locationLabel}: ${season} is active. Confirm your location and ask for crop advice so Fahamu can balance staple and cash-crop options for your farm.`;
+  if (normalized.latitude !== null && normalized.longitude !== null) {
+    text = `Location ready for ${locationLabel}. Ask for weather, market prices, or crop advice and Fahamu will use your saved farm context first.`;
+  }
+  $("#farm-alert-text").textContent = text;
+  $("#farm-alert-meta").textContent = `Source: saved farm profile and seasonal calendar. Updated ${now.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}.`;
 }
 
 function updateProfile(profile) {
@@ -1039,6 +1217,8 @@ function updateProfile(profile) {
     img.style.display = "none";
     initialsWrap.style.display = "inline";
   }
+  setCurrentLanguage(normalized.preferredLanguage);
+  refreshFarmAlert(normalized);
 }
 
 function saveProfile(profile) {
@@ -1114,6 +1294,7 @@ function ensureGeolocation() {
       });
     } else {
       $("#location-note").textContent = `Live location enabled near ${profile.subcounty}, ${profile.county} for weather and market updates.`;
+      refreshFarmAlert(profile);
     }
   }, () => {}, { enableHighAccuracy: true, timeout: 9000, maximumAge: 300000 });
 }
@@ -1214,11 +1395,13 @@ function stopSpeaking() {
   if (!("speechSynthesis" in window)) {
     state.speaking = false;
     state.currentUtterance = null;
+    setVoiceUiState("idle");
     return;
   }
   window.speechSynthesis.cancel();
   state.speaking = false;
   state.currentUtterance = null;
+  setVoiceUiState("idle");
 }
 
 function startListening() {
@@ -1274,7 +1457,7 @@ function speakReply(text, language) {
     const utterance = new SpeechSynthesisUtterance(cleaned);
     const meta = getSpeechMeta(resolvedLanguage);
     utterance.lang = meta.synthesis[0];
-    utterance.rate = 0.96;
+    utterance.rate = 0.95;
     utterance.pitch = 1;
     const voice = chooseVoice(resolvedLanguage);
     if (voice) {
@@ -1284,12 +1467,14 @@ function speakReply(text, language) {
     utterance.onstart = () => {
       state.speaking = true;
       state.currentUtterance = utterance;
-      setVoiceStatus(`Speaking in ${getSpeechMeta(resolvedLanguage).label}. Tap the microphone to interrupt.`);
+      setVoiceUiState("speaking");
+      setVoiceStatus(`Speaking in ${getSpeechMeta(resolvedLanguage).label}. Tap to interrupt any time.`);
       updateVoiceButton();
     };
     utterance.onend = () => {
       state.speaking = false;
       state.currentUtterance = null;
+      setVoiceUiState("idle");
       updateVoiceButton();
       setVoiceStatus(state.voiceMode ? "Listening for the next farming question." : "Voice ready for English, Kiswahili, and Luo.");
       resolve();
@@ -1298,6 +1483,7 @@ function speakReply(text, language) {
     utterance.onerror = () => {
       state.speaking = false;
       state.currentUtterance = null;
+      setVoiceUiState("idle");
       updateVoiceButton();
       setVoiceStatus("Voice output is available when the browser has a matching speech voice.");
       resolve();
@@ -1324,12 +1510,16 @@ function initVoice() {
   recognition.onstart = () => {
     state.listening = true;
     stopSpeaking();
+    setVoiceUiState("listening");
     setVoiceStatus(`Listening in ${getSpeechMeta(state.currentLanguage).label}.`);
     updateVoiceButton();
   };
 
   recognition.onend = () => {
     state.listening = false;
+    if (!state.speaking) {
+      setVoiceUiState("idle");
+    }
     updateVoiceButton();
     if (!state.sending) {
       setVoiceStatus(state.voiceMode ? "Voice mode is on. Waiting to listen again." : "Voice ready for English, Kiswahili, and Luo.");
@@ -1341,6 +1531,7 @@ function initVoice() {
 
   recognition.onerror = () => {
     state.listening = false;
+    setVoiceUiState("idle");
     updateVoiceButton();
     setVoiceStatus("Voice input had trouble hearing that. Try again.");
   };
@@ -1379,6 +1570,7 @@ function handleMicPress() {
   }
   if (state.speaking) {
     stopSpeaking();
+    setVoiceStatus(interruptionAcknowledgement(state.currentLanguage));
     startListening();
     return;
   }
@@ -1399,6 +1591,7 @@ function toggleVoiceConsultation() {
   } else {
     stopSpeaking();
     stopListening();
+    setVoiceUiState("idle");
     setVoiceStatus("Voice consultation stopped.");
   }
 }
@@ -1410,6 +1603,7 @@ function openSetupModal(prefill = {}) {
   $("#regEmail").value = profile.email;
   $("#regCounty").value = profile.county;
   updateSubcountyOptions("regCounty", "regSubcounty", profile.subcounty);
+  $("#regLanguage").value = profile.preferredLanguage;
   $("#regSoilType").value = profile.soilSelection || "auto";
   $("#regAcres").value = profile.acres;
   $("#regPhoto").value = "";
@@ -1427,6 +1621,7 @@ function openProfileEditor() {
   $("#editEmail").value = profile.email;
   $("#editCounty").value = profile.county;
   updateSubcountyOptions("editCounty", "editSubcounty", profile.subcounty);
+  $("#editLanguage").value = profile.preferredLanguage;
   $("#editSoilType").value = profile.soilSelection || "auto";
   $("#editAcres").value = profile.acres;
   $("#editPhoto").value = "";
@@ -1458,6 +1653,7 @@ async function saveSetupProfile() {
     name: $("#regName").value.trim() || "Farmer",
     phone: $("#regPhone").value.trim(),
     email: $("#regEmail").value.trim(),
+    preferredLanguage: $("#regLanguage").value,
     county: $("#regCounty").value,
     subcounty: $("#regSubcounty").value,
     soilSelection: $("#regSoilType").value,
@@ -1479,6 +1675,7 @@ async function saveProfileEditor() {
     name: $("#editName").value.trim() || "Farmer",
     phone: $("#editPhone").value.trim(),
     email: $("#editEmail").value.trim(),
+    preferredLanguage: $("#editLanguage").value,
     county: $("#editCounty").value,
     subcounty: $("#editSubcounty").value,
     soilSelection: $("#editSoilType").value,
@@ -1497,7 +1694,10 @@ function newChat() {
   state.context = "general";
   clearAttachment();
   closePanel();
-  bubble("Welcome to Fahamu Shamba. Ask about crops, weather, pests, market prices, yields, or your farm profile. You can also call the Twilio voice line for hands-free support.", "bot");
+  const profile = normalizeProfile(getProfile());
+  const locationLine = `I'll base location-specific advice on ${profile.subcounty}, ${profile.county}. Is that correct?`;
+  bubble("Hello! I'm Fahamu, your smart farm assistant.\nHabari! Mimi ni Fahamu, msaidizi wako wa kilimo.\nMisawa! An Fahamu, jakony mari mar puodho.\n\nShare your location or allow GPS, tell me your preferred language, and I can start with crop advice, market prices, pest help, weather, or any other question.", "bot");
+  bubble(locationLine, "bot");
 }
 
 async function loadAppConfig() {
@@ -1521,9 +1721,9 @@ async function ask(message, contextOverride) {
   const profile = normalizeProfile(getProfile());
   const county = profile.county;
   const sublocation = profile.subcounty;
-  const detectedLanguage = detectConversationLanguage(message);
+  const detectedLanguage = profile.preferredLanguage || detectConversationLanguage(message);
   setCurrentLanguage(detectedLanguage);
-  const profileNote = `Farmer profile context: county ${profile.county}; subcounty ${profile.subcounty}; soil selection ${profile.soilSelection}; resolved soil type ${profile.soilType}.`;
+  const profileNote = `Farmer profile context: county ${profile.county}; subcounty ${profile.subcounty}; soil selection ${profile.soilSelection}; resolved soil type ${profile.soilType}; preferred language ${profile.preferredLanguage}; acreage ${profile.acres}. Confirm the location before location-based recommendations.`;
   const response = await fetch("/chat", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -1591,7 +1791,7 @@ async function send(message, contextOverride, fromVoice = false) {
 function primeProfileIfMissing() {
   const stored = getProfile();
   if (!stored || Object.keys(stored).length === 0) {
-    saveProfile({});
+    saveProfile({ preferredLanguage: "sw" });
     openSetupModal();
   } else {
     updateProfile(stored);
@@ -1645,7 +1845,7 @@ document.addEventListener("DOMContentLoaded", () => {
   $("#hero-mic-btn").addEventListener("pointerdown", () => {
     if (state.speaking) {
       stopSpeaking();
-      setVoiceStatus("Assistant speech interrupted. Listening now.");
+      setVoiceStatus(interruptionAcknowledgement(state.currentLanguage));
     }
   });
 
@@ -1667,7 +1867,7 @@ document.addEventListener("DOMContentLoaded", () => {
   refreshAttachmentChip();
   autoGrowInput();
   initClock();
-  setCurrentLanguage("en");
+  setVoiceUiState("idle");
   initVoice();
   loadAppConfig();
   primeProfileIfMissing();
