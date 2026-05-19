@@ -491,6 +491,36 @@ button{border:0;background:none;color:inherit}
   gap:10px;
   margin-top:2px;
 }
+.semantic-box{
+  margin-top:12px;
+  padding:12px;
+  border-radius:18px;
+  background:rgba(255,255,255,.5);
+  border:1px solid rgba(47,122,69,.12);
+}
+.semantic-box strong{
+  display:block;
+  font-size:.8rem;
+  letter-spacing:.04em;
+  text-transform:uppercase;
+  color:var(--green-deep);
+}
+.semantic-list{
+  display:flex;
+  flex-wrap:wrap;
+  gap:8px;
+  margin-top:10px;
+}
+.semantic-chip{
+  padding:9px 12px;
+  border-radius:999px;
+  background:rgba(47,122,69,.08);
+  border:1px solid rgba(47,122,69,.14);
+  color:var(--green-deep);
+  cursor:pointer;
+  font-size:.84rem;
+  line-height:1.2;
+}
 .prompt{
   min-height:58px;
   padding:12px;
@@ -897,6 +927,10 @@ button{border:0;background:none;color:inherit}
                 <span class="ico">5</span><span>Ask Farming Question</span>
               </button>
             </div>
+            <div class="semantic-box">
+              <strong>Try saying</strong>
+              <div class="semantic-list" id="semantic-list"></div>
+            </div>
           </div>
 
           <div id="thread" class="thread"></div>
@@ -1032,7 +1066,8 @@ const state = {
   geo: null,
   chatHistory: [],
   currentUtterance: null,
-  currentLanguage: "sw"
+  currentLanguage: "sw",
+  resolvedContext: "general"
 };
 
 const $ = selector => document.querySelector(selector);
@@ -1194,6 +1229,36 @@ function refreshFarmAlert(profile = getProfile()) {
   $("#farm-alert-meta").textContent = `Source: saved farm profile and seasonal calendar. Updated ${now.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}.`;
 }
 
+function semanticExamples(profile = getProfile()) {
+  const normalized = normalizeProfile(profile);
+  const location = `${normalized.subcounty}, ${normalized.county}`;
+  return [
+    `What should I plant this season in ${location}?`,
+    `Will it rain in ${location} this week?`,
+    `Show market prices for maize near ${normalized.county}.`,
+    `My tomatoes have spots on the leaves. What disease could it be?`,
+    `Recommend fertilizer for ${normalized.soilType} soil in ${normalized.county}.`,
+    `When is the best time to spray after rainfall?`
+  ];
+}
+
+function renderSemanticSuggestions(profile = getProfile()) {
+  const list = $("#semantic-list");
+  if (!list) {
+    return;
+  }
+  list.innerHTML = semanticExamples(profile).map(example => (
+    `<button class="semantic-chip" type="button" data-semantic="${example.replace(/"/g, "&quot;")}">${example}</button>`
+  )).join("");
+  list.querySelectorAll(".semantic-chip").forEach(button => {
+    button.addEventListener("click", () => {
+      $("#user-input").value = button.dataset.semantic || "";
+      autoGrowInput();
+      $("#user-input").focus();
+    });
+  });
+}
+
 function updateProfile(profile) {
   const normalized = normalizeProfile(profile);
   $("#profileName").textContent = normalized.name;
@@ -1220,6 +1285,7 @@ function updateProfile(profile) {
   }
   setCurrentLanguage(normalized.preferredLanguage);
   refreshFarmAlert(normalized);
+  renderSemanticSuggestions(normalized);
 }
 
 function saveProfile(profile) {
@@ -1741,7 +1807,11 @@ async function ask(message, contextOverride) {
     })
   });
   const data = await response.json();
-  return { reply: data.reply || "Sorry, I could not connect. Please try again.", language: data.language || detectedLanguage };
+  return {
+    reply: data.reply || "Sorry, I could not connect. Please try again.",
+    language: data.language || detectedLanguage,
+    context: data.context || contextOverride || state.context
+  };
 }
 
 async function send(message, contextOverride, fromVoice = false) {
@@ -1771,6 +1841,7 @@ async function send(message, contextOverride, fromVoice = false) {
 
   try {
     const result = await ask(outbound, contextOverride);
+    state.resolvedContext = result.context || state.context;
     bubble(result.reply, "bot");
     if (state.voiceMode || fromVoice) {
       await speakReply(result.reply, result.language);

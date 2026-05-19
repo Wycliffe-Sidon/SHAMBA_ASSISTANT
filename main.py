@@ -129,6 +129,55 @@ def agricultural_only_reply(language: str) -> str:
         return "I only answer agricultural questions. Ask me about crops, livestock, soil, weather, pests, irrigation, or farm market prices."
     return "Ninajibu maswali ya kilimo tu. Uliza kuhusu mazao, mifugo, udongo, hali ya hewa, wadudu, umwagiliaji, au bei za soko la mazao."
 
+def detect_agricultural_intent(text: str, requested_context: str = "general") -> str:
+    if requested_context in ALLOWED_CONTEXTS and requested_context != "general":
+        return requested_context
+    lowered = (text or "").lower()
+    intent_keywords = {
+        "crops": ["best crop", "what to plant", "plant", "planting", "crop", "crops", "mazao", "panda", "yield"],
+        "weather": ["weather", "rain", "rainfall", "forecast", "season", "temperature", "wind", "hali ya hewa", "mvua", "koth"],
+        "pests": ["pest", "disease", "blight", "armyworm", "aphid", "fungus", "wadudu", "ugonjwa", "spray", "chemical"],
+        "market": ["market", "price", "prices", "sell", "buyer", "demand", "soko", "bei", "uza"],
+    }
+    for intent, keywords in intent_keywords.items():
+        if any(keyword in lowered for keyword in keywords):
+            return intent
+    return "general"
+
+def build_orchestration_context(req, intent: str) -> tuple[dict | None, list | None]:
+    context_data = None
+    recommendations = None
+    if req.county:
+        if intent in {"crops", "weather", "general"}:
+            context_data, recommendations = build_farming_context(
+                county=req.county,
+                sublocation=req.sublocation,
+                latitude=req.latitude,
+                longitude=req.longitude,
+                village=req.village,
+                soil_type=req.soil_type,
+            )
+        elif intent == "market":
+            context_data = {
+                "location": f"{req.sublocation}, {req.county}".strip(", "),
+                "county": req.county,
+                "sublocation": req.sublocation,
+                "market_data": get_market_data(req.county, req.sublocation),
+            }
+        elif intent == "pests":
+            context_data = {
+                "location": f"{req.sublocation}, {req.county}".strip(", "),
+                "county": req.county,
+                "sublocation": req.sublocation,
+                "weather_data": fetch_weather(
+                    f"{req.sublocation}, {req.county}".strip(", "),
+                    req.county,
+                    req.latitude,
+                    req.longitude,
+                ),
+            }
+    return context_data, recommendations
+
 def extract_farmer_name(text: str):
     patterns = [
         r'my name is ([A-Za-z]+)', r'i am ([A-Za-z]+)', r"i'm ([A-Za-z]+)",
@@ -799,20 +848,13 @@ async def chat(req: ChatRequest, request: Request):
     if is_rate_limited(ip):
         return JSONResponse({"reply": "Too many requests. Please wait a moment.", "language": "en"}, status_code=429)
 
+    resolved_context = detect_agricultural_intent(req.message, req.context)
     context_data  = None
     recommendations = None
     msg_lower = req.message.lower()
-    if req.county:
-        context_data, recommendations = build_farming_context(
-            county=req.county,
-            sublocation=req.sublocation,
-            latitude=req.latitude,
-            longitude=req.longitude,
-            village=req.village,
-            soil_type=req.soil_type,
-        )
+    context_data, recommendations = build_orchestration_context(req, resolved_context)
 
-    if req.context == "crops" or any(k in msg_lower for k in ["best crop","what to plant","recommend","top 3","mazao","panda","kilimo","crop"]):
+    if resolved_context == "crops":
         if req.county and context_data:
             soil_data = context_data.get("soil_data") or {}
             context_data.update({
@@ -822,12 +864,12 @@ async def chat(req: ChatRequest, request: Request):
                 "soil_drainage": soil_data.get("drainage"),
             })
 
-    reply = ask_ai(req.message, req.session_id, context_data, req.context, req.language)
+    reply = ask_ai(req.message, req.session_id, context_data, resolved_context, req.language)
     lang  = req.language
 
     if recommendations:
-        return {"reply": reply, "recommendations": recommendations, "language": lang}
-    return {"reply": reply, "language": lang}
+        return {"reply": reply, "recommendations": recommendations, "language": lang, "context": resolved_context}
+    return {"reply": reply, "language": lang, "context": resolved_context}
 
 @app.post("/ussd", response_class=PlainTextResponse)
 async def ussd(
