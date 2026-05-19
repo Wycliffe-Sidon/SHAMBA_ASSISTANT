@@ -6,23 +6,23 @@
 <title>Fahamu Shamba</title>
 <style>
 :root{
-  --bg:#efe6d0;
-  --bg-deep:#d8c4a0;
-  --panel:#f8f2e4;
-  --panel-strong:#f1e4c8;
-  --card:#fcf8ee;
-  --line:#cdbb98;
-  --ink:#2f2417;
-  --muted:#675842;
-  --green:#3f6b3e;
-  --green-deep:#2f5232;
-  --green-soft:#dae7d2;
-  --brown:#8a6039;
-  --brown-deep:#684623;
-  --beige:#f7edd8;
-  --accent:#c2873c;
-  --user:#577c45;
-  --shadow:0 22px 60px rgba(74, 57, 34, 0.18);
+  --bg:#dcefdc;
+  --bg-deep:#9fc89d;
+  --panel:#eef8ee;
+  --panel-strong:#dcefdc;
+  --card:#f7fcf6;
+  --line:#aac9aa;
+  --ink:#17311d;
+  --muted:#48604d;
+  --green:#2f7a45;
+  --green-deep:#1f5b31;
+  --green-soft:#d7edd8;
+  --brown:#5b8f4c;
+  --brown-deep:#3d6c35;
+  --beige:#edf7ea;
+  --accent:#67a85f;
+  --user:#2f7a45;
+  --shadow:0 22px 60px rgba(31, 91, 49, 0.18);
   --radius:28px;
   --display:"Trebuchet MS", "Segoe UI", sans-serif;
   --body:"Segoe UI", Tahoma, sans-serif;
@@ -33,16 +33,17 @@ body{
   font-family:var(--body);
   color:var(--ink);
   background:
-    radial-gradient(circle at top left, rgba(255,255,255,.65), transparent 22%),
-    radial-gradient(circle at bottom right, rgba(111,153,93,.2), transparent 24%),
-    linear-gradient(140deg, var(--bg) 0%, #e4d4b3 42%, var(--bg-deep) 100%);
+    radial-gradient(circle at top left, rgba(255,255,255,.58), transparent 20%),
+    radial-gradient(circle at top right, rgba(82,145,91,.22), transparent 26%),
+    radial-gradient(circle at bottom left, rgba(123,173,116,.18), transparent 24%),
+    linear-gradient(145deg, #eaf7e8 0%, var(--bg) 34%, #b8d8b6 68%, var(--bg-deep) 100%);
 }
 button,input,select,textarea{font:inherit}
 button{border:0;background:none;color:inherit}
 .page{min-height:100vh;width:100%;display:flex;align-items:center;justify-content:center;padding:18px}
 .glass{
-  background:linear-gradient(180deg, rgba(252,248,238,.96), rgba(245,236,216,.92));
-  border:1px solid rgba(104,70,35,.12);
+  background:linear-gradient(180deg, rgba(247,252,246,.96), rgba(231,245,230,.92));
+  border:1px solid rgba(47,122,69,.12);
   box-shadow:var(--shadow);
 }
 .stage{
@@ -59,8 +60,8 @@ button{border:0;background:none;color:inherit}
   justify-content:space-between;
   min-height:min(940px, calc(100vh - 36px));
   background:
-    linear-gradient(180deg, rgba(252,248,238,.98), rgba(240,228,201,.94)),
-    linear-gradient(140deg, rgba(63,107,62,.08), rgba(138,96,57,.08));
+    linear-gradient(180deg, rgba(247,252,246,.98), rgba(224,242,223,.94)),
+    linear-gradient(140deg, rgba(47,122,69,.1), rgba(103,168,95,.1));
 }
 .pill{
   display:inline-flex;
@@ -254,9 +255,9 @@ button{border:0;background:none;color:inherit}
   display:flex;
   flex-direction:column;
   background:
-    radial-gradient(circle at top right, rgba(132,176,113,.22), transparent 22%),
-    radial-gradient(circle at top left, rgba(194,135,60,.22), transparent 25%),
-    linear-gradient(180deg, #fbf6ea 0%, #f1e3c6 56%, #e7d2ab 100%);
+    radial-gradient(circle at top right, rgba(103,168,95,.28), transparent 22%),
+    radial-gradient(circle at top left, rgba(47,122,69,.22), transparent 24%),
+    linear-gradient(180deg, #f5fcf4 0%, #e3f3e1 52%, #c9e2c5 100%);
 }
 .inner{
   flex:1;
