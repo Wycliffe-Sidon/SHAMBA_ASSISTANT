@@ -364,14 +364,24 @@ def ask_openai(user_message: str, session_id: str, context_data: dict = None, ta
         messages.extend(conversation_memory[session_id][-10:])
         messages.append({"role": "user", "content": user_message[:MAX_MESSAGE_LEN]})
 
-        response = openai.ChatCompletion.create(
-            model="gpt-3.5-turbo",
-            messages=messages,
-            max_tokens=800,
-            temperature=0.8,
-            timeout=API_TIMEOUT,
-        )
-        reply = response.choices[0].message.content.strip()
+        if hasattr(openai, "chat") and hasattr(openai.chat, "completions"):
+            response = openai.chat.completions.create(
+                model="gpt-3.5-turbo",
+                messages=messages,
+                max_tokens=800,
+                temperature=0.8,
+                timeout=API_TIMEOUT,
+            )
+            reply = (response.choices[0].message.content or "").strip()
+        else:
+            response = openai.ChatCompletion.create(
+                model="gpt-3.5-turbo",
+                messages=messages,
+                max_tokens=800,
+                temperature=0.8,
+                timeout=API_TIMEOUT,
+            )
+            reply = response.choices[0].message.content.strip()
         conversation_memory[session_id].append({"role": "user", "content": user_message[:MAX_MESSAGE_LEN]})
         conversation_memory[session_id].append({"role": "assistant", "content": reply})
         return reply
@@ -542,7 +552,7 @@ FALLBACK = {
     "general": "🌱 I'm here to help with any farming question. Ask about soil, fertilizers, irrigation, or crop management!",
 }
 
-SYSTEM_PROMPT = """You are Fahamu, an advanced agricultural AI assistant built for African farmers, especially in Kenya's Siaya region and beyond.
+SYSTEM_PROMPT = """You are Fahamu, an advanced agricultural AI assistant built for African farmers, especially in Kenya's Kisumu region and beyond.
 
 Identity and tone:
 - You are warm, practical, knowledgeable, and natural, like a trusted local agronomist who also knows tech.
@@ -590,6 +600,14 @@ CONTEXT_INSTRUCTIONS = {
     "pests":   "CONTEXT: PEST AND DISEASES - identify likely problems, symptoms, affected crops, and IPM advice in the order cultural, biological, then chemical controls.",
     "market":  "CONTEXT: MARKET PRICES - focus on commodity prices, trends, margins, demand, and the best selling or holding guidance supported by available data.",
     "general": "CONTEXT: GENERAL ASSISTANT - answer farming or non-farming questions helpfully while keeping a practical assistant style.",
+}
+
+FALLBACK = {
+    "crops":   "🌽 I can help with crop advice, but I do not have enough live location data yet. Share your county or nearest town and I will suggest suitable staple and cash crops.",
+    "weather": "🌧 I could not reach live weather data just now. Share your location and I will still give practical seasonal farm guidance.",
+    "pests":   "🐛 Describe the crop, symptoms, and how fast the problem is spreading. I will help you narrow it down and suggest safe IPM steps.",
+    "market":  "💰 I could not confirm live prices right now. Tell me the crop and market area, and I will guide you on what to compare before selling.",
+    "general": "🌱 I’m here to help with farming and everyday questions in English, Kiswahili, or Luo.",
 }
 
 FALLBACK = {
