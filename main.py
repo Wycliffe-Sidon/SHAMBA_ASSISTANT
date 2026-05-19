@@ -102,6 +102,33 @@ def detect_language(text: str) -> str:
         return 'sw'
     return 'sw'
 
+def is_agricultural_query(text: str) -> bool:
+    lowered = (text or "").lower()
+    agricultural_terms = {
+        "farm", "farming", "farmer", "agriculture", "agricultural", "crop", "crops",
+        "plant", "planting", "harvest", "harvesting", "yield", "seed", "seeds",
+        "maize", "corn", "bean", "beans", "sorghum", "millet", "rice", "wheat",
+        "tomato", "tomatoes", "onion", "onions", "kale", "cabbage", "potato", "potatoes",
+        "soil", "fertilizer", "fertiliser", "manure", "lime", "irrigation", "rainfall",
+        "weather", "forecast", "season", "pest", "disease", "armyworm", "aphid",
+        "fungicide", "pesticide", "herbicide", "agrovet", "market price", "market prices",
+        "livestock", "cow", "cows", "cattle", "goat", "goats", "sheep", "chicken", "poultry",
+        "dairy", "milk", "feed", "fodder", "grazing", "green gram", "groundnut",
+        "shamba", "kilimo", "mazao", "mbegu", "udongo", "mvua", "mbolea", "soko",
+        "puodho", "yath", "koth", "chiemo", "remind me to spray", "seed stockist"
+    }
+    greetings = {"hello", "hi", "habari", "misawa", "sasa", "hey"}
+    if lowered.strip() in greetings:
+        return True
+    return any(term in lowered for term in agricultural_terms)
+
+def agricultural_only_reply(language: str) -> str:
+    if language == "luo":
+        return "An jakony mar puodho kende. Penja kuom mazao, yath mar puodho, koth, ngom, jomoko mar puodho, kata bei mar soko."
+    if language == "en":
+        return "I only answer agricultural questions. Ask me about crops, livestock, soil, weather, pests, irrigation, or farm market prices."
+    return "Ninajibu maswali ya kilimo tu. Uliza kuhusu mazao, mifugo, udongo, hali ya hewa, wadudu, umwagiliaji, au bei za soko la mazao."
+
 def extract_farmer_name(text: str):
     patterns = [
         r'my name is ([A-Za-z]+)', r'i am ([A-Za-z]+)', r"i'm ([A-Za-z]+)",
@@ -515,7 +542,7 @@ def build_farming_context(
     return context_data, recommendations.recommendations
 
 # ── SYSTEM PROMPT ─────────────────────────────────────────────────────────────
-SYSTEM_PROMPT = """You are "Fahamu Shamba," an AI agricultural assistant for Kenyan farmers.
+LEGACY_SYSTEM_PROMPT = """You are "Fahamu Shamba," an AI agricultural assistant for Kenyan farmers.
 Provide ONLY agricultural guidance. Politely decline non-agricultural queries.
 
 Rules:
@@ -535,7 +562,7 @@ If actual weather or market data is provided in DATA, use it directly to answer 
 Provide concise, location-specific agricultural guidance based on the available data.
 """
 
-CONTEXT_INSTRUCTIONS = {
+LEGACY_CONTEXT_INSTRUCTIONS = {
     "crops":   "CONTEXT: CROP RECOMMENDATIONS — focus only on what to plant, why, and how.",
     "weather": "CONTEXT: WEATHER — focus only on season, rainfall, temperature, and weather-based farming advice.",
     "pests":   "CONTEXT: PEST & DISEASES — focus only on pest/disease identification, prevention, and treatment.",
@@ -544,7 +571,7 @@ CONTEXT_INSTRUCTIONS = {
 }
 
 # ── FALLBACK RESPONSES ────────────────────────────────────────────────────────
-FALLBACK = {
+LEGACY_FALLBACK = {
     "crops":   "🌾 Based on Kenya's current season, consider planting Maize, Beans, or Tomatoes. Set your location for personalized advice.",
     "weather": "☀️ Kenya is currently in a seasonal transition. Monitor KMD forecasts and prepare your land accordingly.",
     "pests":   "🐛 Common pests in Kenya include Fall Armyworm, Aphids, and Thrips. Use certified pesticides and practice crop rotation.",
@@ -558,7 +585,7 @@ Identity and tone:
 - You are warm, practical, knowledgeable, and natural, like a trusted local agronomist who also knows tech.
 - Never sound robotic.
 - Remember useful session context and use the farmer's name naturally when available.
-- You are strongest in agriculture, but you can also answer reasonable general-assistant questions helpfully.
+- You answer agricultural questions only. If the user asks a non-agricultural question, politely say that Fahamu only handles farming, livestock, soils, weather, pests, markets, and related agricultural support.
 
 Language rules:
 - Detect and respond in the user's language automatically.
@@ -589,9 +616,10 @@ Truthfulness and safety:
 - Never recommend banned or highly hazardous WHO Class Ia or Ib chemicals.
 
 Context handling:
-- Stay aligned with the active section context provided, but do not refuse reasonable non-farming questions.
+- Stay aligned with the active section context provided.
 - If actual data is provided in DATA, prioritize it over generic knowledge.
 - Be concise, actionable, and location-aware.
+- Behave like a virtual assistant for agriculture: the farmer should be able to simply state what they want to accomplish, and you should interpret the intent, use the available farm context and data, and respond conversationally with the next useful answer.
 """
 
 CONTEXT_INSTRUCTIONS = {
@@ -599,10 +627,18 @@ CONTEXT_INSTRUCTIONS = {
     "weather": "CONTEXT: WEATHER - focus on forecast conditions, seasonal pattern, farm timing, rainfall opportunities, and practical weather risk alerts.",
     "pests":   "CONTEXT: PEST AND DISEASES - identify likely problems, symptoms, affected crops, and IPM advice in the order cultural, biological, then chemical controls.",
     "market":  "CONTEXT: MARKET PRICES - focus on commodity prices, trends, margins, demand, and the best selling or holding guidance supported by available data.",
-    "general": "CONTEXT: GENERAL ASSISTANT - answer farming or non-farming questions helpfully while keeping a practical assistant style.",
+    "general": "CONTEXT: GENERAL AGRICULTURAL ASSISTANT - answer only agricultural questions, including crops, livestock, soils, irrigation, farm planning, markets, weather, pests, storage, and farm operations.",
 }
 
-FALLBACK = {
+LEGACY_FALLBACK_2 = {
+    "crops":   "🌽 I can help with crop advice, but I do not have enough live location data yet. Share your county or nearest town and I will suggest suitable staple and cash crops.",
+    "weather": "🌧 I could not reach live weather data just now. Share your location and I will still give practical seasonal farm guidance.",
+    "pests":   "🐛 Describe the crop, symptoms, and how fast the problem is spreading. I will help you narrow it down and suggest safe IPM steps.",
+    "market":  "💰 I could not confirm live prices right now. Tell me the crop and market area, and I will guide you on what to compare before selling.",
+    "general": "🌱 I’m here to help with farming and everyday questions in English, Kiswahili, or Luo.",
+}
+
+LEGACY_FALLBACK_3 = {
     "crops":   "🌽 I can help with crop advice, but I do not have enough live location data yet. Share your county or nearest town and I will suggest suitable staple and cash crops.",
     "weather": "🌧 I could not reach live weather data just now. Share your location and I will still give practical seasonal farm guidance.",
     "pests":   "🐛 Describe the crop, symptoms, and how fast the problem is spreading. I will help you narrow it down and suggest safe IPM steps.",
@@ -623,7 +659,7 @@ FALLBACK = {
     "weather": "🌧 I could not reach live weather data just now. Share your location and I will still give practical seasonal farm guidance.",
     "pests":   "🐛 Describe the crop, symptoms, and how fast the problem is spreading. I will help you narrow it down and suggest safe IPM steps.",
     "market":  "💰 I could not confirm live prices right now. Tell me the crop and market area, and I will guide you on what to compare before selling.",
-    "general": "🌱 I’m here to help with farming and everyday questions in English, Kiswahili, or Luo.",
+    "general": "🌱 I only handle agricultural questions. Ask me about crops, livestock, soils, weather, pests, irrigation, or farm markets.",
 }
 
 def ask_groq(user_message: str, session_id: str, context_data: dict = None, tab_context: str = "general", language: str = "en") -> str:
@@ -672,6 +708,8 @@ def ask_groq(user_message: str, session_id: str, context_data: dict = None, tab_
 
 
 def ask_ai(user_message: str, session_id: str, context_data: dict = None, tab_context: str = "general", language: str = "en") -> str:
+    if not is_agricultural_query(user_message):
+        return agricultural_only_reply(language or detect_language(user_message))
     if OPENAI_API_KEY:
         return ask_openai(user_message, session_id, context_data, tab_context, language)
     return ask_groq(user_message, session_id, context_data, tab_context, language)

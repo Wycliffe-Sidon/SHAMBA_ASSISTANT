@@ -768,7 +768,7 @@ button{border:0;background:none;color:inherit}
     <aside class="glass side">
       <div>
         <div class="pill"><span>Fahamu</span><span>|</span><span>Agricultural AI agent</span></div>
-        <h1>One farm assistant for advice, alerts, prices, and everyday questions.</h1>
+        <h1>One farm assistant for advice, alerts, prices, and field decisions.</h1>
         <p class="lead">Fahamu now starts like a farm-first Siri for Kenya and beyond: multilingual, location-aware, interruption-friendly, and ready for crop advice, pest help, market checks, weather guidance, and general support in one place.</p>
         <div class="badge-row">
           <div class="badge">Twilio voice access</div>
@@ -849,7 +849,7 @@ button{border:0;background:none;color:inherit}
               </div>
             </div>
 
-            <div class="assistant"><span>AI</span><span>Farm advisor, market guide, and general assistant</span></div>
+            <div class="assistant"><span>AI</span><span>Farm advisor, market guide, and agricultural assistant</span></div>
             <h3 class="hero-q">Hello. Habari. Misawa. I am Fahamu.</h3>
             <p class="hero-note">Share your location or allow GPS, choose your language, then ask by text or voice. If you interrupt while Fahamu is speaking, speech stops immediately and listening starts again.</p>
             <div class="farm-alert" id="farm-alert">
@@ -892,8 +892,8 @@ button{border:0;background:none;color:inherit}
               <button class="prompt" type="button" data-context="weather" data-prompt="Check my farm weather, rain outlook, and what it means for planting, spraying, and harvesting.">
                 <span class="ico">4</span><span>Weather</span>
               </button>
-              <button class="prompt" type="button" data-context="general" data-prompt="Ask anything about farming or everyday life, and answer in my preferred language.">
-                <span class="ico">5</span><span>Ask Anything</span>
+              <button class="prompt" type="button" data-context="general" data-prompt="Help me with any farming question in my preferred language.">
+                <span class="ico">5</span><span>Ask Farming Question</span>
               </button>
             </div>
           </div>
@@ -1696,7 +1696,7 @@ function newChat() {
   closePanel();
   const profile = normalizeProfile(getProfile());
   const locationLine = `I'll base location-specific advice on ${profile.subcounty}, ${profile.county}. Is that correct?`;
-  bubble("Hello! I'm Fahamu, your smart farm assistant.\nHabari! Mimi ni Fahamu, msaidizi wako wa kilimo.\nMisawa! An Fahamu, jakony mari mar puodho.\n\nShare your location or allow GPS, tell me your preferred language, and I can start with crop advice, market prices, pest help, weather, or any other question.", "bot");
+  bubble("Hello! I'm Fahamu, your smart farm assistant.\nHabari! Mimi ni Fahamu, msaidizi wako wa kilimo.\nMisawa! An Fahamu, jakony mari mar puodho.\n\nShare your location or allow GPS, tell me your preferred language, and I can start with crop advice, market prices, pest help, weather, or any other farming question.", "bot");
   bubble(locationLine, "bot");
 }
 
