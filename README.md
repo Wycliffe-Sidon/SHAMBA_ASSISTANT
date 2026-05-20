@@ -107,6 +107,36 @@ https://your-domain.com/voice/incoming?lang=sw&location=Nairobi%2C%20Kenya
 
 You can deploy to Railway, Render, or Heroku-style Node hosting.
 
+### Vercel
+
+This repo now includes:
+
+- `vercel.json`
+- `api/index.js`
+
+They route Vercel traffic into the Express app as a Node serverless function while still serving `public/` as static assets.
+
+Deploy with:
+
+```bash
+npx vercel
+```
+
+For production redeploy:
+
+```bash
+npx vercel --prod
+```
+
+Set these environment variables in the Vercel project settings:
+
+- `ANTHROPIC_API_KEY`
+- `OPENWEATHER_API_KEY`
+- `TWILIO_ACCOUNT_SID`
+- `TWILIO_AUTH_TOKEN`
+- `TWILIO_PHONE_NUMBER`
+- `MARKET_PRICES_URL` if used
+
 ### Render
 
 - `buildCommand`: `npm install`

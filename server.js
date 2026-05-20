@@ -55,6 +55,10 @@ app.get("*", (_req, res) => {
   res.sendFile(path.join(__dirname, "public", "index.html"));
 });
 
-app.listen(port, () => {
-  console.log(`SHAMBA ASSISTANT running on port ${port}`);
-});
+if (require.main === module) {
+  app.listen(port, () => {
+    console.log(`SHAMBA ASSISTANT running on port ${port}`);
+  });
+}
+
+module.exports = app;
