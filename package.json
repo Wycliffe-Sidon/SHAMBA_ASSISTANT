@@ -1,0 +1,24 @@
+{
+  "name": "shamba-assistant",
+  "version": "1.0.0",
+  "description": "Production-ready voice-first agricultural web app for East African farmers.",
+  "main": "server.js",
+  "type": "commonjs",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "dotenv": "^16.4.5",
+    "axios": "^1.6.8",
+    "twilio": "^4.19.0",
+    "helmet": "^7.1.0",
+    "express-rate-limit": "^7.2.0",
+    "cors": "^2.8.5",
+    "node-fetch": "^3.3.2"
+  }
+}

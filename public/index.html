@@ -1,0 +1,1761 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#1a5c2a">
+  <title>SHAMBA ASSISTANT</title>
+  <link rel="manifest" href="/manifest.json">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      color-scheme: light dark;
+      --green-900: #103717;
+      --green-800: #1a5c2a;
+      --green-700: #28733a;
+      --green-500: #4b9d60;
+      --green-100: #e7f5e8;
+      --brown-700: #7a5c3a;
+      --brown-300: #c6aa8a;
+      --gold: #f5a623;
+      --sky: #d8efff;
+      --sky-strong: #99d2ff;
+      --surface: #f4faf4;
+      --panel: rgba(255, 255, 255, 0.74);
+      --panel-strong: rgba(255, 255, 255, 0.92);
+      --text: #17331c;
+      --muted: #607764;
+      --line: rgba(26, 92, 42, 0.13);
+      --shadow: 0 24px 70px rgba(26, 92, 42, 0.15);
+      --danger: #b83333;
+      --radius-xl: 28px;
+      --radius-lg: 22px;
+      --radius-md: 16px;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --surface: #0d1910;
+        --panel: rgba(16, 31, 19, 0.8);
+        --panel-strong: rgba(20, 37, 23, 0.95);
+        --text: #eef8ef;
+        --muted: #a9c2ad;
+        --line: rgba(255, 255, 255, 0.09);
+        --shadow: 0 24px 70px rgba(0, 0, 0, 0.35);
+        --sky: #143042;
+        --sky-strong: #1f4f6d;
+      }
+    }
+
+    body.force-dark {
+      --surface: #0d1910;
+      --panel: rgba(16, 31, 19, 0.8);
+      --panel-strong: rgba(20, 37, 23, 0.95);
+      --text: #eef8ef;
+      --muted: #a9c2ad;
+      --line: rgba(255, 255, 255, 0.09);
+      --shadow: 0 24px 70px rgba(0, 0, 0, 0.35);
+      --sky: #143042;
+      --sky-strong: #1f4f6d;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html, body {
+      min-height: 100%;
+    }
+
+    body {
+      font-family: "Nunito", sans-serif;
+      color: var(--text);
+      background:
+        radial-gradient(circle at top left, rgba(245, 166, 35, 0.18), transparent 22%),
+        radial-gradient(circle at top right, rgba(94, 165, 255, 0.12), transparent 24%),
+        linear-gradient(160deg, #edf8ee 0%, #d8eddc 42%, #a9cfae 100%);
+    }
+
+    body.force-dark {
+      background:
+        radial-gradient(circle at top left, rgba(245, 166, 35, 0.16), transparent 24%),
+        radial-gradient(circle at top right, rgba(94, 165, 255, 0.08), transparent 24%),
+        linear-gradient(160deg, #0a130b 0%, #112016 40%, #193022 100%);
+    }
+
+    button, input, textarea {
+      font: inherit;
+    }
+
+    button {
+      border: 0;
+    }
+
+    .page {
+      min-height: 100vh;
+      padding: 18px;
+    }
+
+    .shell {
+      width: min(1360px, 100%);
+      margin: 0 auto;
+      background: rgba(255, 255, 255, 0.34);
+      border: 1px solid rgba(255, 255, 255, 0.38);
+      border-radius: 34px;
+      backdrop-filter: blur(18px);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+
+    .header {
+      background: linear-gradient(135deg, rgba(26, 92, 42, 0.98), rgba(20, 71, 31, 0.96));
+      color: #fff;
+      padding: 22px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 18px;
+      flex-wrap: wrap;
+    }
+
+    .brand {
+      display: grid;
+      gap: 6px;
+    }
+
+    .brand h1 {
+      font-size: clamp(1.8rem, 2.5vw, 2.5rem);
+      line-height: 1;
+    }
+
+    .brand p {
+      color: rgba(255, 255, 255, 0.8);
+      max-width: 740px;
+    }
+
+    .header-actions {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .lang-switch {
+      display: flex;
+      gap: 8px;
+    }
+
+    .lang-btn,
+    .ghost-btn,
+    .pill-btn,
+    .call-btn,
+    .chip,
+    .icon-btn,
+    .send-btn {
+      border-radius: 999px;
+      cursor: pointer;
+      transition: transform 0.18s ease, opacity 0.18s ease, background 0.18s ease;
+    }
+
+    .lang-btn,
+    .ghost-btn {
+      padding: 10px 14px;
+      background: rgba(255, 255, 255, 0.1);
+      color: #fff;
+      border: 1px solid rgba(255, 255, 255, 0.16);
+      font-weight: 800;
+    }
+
+    .lang-btn.active {
+      background: #fff;
+      color: var(--green-800);
+    }
+
+    .call-btn {
+      padding: 12px 16px;
+      background: linear-gradient(135deg, #f5c33c, #f08a21);
+      color: #17331c;
+      font-weight: 800;
+    }
+
+    .content {
+      padding: 20px;
+      display: grid;
+      gap: 16px;
+    }
+
+    .status-grid,
+    .context-grid {
+      display: grid;
+      gap: 14px;
+    }
+
+    .status-grid {
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+
+    .card,
+    .status-card,
+    .chat-card,
+    .context-card,
+    .ask-card {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow);
+    }
+
+    .status-card {
+      padding: 14px 16px;
+    }
+
+    .status-card small {
+      display: block;
+      color: var(--muted);
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      font-size: 0.72rem;
+    }
+
+    .status-card strong {
+      display: block;
+      margin-top: 8px;
+      font-size: 1rem;
+    }
+
+    .status-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: #58f47d;
+      box-shadow: 0 0 0 8px rgba(88, 244, 125, 0.12);
+    }
+
+    .location-bar {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto auto;
+      gap: 10px;
+    }
+
+    .field,
+    textarea {
+      width: 100%;
+      border-radius: 18px;
+      border: 1px solid var(--line);
+      background: var(--panel-strong);
+      color: var(--text);
+      padding: 14px 16px;
+      outline: none;
+    }
+
+    .pill-btn {
+      padding: 12px 14px;
+      background: var(--panel-strong);
+      border: 1px solid var(--line);
+      color: var(--text);
+      font-weight: 800;
+    }
+
+    .ticker-wrap {
+      overflow: hidden;
+      border-radius: 18px;
+      background: linear-gradient(135deg, rgba(245, 166, 35, 0.18), rgba(26, 92, 42, 0.08));
+      border: 1px solid var(--line);
+    }
+
+    .ticker {
+      display: inline-block;
+      white-space: nowrap;
+      padding: 12px 0 12px 100%;
+      animation: ticker 28s linear infinite;
+      font-weight: 800;
+    }
+
+    @keyframes ticker {
+      from { transform: translateX(0); }
+      to { transform: translateX(-100%); }
+    }
+
+    .hero {
+      padding: 20px;
+      display: grid;
+      gap: 14px;
+      background:
+        radial-gradient(circle at right top, rgba(245, 166, 35, 0.2), transparent 30%),
+        linear-gradient(135deg, rgba(26, 92, 42, 0.09), rgba(122, 92, 58, 0.08));
+    }
+
+    .hero-top {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      align-items: start;
+      flex-wrap: wrap;
+    }
+
+    .hero-copy h2 {
+      font-size: clamp(1.5rem, 2.8vw, 2rem);
+      margin-bottom: 8px;
+    }
+
+    .hero-copy p {
+      color: var(--muted);
+      max-width: 840px;
+      line-height: 1.65;
+    }
+
+    .speaking-bar {
+      display: flex;
+      justify-content: space-between;
+      gap: 14px;
+      align-items: center;
+      flex-wrap: wrap;
+      padding: 14px 16px;
+      border-radius: 18px;
+      background: var(--panel-strong);
+      border: 1px solid var(--line);
+    }
+
+    .wave-box {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .wave {
+      height: 28px;
+      display: flex;
+      align-items: end;
+      gap: 5px;
+    }
+
+    .wave span {
+      display: block;
+      width: 5px;
+      height: 10px;
+      border-radius: 999px;
+      background: linear-gradient(180deg, var(--gold), var(--green-700));
+      opacity: 0.45;
+    }
+
+    .hero.speaking .wave span {
+      animation: wave 0.9s ease-in-out infinite;
+    }
+
+    .hero.speaking .wave span:nth-child(2) { animation-delay: 0.08s; }
+    .hero.speaking .wave span:nth-child(3) { animation-delay: 0.16s; }
+    .hero.speaking .wave span:nth-child(4) { animation-delay: 0.24s; }
+    .hero.speaking .wave span:nth-child(5) { animation-delay: 0.32s; }
+
+    @keyframes wave {
+      0%, 100% { height: 8px; opacity: 0.5; }
+      50% { height: 28px; opacity: 1; }
+    }
+
+    .stop-btn {
+      display: none;
+      padding: 11px 16px;
+      border-radius: 999px;
+      background: rgba(184, 51, 51, 0.12);
+      border: 1px solid rgba(184, 51, 51, 0.2);
+      color: var(--danger);
+      font-weight: 800;
+      cursor: pointer;
+    }
+
+    .stop-btn.show {
+      display: inline-flex;
+    }
+
+    .quick-actions {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .chip {
+      padding: 11px 14px;
+      background: var(--panel-strong);
+      border: 1px solid var(--line);
+      color: var(--green-800);
+      font-weight: 800;
+    }
+
+    .workspace {
+      display: grid;
+      grid-template-columns: minmax(0, 1.45fr) minmax(300px, 0.85fr);
+      gap: 16px;
+      min-height: 0;
+    }
+
+    .chat-card,
+    .context-stack,
+    .ask-card {
+      overflow: hidden;
+    }
+
+    .chat-card {
+      display: grid;
+      grid-template-rows: auto 1fr auto;
+      min-height: 620px;
+    }
+
+    .chat-head {
+      padding: 18px 18px 12px;
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      align-items: center;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .chat-head p {
+      color: var(--muted);
+      margin-top: 4px;
+    }
+
+    .thread {
+      padding: 18px;
+      overflow: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      scroll-behavior: smooth;
+    }
+
+    .message {
+      display: flex;
+      align-items: end;
+      gap: 10px;
+    }
+
+    .message.user {
+      justify-content: end;
+    }
+
+    .bubble {
+      max-width: 86%;
+      border-radius: 22px;
+      padding: 14px 16px;
+      line-height: 1.62;
+      white-space: normal;
+      box-shadow: 0 10px 30px rgba(16, 55, 23, 0.08);
+    }
+
+    .message.user .bubble {
+      background: linear-gradient(135deg, var(--green-700), var(--green-800));
+      color: #fff;
+      border-bottom-right-radius: 8px;
+    }
+
+    .message.bot .bubble {
+      background: var(--panel-strong);
+      border: 1px solid var(--line);
+      border-bottom-left-radius: 8px;
+    }
+
+    .bubble h4,
+    .bubble strong {
+      font-weight: 800;
+    }
+
+    .avatar {
+      width: 38px;
+      height: 38px;
+      border-radius: 50%;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1rem;
+      background: rgba(26, 92, 42, 0.12);
+      border: 1px solid var(--line);
+      flex: 0 0 auto;
+    }
+
+    .bubble ul,
+    .bubble ol {
+      padding-left: 18px;
+      margin-top: 8px;
+    }
+
+    .bubble table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 10px;
+      font-size: 0.92rem;
+    }
+
+    .bubble th,
+    .bubble td {
+      text-align: left;
+      border-bottom: 1px solid var(--line);
+      padding: 8px 6px;
+    }
+
+    .typing {
+      display: none;
+      align-items: center;
+      gap: 8px;
+      padding: 0 18px 10px;
+      color: var(--muted);
+      font-weight: 800;
+    }
+
+    .typing.show {
+      display: flex;
+    }
+
+    .typing span {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--green-500);
+      animation: pulse 1s ease-in-out infinite;
+    }
+
+    .typing span:nth-child(2) { animation-delay: 0.15s; }
+    .typing span:nth-child(3) { animation-delay: 0.3s; }
+
+    @keyframes pulse {
+      0%, 80%, 100% { transform: scale(0.55); opacity: 0.5; }
+      40% { transform: scale(1); opacity: 1; }
+    }
+
+    .composer {
+      padding: 14px 18px 18px;
+      border-top: 1px solid var(--line);
+      display: grid;
+      grid-template-columns: auto minmax(0, 1fr) auto auto;
+      gap: 10px;
+      align-items: end;
+    }
+
+    textarea {
+      min-height: 58px;
+      max-height: 190px;
+      resize: none;
+    }
+
+    .icon-btn,
+    .send-btn {
+      width: 54px;
+      height: 54px;
+      border-radius: 18px;
+      background: var(--panel-strong);
+      border: 1px solid var(--line);
+      color: var(--green-800);
+      font-weight: 800;
+      font-size: 1rem;
+    }
+
+    .send-btn {
+      background: linear-gradient(135deg, var(--green-700), var(--green-800));
+      color: #fff;
+      border-color: transparent;
+    }
+
+    .icon-btn.active {
+      background: rgba(75, 157, 96, 0.16);
+    }
+
+    .context-stack {
+      display: grid;
+      gap: 14px;
+    }
+
+    .context-card {
+      padding: 16px;
+    }
+
+    .context-card.weather {
+      background: linear-gradient(135deg, var(--sky), var(--sky-strong));
+      color: #103717;
+    }
+
+    .context-card h3 {
+      margin-bottom: 10px;
+      font-size: 1.05rem;
+    }
+
+    .mini-grid {
+      display: grid;
+      gap: 10px;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      margin-top: 12px;
+    }
+
+    .mini-tile {
+      padding: 10px 12px;
+      border-radius: 14px;
+      background: rgba(255, 255, 255, 0.6);
+      border: 1px solid rgba(255, 255, 255, 0.35);
+    }
+
+    .context-list {
+      display: grid;
+      gap: 8px;
+      color: var(--muted);
+    }
+
+    .forecast-list {
+      display: grid;
+      gap: 8px;
+      max-height: 200px;
+      overflow: auto;
+    }
+
+    .forecast-item,
+    .price-item {
+      display: grid;
+      gap: 4px;
+      padding: 10px 0;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .ask-card {
+      padding: 18px;
+      display: grid;
+      gap: 12px;
+    }
+
+    .ask-card p {
+      color: var(--muted);
+      line-height: 1.6;
+    }
+
+    .ask-form {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 10px;
+      align-items: end;
+    }
+
+    .call-modal {
+      position: fixed;
+      inset: 0;
+      background: rgba(3, 12, 6, 0.56);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      z-index: 30;
+    }
+
+    .call-modal.show {
+      display: flex;
+    }
+
+    .call-sheet {
+      width: min(430px, 100%);
+      border-radius: 28px;
+      padding: 22px;
+      background: linear-gradient(180deg, rgba(14, 44, 20, 0.98), rgba(26, 92, 42, 0.97));
+      color: #fff;
+      box-shadow: var(--shadow);
+      display: grid;
+      gap: 16px;
+    }
+
+    .call-sheet h3 {
+      font-size: 1.6rem;
+    }
+
+    .call-sheet p {
+      color: rgba(255, 255, 255, 0.76);
+    }
+
+    .call-transcript {
+      min-height: 180px;
+      max-height: 250px;
+      overflow: auto;
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 18px;
+      padding: 14px;
+      display: grid;
+      gap: 10px;
+    }
+
+    .call-controls {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+
+    .call-control {
+      padding: 12px 14px;
+      border-radius: 14px;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      color: #fff;
+      font-weight: 800;
+      cursor: pointer;
+    }
+
+    .call-control.hangup {
+      background: #b83333;
+      border-color: #b83333;
+    }
+
+    .hidden {
+      display: none;
+    }
+
+    @media (max-width: 1100px) {
+      .status-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .workspace {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 760px) {
+      .page {
+        padding: 0;
+      }
+
+      .shell {
+        border-radius: 0;
+        min-height: 100vh;
+      }
+
+      .header,
+      .content {
+        padding: 14px;
+      }
+
+      .status-grid,
+      .location-bar,
+      .ask-form,
+      .composer {
+        grid-template-columns: 1fr;
+      }
+
+      .icon-btn,
+      .send-btn {
+        width: 100%;
+      }
+
+      .bubble {
+        max-width: 94%;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <div class="shell">
+      <header class="header">
+        <div class="brand">
+          <h1>🌾 <span id="title-text">Shamba Assistant</span></h1>
+          <p id="subtitle-text">Siri-like voice-first agricultural chatbot for East African farmers.</p>
+        </div>
+        <div class="header-actions">
+          <div class="lang-switch" id="lang-switch"></div>
+          <button class="ghost-btn" id="theme-btn">🌙</button>
+          <button class="call-btn" id="open-call-btn">📞 Call Shamba</button>
+        </div>
+      </header>
+
+      <main class="content">
+        <section class="status-grid">
+          <article class="status-card">
+            <small id="status-ai-label">AI Status</small>
+            <strong class="status-pill"><span class="dot"></span><span id="status-ai-value">Online and ready</span></strong>
+          </article>
+          <article class="status-card">
+            <small id="status-location-label">Current Location</small>
+            <strong id="status-location-value">Nairobi, Kenya</strong>
+          </article>
+          <article class="status-card">
+            <small id="status-weather-label">Weather Summary</small>
+            <strong id="status-weather-value">Loading...</strong>
+          </article>
+          <article class="status-card">
+            <small id="status-market-label">Market Status</small>
+            <strong id="status-market-value">Loading prices...</strong>
+          </article>
+        </section>
+
+        <section class="location-bar">
+          <input class="field" id="location-input" type="text" value="Nairobi, Kenya" placeholder="Type any city">
+          <button class="pill-btn" id="update-location-btn">Update</button>
+          <button class="pill-btn" id="gps-btn">GPS</button>
+        </section>
+
+        <section class="ticker-wrap">
+          <div class="ticker" id="market-ticker">Loading market prices...</div>
+        </section>
+
+        <section class="hero card" id="hero-card">
+          <div class="hero-top">
+            <div class="hero-copy">
+              <h2 id="hero-title">Farm advice with live weather, soil, and markets.</h2>
+              <p id="hero-copy">Speak naturally or type your farming question. Shamba Assistant combines live farm weather, SoilGrids soil analysis, and market prices into one answer in your chosen language.</p>
+            </div>
+            <div>
+              <div style="font-weight:800;" id="phone-display">+254 700 SHAMBA</div>
+              <p id="phone-copy">Twilio voice webhook ready.</p>
+            </div>
+          </div>
+
+          <div class="speaking-bar">
+            <div class="wave-box">
+              <div class="wave" aria-hidden="true">
+                <span></span><span></span><span></span><span></span><span></span>
+              </div>
+              <div>
+                <div style="font-weight:800;" id="voice-status">Voice ready.</div>
+                <div style="color:var(--muted);" id="language-status">Current language: English</div>
+              </div>
+            </div>
+            <button class="stop-btn" id="stop-speaking-btn">⏹ Stop</button>
+          </div>
+
+          <div class="quick-actions">
+            <button class="chip quick-chip" data-prompt="crop">🌱 Crop Recommendations</button>
+            <button class="chip quick-chip" data-prompt="weather">🌦 Weather</button>
+            <button class="chip quick-chip" data-prompt="market">💹 Market Prices</button>
+            <button class="chip quick-chip" data-prompt="soil">🟤 Soil Analysis</button>
+            <button class="chip quick-chip" data-prompt="pest">🐛 Pest Control</button>
+          </div>
+        </section>
+
+        <section class="workspace">
+          <article class="chat-card">
+            <div class="chat-head">
+              <div>
+                <strong id="chat-title">Main Chat</strong>
+                <p id="chat-copy">Conversation memory stays active within this session.</p>
+              </div>
+              <div class="header-actions">
+                <button class="pill-btn" id="continuous-btn">Continuous: Off</button>
+                <button class="pill-btn" id="clear-chat-btn">Clear Chat</button>
+              </div>
+            </div>
+
+            <div class="thread" id="thread"></div>
+
+            <div class="typing" id="typing">
+              <span></span><span></span><span></span>
+              <div id="typing-text">Thinking...</div>
+            </div>
+
+            <div class="composer">
+              <button class="icon-btn" id="mic-btn" title="Voice input">🎙</button>
+              <textarea id="message-input" placeholder="Ask about crops, livestock, pests, markets, weather, or soil"></textarea>
+              <button class="icon-btn" id="attach-btn" title="Simulate image upload">📷</button>
+              <button class="send-btn" id="send-btn" title="Send">➤</button>
+            </div>
+            <input class="hidden" type="file" id="image-input" accept="image/*">
+          </article>
+
+          <div class="context-stack">
+            <article class="context-card weather">
+              <h3 id="weather-card-title">Weather Card</h3>
+              <div id="weather-card-body">Loading...</div>
+            </article>
+
+            <article class="context-card">
+              <h3 id="soil-card-title">Soil Summary</h3>
+              <div id="soil-card-body" class="context-list">Loading...</div>
+            </article>
+
+            <article class="context-card">
+              <h3 id="forecast-card-title">7-Day Forecast</h3>
+              <div class="forecast-list" id="forecast-card-body"></div>
+            </article>
+
+            <article class="context-card">
+              <h3 id="market-card-title">Live Market Prices</h3>
+              <div class="forecast-list" id="market-card-body"></div>
+            </article>
+          </div>
+        </section>
+
+        <section class="ask-card">
+          <div>
+            <h3 id="ask-title">Ask Anything 🌾</h3>
+            <p id="ask-copy">Use this dedicated farming Q&A area for pest control, irrigation, fertilizer dosing, crop storage, livestock disease, planting calendars, intercropping, organic farming, and water harvesting.</p>
+          </div>
+          <div class="quick-actions" id="suggestion-row"></div>
+          <div class="ask-form">
+            <textarea id="ask-input" placeholder="Ask a detailed agriculture question"></textarea>
+            <button class="send-btn" id="ask-send-btn">➤</button>
+          </div>
+        </section>
+      </main>
+    </div>
+  </div>
+
+  <section class="call-modal" id="call-modal">
+    <div class="call-sheet">
+      <div>
+        <h3 id="call-title">Shamba Call</h3>
+        <p><span id="call-number">+254 700 SHAMBA</span> • <span id="call-timer">00:00</span></p>
+      </div>
+      <div class="call-transcript" id="call-transcript"></div>
+      <div class="call-controls">
+        <button class="call-control" id="call-mic-btn">🎙 Talk</button>
+        <button class="call-control" id="call-mute-btn">🔇 Mute</button>
+        <button class="call-control" id="call-speaker-btn">🔊 Speaker</button>
+        <button class="call-control hangup" id="call-hangup-btn">📴 Hang up</button>
+      </div>
+    </div>
+  </section>
+
+  <script>
+    const $ = selector => document.querySelector(selector);
+    const $$ = selector => Array.from(document.querySelectorAll(selector));
+
+    const I18N = {
+      en: {
+        languageName: "English",
+        title: "Shamba Assistant",
+        subtitle: "Siri-like voice-first agricultural chatbot for East African farmers.",
+        heroTitle: "Farm advice with live weather, soil, and markets.",
+        heroCopy: "Speak naturally or type your farming question. Shamba Assistant combines live farm weather, SoilGrids soil analysis, and market prices into one answer in your chosen language.",
+        phoneCopy: "Twilio voice webhook ready.",
+        aiStatus: "AI Status",
+        aiOnline: "Online and ready",
+        location: "Current Location",
+        weather: "Weather Summary",
+        market: "Market Status",
+        locationPlaceholder: "Type any city",
+        updateLocation: "Update",
+        gps: "GPS",
+        loadingPrices: "Loading prices...",
+        weatherCardTitle: "Weather Card",
+        soilCardTitle: "Soil Summary",
+        forecastCardTitle: "7-Day Forecast",
+        marketCardTitle: "Live Market Prices",
+        mainChat: "Main Chat",
+        chatCopy: "Conversation memory stays active within this session.",
+        continuousOn: "Continuous: On",
+        continuousOff: "Continuous: Off",
+        clearChat: "Clear Chat",
+        thinking: "Thinking...",
+        messagePlaceholder: "Ask about crops, livestock, pests, markets, weather, or soil",
+        voiceReady: "Voice ready.",
+        voiceListening: "Listening...",
+        voiceSpeaking: "Speaking...",
+        languageStatus: "Current language: English",
+        askTitle: "Ask Anything 🌾",
+        askCopy: "Use this dedicated farming Q&A area for pest control, irrigation, fertilizer dosing, crop storage, livestock disease, planting calendars, intercropping, organic farming, and water harvesting.",
+        askPlaceholder: "Ask a detailed agriculture question",
+        callTitle: "Shamba Call",
+        callGreeting: "Call connected. Ask your farming question after the tone.",
+        callMuted: "Muted",
+        callUnmuted: "Unmuted",
+        callSpeaker: "Speaker",
+        callEarpiece: "Earpiece",
+        locationUpdated: location => `I have updated your farm context to ${location}.`,
+        welcome: "Hello. I am Shamba Assistant. Ask me about crops, weather, soil, livestock, pests, irrigation, fertilizer, or farm markets.",
+        quickPrompts: {
+          crop: "Give me the top 3 crops to plant here right now and explain why.",
+          weather: "Summarize the current farm weather and the next 7 days for this location.",
+          market: "Show me the latest market prices and what they mean for selling crops.",
+          soil: "Explain this soil analysis and how it affects planting decisions.",
+          pest: "What common pests should I watch for right now and how do I control them?"
+        },
+        suggestions: [
+          "How do I control fall armyworm in maize?",
+          "How much fertilizer should I use for tomatoes?",
+          "What is the best irrigation schedule this week?",
+          "How do I store beans after harvest?",
+          "What are signs of disease in dairy cows?"
+        ],
+        uploadPrompt: name => `I uploaded an agricultural image called ${name}. Help me inspect likely farming issues and what I should check next.`
+      },
+      sw: {
+        languageName: "Kiswahili",
+        title: "Shamba Assistant",
+        subtitle: "Chatbot ya kilimo ya kwanza kwa sauti kwa wakulima wa Afrika Mashariki.",
+        heroTitle: "Ushauri wa shamba kwa hali ya hewa, udongo, na masoko ya moja kwa moja.",
+        heroCopy: "Ongea kawaida au andika swali lako la kilimo. Shamba Assistant huunganisha hali ya hewa ya shambani, uchambuzi wa udongo wa SoilGrids, na bei za soko katika jibu moja kwa lugha uliyochagua.",
+        phoneCopy: "Webhook ya sauti ya Twilio iko tayari.",
+        aiStatus: "Hali ya AI",
+        aiOnline: "Mkononi na tayari",
+        location: "Eneo la Sasa",
+        weather: "Muhtasari wa Hali ya Hewa",
+        market: "Hali ya Soko",
+        locationPlaceholder: "Andika jiji lolote",
+        updateLocation: "Sasisha",
+        gps: "GPS",
+        loadingPrices: "Inapakia bei...",
+        weatherCardTitle: "Kadi ya Hali ya Hewa",
+        soilCardTitle: "Muhtasari wa Udongo",
+        forecastCardTitle: "Utabiri wa Siku 7",
+        marketCardTitle: "Bei za Soko za Moja kwa Moja",
+        mainChat: "Mazungumzo Makuu",
+        chatCopy: "Kumbukumbu ya mazungumzo inaendelea ndani ya kipindi hiki.",
+        continuousOn: "Endelea Kusikiliza: Ndio",
+        continuousOff: "Endelea Kusikiliza: Hapana",
+        clearChat: "Futa Mazungumzo",
+        thinking: "Ninafikiria...",
+        messagePlaceholder: "Uliza kuhusu mazao, mifugo, wadudu, masoko, hali ya hewa, au udongo",
+        voiceReady: "Sauti iko tayari.",
+        voiceListening: "Ninasikiliza...",
+        voiceSpeaking: "Ninazungumza...",
+        languageStatus: "Lugha ya sasa: Kiswahili",
+        askTitle: "Uliza Chochote 🌾",
+        askCopy: "Tumia sehemu hii maalum ya maswali ya kilimo kwa wadudu, umwagiliaji, kiwango cha mbolea, uhifadhi wa mazao, magonjwa ya mifugo, kalenda za kupanda, mseto wa mazao, kilimo hai, na uvunaji wa maji.",
+        askPlaceholder: "Uliza swali la kina la kilimo",
+        callTitle: "Simu ya Shamba",
+        callGreeting: "Simu imeunganishwa. Uliza swali lako la kilimo baada ya mlio.",
+        callMuted: "Kimya",
+        callUnmuted: "Sauti",
+        callSpeaker: "Spika",
+        callEarpiece: "Sikioni",
+        locationUpdated: location => `Nimesasisha taarifa za shamba lako hadi ${location}.`,
+        welcome: "Habari. Mimi ni Shamba Assistant. Uliza kuhusu mazao, hali ya hewa, udongo, mifugo, wadudu, umwagiliaji, mbolea, au masoko ya mazao.",
+        quickPrompts: {
+          crop: "Nipe mazao matatu bora ya kupanda hapa sasa na sababu zake.",
+          weather: "Nipe muhtasari wa hali ya hewa ya sasa ya shamba na siku 7 zijazo kwa eneo hili.",
+          market: "Nionyeshe bei za karibuni za soko na maana yake kwa kuuza mazao.",
+          soil: "Eleza uchambuzi huu wa udongo na jinsi unavyoathiri maamuzi ya kupanda.",
+          pest: "Ni wadudu gani wa kawaida ninaopaswa kuangalia sasa na nitawadhibitije?"
+        },
+        suggestions: [
+          "Nidhibiti vipi fall armyworm kwenye mahindi?",
+          "Nitafaa kutumia mbolea kiasi gani kwa nyanya?",
+          "Ratiba gani bora ya umwagiliaji wiki hii?",
+          "Nitahifadhije maharagwe baada ya mavuno?",
+          "Dalili za ugonjwa kwa ng'ombe wa maziwa ni zipi?"
+        ],
+        uploadPrompt: name => `Nimepakiwa picha ya kilimo inayoitwa ${name}. Nisaidie kuchunguza matatizo yanayowezekana na mambo ya kuangalia baadaye.`
+      },
+      luo: {
+        languageName: "Luo-Dholuo",
+        title: "Shamba Assistant",
+        subtitle: "Jakony mar puodho ma dwoko gi dwol ne jopuodho mar Afrika Maduong'.",
+        heroTitle: "Kony mar puodho gi koth, ngom, gi soko manyien.",
+        heroCopy: "Wach e yore ma ineno maber kata ndik penji mari mar puodho. Shamba Assistant chuoko koth mar puodho, nonro mar ngom mar SoilGrids, gi bei mar soko e duoko achiel kuom dho ma iyiero.",
+        phoneCopy: "Webhook mar dwol mar Twilio osechikore.",
+        aiStatus: "Kit AI",
+        aiOnline: "Osebedo gi kikelo kony",
+        location: "Kama In",
+        weather: "Weche mar Koth",
+        market: "Kit Soko",
+        locationPlaceholder: "Ndik dala moro amora",
+        updateLocation: "Yik Manyien",
+        gps: "GPS",
+        loadingPrices: "Tiyo kuom bei...",
+        weatherCardTitle: "Kadi mar Koth",
+        soilCardTitle: "Weche Ngom",
+        forecastCardTitle: "Neno Nyime mar Ndalo 7",
+        marketCardTitle: "Bei mar Soko Monyien",
+        mainChat: "Goyo Weche Madongo",
+        chatCopy: "Paro mar weche tinre e session ni.",
+        continuousOn: "Winjo Kendo: Ee",
+        continuousOff: "Winjo Kendo: Da",
+        clearChat: "Jwa Weche",
+        thinking: "Aparo...",
+        messagePlaceholder: "Penja kuom mazao, dhiang', chwiri, soko, koth, kata ngom",
+        voiceReady: "Dwol oikore.",
+        voiceListening: "Awinjo...",
+        voiceSpeaking: "Awacho...",
+        languageStatus: "Dho ma sani: Luo-Dholuo",
+        askTitle: "Penja Gima Amora 🌾",
+        askCopy: "Ti gi kabedo ni mondo ipenj kuom chwiri, kudho pi, kit yath mar puodho, gweng' mar mazao, tuo mar dhiang', ndalo mar pandruok, puodho mar achiel gi achiel, puodho mar natur, gi chulo pi.",
+        askPlaceholder: "Penja penjo maduong' mar puodho",
+        callTitle: "Go mar Shamba",
+        callGreeting: "Go olor. Penja penji mari mar puodho bang' dwol.",
+        callMuted: "Ling'",
+        callUnmuted: "Dwol",
+        callSpeaker: "Speaker",
+        callEarpiece: "Ear",
+        locationUpdated: location => `Aseketo weche mar puodhi e ${location}.`,
+        welcome: "Misawa. An Shamba Assistant. Penja kuom mazao, koth, ngom, dhiang', chwiri, kudho pi, yath mar puodho, kata soko.",
+        quickPrompts: {
+          crop: "Nyisa mazao adek maber ma nyal pandore kanyo sani kod sababu.",
+          weather: "Nyisa weche mar koth mar sani kod ndalo 7 mabiro e kama ni.",
+          market: "Nyisa bei mar soko manyien kod gima gikelo e yueyo mazao.",
+          soil: "Lony ni nonro mar ngom ni to ginyalo konyo nadi e pandruok.",
+          pest: "Chwiri mane ma nyaka arit sani kod ango mar ketho gi?"
+        },
+        suggestions: [
+          "Ariyo fall armyworm e bel nade?",
+          "Anyalo tiyo gi yath mar puodho mang'weny e nyanya?",
+          "Ber mar kudho pi mar wiki ni en ang'o?",
+          "Abiro kano njahe nade bang' keyo?",
+          "Weche mane nyiso tuo e dhiang' mamiyo pi en ang'o?"
+        ],
+        uploadPrompt: name => `Aoseketi picha mar puodho ma iluongo ni ${name}. Konyna nono chandruok ma nyal bedo kanyo gi gima onego anen malit.`
+      }
+    };
+
+    const voiceLocales = {
+      en: "en-US",
+      sw: "sw-KE",
+      luo: "luo"
+    };
+
+    const voicePriority = {
+      en: ["en-KE", "en-US", "en-GB"],
+      sw: ["sw-KE", "sw", "en-KE"],
+      luo: ["en-KE", "en-ZA", "en-GB"]
+    };
+
+    const state = {
+      sessionId: `session-${Math.random().toString(36).slice(2)}`,
+      language: "en",
+      currentLocation: "Nairobi, Kenya",
+      lat: null,
+      lon: null,
+      currentWeather: null,
+      currentSoil: null,
+      currentPrices: null,
+      recognition: null,
+      listening: false,
+      speaking: false,
+      continuousListening: false,
+      callOpen: false,
+      callMuted: false,
+      callSpeaker: true,
+      callTimer: null,
+      callSeconds: 0,
+      config: null
+    };
+
+    function t(key) {
+      return I18N[state.language][key];
+    }
+
+    function escapeHtml(value) {
+      return String(value)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#39;");
+    }
+
+    function formatText(text) {
+      return escapeHtml(text)
+        .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")
+        .replace(/^###\s(.+)$/gm, "<h4>$1</h4>");
+    }
+
+    function markdownToHtml(text) {
+      const lines = String(text || "").split(/\n/);
+      let html = "";
+      let inList = false;
+      lines.forEach(line => {
+        if (/^\s*[-*]\s+/.test(line)) {
+          if (!inList) {
+            html += "<ul>";
+            inList = true;
+          }
+          html += `<li>${formatText(line.replace(/^\s*[-*]\s+/, ""))}</li>`;
+          return;
+        }
+        if (inList) {
+          html += "</ul>";
+          inList = false;
+        }
+        if (!line.trim()) {
+          html += "<br>";
+          return;
+        }
+        html += `<p>${formatText(line)}</p>`;
+      });
+      if (inList) {
+        html += "</ul>";
+      }
+      return html;
+    }
+
+    function autoResize(element) {
+      element.style.height = "auto";
+      element.style.height = `${Math.min(element.scrollHeight, 190)}px`;
+    }
+
+    function appendMessage(role, text, target = "#thread") {
+      const row = document.createElement("div");
+      row.className = `message ${role}`;
+      if (role === "bot") {
+        const avatar = document.createElement("div");
+        avatar.className = "avatar";
+        avatar.textContent = "🌾";
+        row.appendChild(avatar);
+      }
+      const bubble = document.createElement("div");
+      bubble.className = "bubble";
+      bubble.innerHTML = markdownToHtml(text);
+      row.appendChild(bubble);
+      $(target).appendChild(row);
+      $(target).scrollTop = $(target).scrollHeight;
+      if (state.callOpen) {
+        appendCallTranscript(`${role === "user" ? "Farmer" : "Shamba"}: ${text}`);
+      }
+    }
+
+    function appendBotMessage(text) {
+      appendMessage("bot", text);
+      speak(text);
+    }
+
+    function appendUserMessage(text) {
+      appendMessage("user", text);
+    }
+
+    function appendCallTranscript(text) {
+      const item = document.createElement("div");
+      item.textContent = text;
+      $("#call-transcript").appendChild(item);
+      $("#call-transcript").scrollTop = $("#call-transcript").scrollHeight;
+    }
+
+    function showTyping(show) {
+      $("#typing").classList.toggle("show", show);
+    }
+
+    function renderLanguageSwitch() {
+      $("#lang-switch").innerHTML = ["en", "sw", "luo"]
+        .map(lang => `<button class="lang-btn ${lang === state.language ? "active" : ""}" data-lang="${lang}">${lang.toUpperCase()}</button>`)
+        .join("");
+      $$(".lang-btn").forEach(button => {
+        button.addEventListener("click", () => switchLanguage(button.dataset.lang));
+      });
+    }
+
+    function renderSuggestionRow() {
+      $("#suggestion-row").innerHTML = I18N[state.language].suggestions
+        .map(item => `<button class="chip suggestion-chip" data-value="${escapeHtml(item)}">${escapeHtml(item)}</button>`)
+        .join("");
+      $$(".suggestion-chip").forEach(button => {
+        button.addEventListener("click", () => {
+          $("#ask-input").value = button.textContent;
+          autoResize($("#ask-input"));
+        });
+      });
+    }
+
+    function renderStaticText() {
+      document.documentElement.lang = state.language === "luo" ? "luo" : state.language;
+      $("#title-text").textContent = t("title");
+      $("#subtitle-text").textContent = t("subtitle");
+      $("#hero-title").textContent = t("heroTitle");
+      $("#hero-copy").textContent = t("heroCopy");
+      $("#phone-copy").textContent = t("phoneCopy");
+      $("#status-ai-label").textContent = t("aiStatus");
+      $("#status-ai-value").textContent = t("aiOnline");
+      $("#status-location-label").textContent = t("location");
+      $("#status-weather-label").textContent = t("weather");
+      $("#status-market-label").textContent = t("market");
+      $("#location-input").placeholder = t("locationPlaceholder");
+      $("#update-location-btn").textContent = t("updateLocation");
+      $("#gps-btn").textContent = t("gps");
+      $("#weather-card-title").textContent = t("weatherCardTitle");
+      $("#soil-card-title").textContent = t("soilCardTitle");
+      $("#forecast-card-title").textContent = t("forecastCardTitle");
+      $("#market-card-title").textContent = t("marketCardTitle");
+      $("#chat-title").textContent = t("mainChat");
+      $("#chat-copy").textContent = t("chatCopy");
+      $("#continuous-btn").textContent = state.continuousListening ? t("continuousOn") : t("continuousOff");
+      $("#clear-chat-btn").textContent = t("clearChat");
+      $("#typing-text").textContent = t("thinking");
+      $("#message-input").placeholder = t("messagePlaceholder");
+      $("#voice-status").textContent = state.listening ? t("voiceListening") : state.speaking ? t("voiceSpeaking") : t("voiceReady");
+      $("#language-status").textContent = t("languageStatus");
+      $("#ask-title").textContent = t("askTitle");
+      $("#ask-copy").textContent = t("askCopy");
+      $("#ask-input").placeholder = t("askPlaceholder");
+      $("#call-title").textContent = t("callTitle");
+      $("#open-call-btn").textContent = "📞 Call Shamba";
+      renderLanguageSwitch();
+      renderSuggestionRow();
+    }
+
+    function weatherSummaryText() {
+      if (!state.currentWeather) {
+        return "Loading...";
+      }
+      return `${state.currentWeather.current.temperatureC ?? "--"}°C • ${state.currentWeather.current.description || "--"}`;
+    }
+
+    function priceStatusText() {
+      if (!state.currentPrices) {
+        return t("loadingPrices");
+      }
+      const when = new Date(state.currentPrices.updatedAt).toLocaleTimeString();
+      return `${state.currentPrices.source} • ${when}`;
+    }
+
+    function renderWeatherCard() {
+      if (!state.currentWeather) {
+        $("#weather-card-body").textContent = "Loading...";
+        return;
+      }
+      $("#weather-card-body").innerHTML = `
+        <strong>${escapeHtml(state.currentWeather.location)}</strong>
+        <div class="mini-grid">
+          <div class="mini-tile"><strong>${state.currentWeather.current.temperatureC ?? "--"}°C</strong><br>Temperature</div>
+          <div class="mini-tile"><strong>${escapeHtml(state.currentWeather.current.description || "--")}</strong><br>Description</div>
+          <div class="mini-tile"><strong>${state.currentWeather.current.humidity ?? "--"}%</strong><br>Humidity</div>
+          <div class="mini-tile"><strong>${state.currentWeather.current.windSpeed ?? "--"} m/s</strong><br>Wind</div>
+          <div class="mini-tile"><strong>${Math.round((state.currentWeather.current.rainProbability || 0) * 100)}%</strong><br>Rain chance</div>
+        </div>
+      `;
+    }
+
+    function renderSoilCard() {
+      if (!state.currentSoil) {
+        $("#soil-card-body").textContent = "Loading...";
+        return;
+      }
+      $("#soil-card-body").innerHTML = `
+        <div><strong>${escapeHtml(state.currentSoil.location)}</strong></div>
+        <div>pH: ${state.currentSoil.summary.ph ?? "--"}</div>
+        <div>Texture: ${escapeHtml(state.currentSoil.summary.textureClass || "--")}</div>
+        <div>Clay: ${state.currentSoil.summary.clay ?? "--"}%</div>
+        <div>Sand: ${state.currentSoil.summary.sand ?? "--"}%</div>
+        <div>Organic carbon: ${state.currentSoil.summary.organicCarbon ?? "--"}</div>
+        <div>Fertility: ${escapeHtml(state.currentSoil.summary.fertilityRating || "--")}</div>
+      `;
+    }
+
+    function renderForecastCard() {
+      if (!state.currentWeather?.forecast?.length) {
+        $("#forecast-card-body").innerHTML = "<div>Loading...</div>";
+        return;
+      }
+      $("#forecast-card-body").innerHTML = state.currentWeather.forecast.map(item => `
+        <div class="forecast-item">
+          <strong>${new Date(item.date).toLocaleDateString()}</strong>
+          <div>${item.tempC ?? "--"}°C • ${escapeHtml(item.description || "--")}</div>
+          <div>Humidity ${item.humidity ?? "--"}% • Wind ${item.windSpeed ?? "--"} m/s • Rain ${Math.round((item.rainProbability || 0) * 100)}%</div>
+        </div>
+      `).join("");
+    }
+
+    function renderMarketCard() {
+      if (!state.currentPrices?.prices?.length) {
+        $("#market-card-body").innerHTML = "<div>Loading...</div>";
+        return;
+      }
+      $("#market-card-body").innerHTML = state.currentPrices.prices.map(item => `
+        <div class="price-item">
+          <strong>${escapeHtml(item.crop)}</strong>
+          <div>KES ${item.price}/${escapeHtml(item.unit)} • ${escapeHtml(item.market)}</div>
+          <div>${escapeHtml(item.trend)}</div>
+        </div>
+      `).join("");
+    }
+
+    function renderTicker() {
+      if (!state.currentPrices?.prices?.length) {
+        $("#market-ticker").textContent = t("loadingPrices");
+        return;
+      }
+      $("#market-ticker").textContent = state.currentPrices.prices
+        .map(item => `${item.crop} ${item.market}: KES ${item.price}/${item.unit} ${item.trend === "up" ? "▲" : item.trend === "down" ? "▼" : "■"}`)
+        .join(" • ");
+    }
+
+    function renderStatus() {
+      $("#status-location-value").textContent = state.currentLocation;
+      $("#status-weather-value").textContent = weatherSummaryText();
+      $("#status-market-value").textContent = priceStatusText();
+      $("#language-status").textContent = t("languageStatus");
+      renderWeatherCard();
+      renderSoilCard();
+      renderForecastCard();
+      renderMarketCard();
+    }
+
+    async function fetchJson(url, options) {
+      const response = await fetch(url, options);
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data.error || "Request failed");
+      }
+      return data;
+    }
+
+    async function loadConfig() {
+      state.config = await fetchJson("/api/config");
+      state.currentLocation = state.config.defaultLocation || state.currentLocation;
+      $("#location-input").value = state.currentLocation;
+      $("#phone-display").textContent = state.config.phoneNumber || "+254 700 SHAMBA";
+      $("#call-number").textContent = state.config.phoneNumber || "+254 700 SHAMBA";
+      state.continuousListening = Boolean(state.config.continuousListeningDefault);
+    }
+
+    async function refreshPrices() {
+      state.currentPrices = await fetchJson("/api/prices");
+      renderTicker();
+      renderStatus();
+    }
+
+    async function refreshContext(notify = false) {
+      const params = new URLSearchParams({ location: state.currentLocation });
+      if (state.lat !== null && state.lon !== null) {
+        params.set("lat", String(state.lat));
+        params.set("lon", String(state.lon));
+      }
+      const [weather, soil] = await Promise.all([
+        fetchJson(`/api/weather?${params.toString()}`),
+        fetchJson(`/api/soil?${params.toString()}`)
+      ]);
+      state.currentWeather = weather;
+      state.currentSoil = soil;
+      state.currentLocation = weather.location || state.currentLocation;
+      $("#location-input").value = state.currentLocation;
+      renderStatus();
+      if (notify) {
+        appendBotMessage(I18N[state.language].locationUpdated(state.currentLocation));
+      }
+    }
+
+    function chooseVoice() {
+      const voices = window.speechSynthesis ? window.speechSynthesis.getVoices() : [];
+      const wanted = voicePriority[state.language];
+      return voices.find(voice => wanted.includes(voice.lang))
+        || voices.find(voice => wanted.some(lang => voice.lang.startsWith(lang.split("-")[0])))
+        || null;
+    }
+
+    function stopSpeaking() {
+      if (!("speechSynthesis" in window)) {
+        return;
+      }
+      window.speechSynthesis.cancel();
+      state.speaking = false;
+      $("#hero-card").classList.remove("speaking");
+      $("#stop-speaking-btn").classList.remove("show");
+      $("#voice-status").textContent = state.listening ? t("voiceListening") : t("voiceReady");
+    }
+
+    function speak(text) {
+      if (!("speechSynthesis" in window) || state.callMuted) {
+        return;
+      }
+      stopSpeaking();
+      const utterance = new SpeechSynthesisUtterance(String(text || "").replace(/\*\*/g, ""));
+      utterance.lang = voiceLocales[state.language];
+      utterance.rate = 0.95;
+      utterance.pitch = 1.05;
+      utterance.volume = 1.0;
+      const voice = chooseVoice();
+      if (voice) {
+        utterance.voice = voice;
+        utterance.lang = voice.lang;
+      }
+      utterance.onstart = () => {
+        state.speaking = true;
+        $("#hero-card").classList.add("speaking");
+        $("#stop-speaking-btn").classList.add("show");
+        $("#voice-status").textContent = t("voiceSpeaking");
+      };
+      utterance.onend = () => {
+        state.speaking = false;
+        $("#hero-card").classList.remove("speaking");
+        $("#stop-speaking-btn").classList.remove("show");
+        $("#voice-status").textContent = state.listening ? t("voiceListening") : t("voiceReady");
+        if (state.continuousListening && !state.callOpen) {
+          startListening();
+        }
+      };
+      utterance.onerror = utterance.onend;
+      window.speechSynthesis.speak(utterance);
+    }
+
+    function resetConversation() {
+      state.sessionId = `session-${Math.random().toString(36).slice(2)}`;
+      $("#thread").innerHTML = "";
+      appendBotMessage(t("welcome"));
+    }
+
+    async function sendMessage(rawMessage) {
+      const message = String(rawMessage || "").trim();
+      if (!message) {
+        return;
+      }
+      appendUserMessage(message);
+      showTyping(true);
+      try {
+        const payload = {
+          message,
+          sessionId: state.sessionId,
+          language: state.language,
+          location: state.currentLocation,
+          lat: state.currentWeather?.coordinates?.lat ?? state.lat,
+          lon: state.currentWeather?.coordinates?.lon ?? state.lon
+        };
+        const data = await fetchJson("/api/chat", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload)
+        });
+        state.currentWeather = data.weather || state.currentWeather;
+        state.currentSoil = data.soil || state.currentSoil;
+        state.currentPrices = data.prices || state.currentPrices;
+        state.currentLocation = data.location || state.currentLocation;
+        renderTicker();
+        renderStatus();
+        appendBotMessage(data.reply);
+      } catch (error) {
+        appendBotMessage(error.message || "Request failed.");
+      } finally {
+        showTyping(false);
+      }
+    }
+
+    async function sendAskAnything() {
+      const message = $("#ask-input").value.trim();
+      if (!message) {
+        return;
+      }
+      $("#ask-input").value = "";
+      autoResize($("#ask-input"));
+      await sendMessage(message);
+    }
+
+    function switchLanguage(language) {
+      if (!I18N[language]) {
+        return;
+      }
+      stopSpeaking();
+      if (state.recognition && state.listening) {
+        try {
+          state.recognition.stop();
+        } catch (_error) {}
+      }
+      state.language = language;
+      renderStaticText();
+      renderStatus();
+      resetConversation();
+      if (state.recognition) {
+        state.recognition.lang = voiceLocales[state.language];
+      }
+    }
+
+    function setupRecognition() {
+      const Recognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+      if (!Recognition) {
+        $("#voice-status").textContent = "Speech recognition unavailable in this browser.";
+        return;
+      }
+      const recognition = new Recognition();
+      recognition.lang = voiceLocales[state.language];
+      recognition.interimResults = false;
+      recognition.continuous = false;
+      recognition.onstart = () => {
+        state.listening = true;
+        $("#mic-btn").classList.add("active");
+        $("#voice-status").textContent = t("voiceListening");
+        if (state.speaking) {
+          stopSpeaking();
+        }
+      };
+      recognition.onend = () => {
+        state.listening = false;
+        $("#mic-btn").classList.remove("active");
+        if (!state.speaking) {
+          $("#voice-status").textContent = t("voiceReady");
+        }
+      };
+      recognition.onerror = () => {
+        state.listening = false;
+        $("#mic-btn").classList.remove("active");
+        $("#voice-status").textContent = t("voiceReady");
+      };
+      recognition.onresult = event => {
+        const transcript = Array.from(event.results).map(item => item[0].transcript).join(" ").trim();
+        if (!transcript) {
+          return;
+        }
+        if (state.callOpen) {
+          appendCallTranscript(`Farmer: ${transcript}`);
+        }
+        $("#message-input").value = transcript;
+        autoResize($("#message-input"));
+        sendMessage(transcript);
+        $("#message-input").value = "";
+        autoResize($("#message-input"));
+      };
+      state.recognition = recognition;
+    }
+
+    function startListening() {
+      if (!state.recognition) {
+        return;
+      }
+      state.recognition.lang = voiceLocales[state.language];
+      try {
+        state.recognition.start();
+      } catch (_error) {}
+    }
+
+    function startCallTimer() {
+      stopCallTimer();
+      state.callSeconds = 0;
+      $("#call-timer").textContent = "00:00";
+      state.callTimer = setInterval(() => {
+        state.callSeconds += 1;
+        const minutes = String(Math.floor(state.callSeconds / 60)).padStart(2, "0");
+        const seconds = String(state.callSeconds % 60).padStart(2, "0");
+        $("#call-timer").textContent = `${minutes}:${seconds}`;
+      }, 1000);
+    }
+
+    function stopCallTimer() {
+      if (state.callTimer) {
+        clearInterval(state.callTimer);
+      }
+      state.callTimer = null;
+    }
+
+    function openCallModal() {
+      state.callOpen = true;
+      $("#call-transcript").innerHTML = "";
+      $("#call-modal").classList.add("show");
+      $("#call-number").textContent = state.config?.phoneNumber || "+254 700 SHAMBA";
+      appendCallTranscript(t("callGreeting"));
+      startCallTimer();
+    }
+
+    function closeCallModal() {
+      state.callOpen = false;
+      $("#call-modal").classList.remove("show");
+      stopCallTimer();
+      stopSpeaking();
+    }
+
+    function registerServiceWorker() {
+      if ("serviceWorker" in navigator) {
+        navigator.serviceWorker.register("/sw.js").catch(() => {});
+      }
+    }
+
+    function detectGps() {
+      if (!navigator.geolocation) {
+        return;
+      }
+      navigator.geolocation.getCurrentPosition(async position => {
+        state.lat = position.coords.latitude;
+        state.lon = position.coords.longitude;
+        try {
+          await refreshContext(true);
+        } catch (_error) {}
+      });
+    }
+
+    function attachEvents() {
+      $("#theme-btn").addEventListener("click", () => {
+        document.body.classList.toggle("force-dark");
+      });
+
+      $("#send-btn").addEventListener("click", async () => {
+        const message = $("#message-input").value;
+        $("#message-input").value = "";
+        autoResize($("#message-input"));
+        await sendMessage(message);
+      });
+
+      $("#message-input").addEventListener("input", () => autoResize($("#message-input")));
+      $("#ask-input").addEventListener("input", () => autoResize($("#ask-input")));
+
+      $("#message-input").addEventListener("keydown", async event => {
+        if (event.key === "Enter" && !event.shiftKey) {
+          event.preventDefault();
+          const message = $("#message-input").value;
+          $("#message-input").value = "";
+          autoResize($("#message-input"));
+          await sendMessage(message);
+        }
+      });
+
+      $("#ask-input").addEventListener("keydown", async event => {
+        if (event.key === "Enter" && !event.shiftKey) {
+          event.preventDefault();
+          await sendAskAnything();
+        }
+      });
+
+      $("#ask-send-btn").addEventListener("click", sendAskAnything);
+      $("#mic-btn").addEventListener("click", startListening);
+      $("#stop-speaking-btn").addEventListener("click", stopSpeaking);
+      $("#continuous-btn").addEventListener("click", () => {
+        state.continuousListening = !state.continuousListening;
+        $("#continuous-btn").textContent = state.continuousListening ? t("continuousOn") : t("continuousOff");
+      });
+      $("#clear-chat-btn").addEventListener("click", resetConversation);
+      $("#gps-btn").addEventListener("click", detectGps);
+      $("#update-location-btn").addEventListener("click", async () => {
+        state.currentLocation = $("#location-input").value.trim() || state.currentLocation;
+        state.lat = null;
+        state.lon = null;
+        await refreshContext(true);
+      });
+
+      $$(".quick-chip").forEach(button => {
+        button.addEventListener("click", async () => {
+          await sendMessage(I18N[state.language].quickPrompts[button.dataset.prompt]);
+        });
+      });
+
+      $("#attach-btn").addEventListener("click", () => $("#image-input").click());
+      $("#image-input").addEventListener("change", async event => {
+        const file = event.target.files && event.target.files[0];
+        if (!file) {
+          return;
+        }
+        await sendMessage(I18N[state.language].uploadPrompt(file.name));
+        event.target.value = "";
+      });
+
+      $("#open-call-btn").addEventListener("click", openCallModal);
+      $("#call-hangup-btn").addEventListener("click", closeCallModal);
+      $("#call-mic-btn").addEventListener("click", startListening);
+      $("#call-mute-btn").addEventListener("click", () => {
+        state.callMuted = !state.callMuted;
+        $("#call-mute-btn").textContent = state.callMuted ? `🔈 ${t("callUnmuted")}` : `🔇 ${t("callMuted")}`;
+        if (state.callMuted) {
+          stopSpeaking();
+        }
+      });
+      $("#call-speaker-btn").addEventListener("click", () => {
+        state.callSpeaker = !state.callSpeaker;
+        $("#call-speaker-btn").textContent = state.callSpeaker ? `🔊 ${t("callSpeaker")}` : `🎧 ${t("callEarpiece")}`;
+      });
+    }
+
+    async function init() {
+      renderStaticText();
+      setupRecognition();
+      attachEvents();
+      await loadConfig();
+      renderStaticText();
+      await refreshPrices();
+      await refreshContext();
+      resetConversation();
+      registerServiceWorker();
+      detectGps();
+      if ("speechSynthesis" in window) {
+        window.speechSynthesis.onvoiceschanged = () => chooseVoice();
+      }
+    }
+
+    init().catch(error => {
+      appendBotMessage(error.message || "Failed to initialize Shamba Assistant.");
+    });
+  </script>
+</body>
+</html>

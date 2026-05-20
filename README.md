@@ -1,294 +1,157 @@
-# Fahamu Shamba AI - Smart Farming Assistant
+# SHAMBA ASSISTANT
 
-## 🌾 Overview
+SHAMBA ASSISTANT is a production-ready, voice-first agricultural web app for East African farmers. It combines Anthropic Claude, OpenWeatherMap, SoilGrids, fallback/live market prices, browser voice input/output, and Twilio voice webhooks in one Node.js + Express deployment.
 
-Fahamu Shamba AI is an intelligent, AI-powered farming assistant designed specifically for African farmers. It provides personalized agricultural recommendations based on location, soil conditions, weather patterns, and market trends. The application uses the **OpenAI API** for fast AI responses and supports both **English and Swahili** languages.
+## Features
 
-## ✨ Key Features
+- Siri-like multilingual farming assistant with strict `EN / SW / LUO` modes
+- Claude model `claude-sonnet-4-20250514` behind a secure backend proxy
+- Live weather and 7-day forecast via OpenWeatherMap
+- Soil analysis via SoilGrids with pH, clay, sand, organic carbon, texture, and fertility summary
+- Market price ticker with configurable external feed and built-in East Africa fallback table
+- Voice input with Web Speech API, continuous listening toggle, and speech interruption
+- Voice output with speech synthesis and Luo fallback voice selection
+- Twilio voice webhook loop for incoming farming calls
+- PWA support with `manifest.json` and `sw.js`
 
-### 🎯 Smart Crop Recommendations
-- Location-based crop suggestions using real-time soil data
-- Percentage-based suitability ratings (0-100%)
-- Detailed recommendations including planting time, maturity days, and market pricing
-- AI-powered personalized advice based on your specific county and sub-location
+## Project Structure
 
-### 🌤️ Weather Information
-- Current seasonal information aligned with farming calendar
-- Rainfall patterns and temperature guidance
-- Farming advice tailored to the current season
-- Real-time updates for better planning
-
-### 🐛 Pest & Disease Management
-- Common pests and diseases by county
-- Treatment recommendations and best practices
-- Prevention strategies for disease control
-- Integrated pest management (IPM) techniques
-
-### 📈 Market Price Tracking
-- Current crop prices across Kenyan markets
-- Trend analysis (rising, stable, falling)
-- Demand indicators (high, medium, low demand)
-- Real-time data for better business decisions
-
-### 💬 General Agricultural Q&A
-- Open-ended farming questions and answers
-- Expert advice from AI trained on agricultural data
-- Support for best practices in crop farming
-- Problem-solving assistance for farming challenges
-
-### 🌐 Multi-Language Support
-- English (en-US)
-- Swahili (sw-KE)
-- Automatic language detection
-- Text-to-speech in both languages
-
-### 🎤 Voice Input & Output
-- Hands-free voice commands
-- Spoken responses for accessibility
-- Speech recognition (where available)
-- Natural conversation experience
-
-## 🏗️ Architecture
-
-### Front-End
-- **Framework**: Vanilla JavaScript (no heavy dependencies)
-- **Styling**: Modern CSS3 with CSS variables and responsive design
-- **UI Components**: 
-  - Tab-based navigation
-  - Modal dialogs
-  - Animated message bubbles
-  - Beautiful crop recommendation cards
-  - Real-time chat interface
-
-### Back-End
-- **Framework**: FastAPI (Python)
-- **AI Engine**: OpenAI API
-- **Deployment**: Render.com
-- **Features**:
-  - Session management
-  - Rate limiting
-  - Input sanitization
-  - Multi-language detection
-  - Comprehensive crop database
-
-## 📋 Supported Counties
-
-The application covers all 15 major farming counties in Kenya:
-- Nairobi, Kiambu, Nakuru, Kisumu, Siaya
-- Kakamega, Bungoma, Meru, Embu
-- Machakos, Kitui, Nyeri, Murang'a
-- Kirinyaga, Uasin Gishu
-
-Each county includes detailed sub-locations for precise localization.
-
-## 🚀 Getting Started
-
-### Prerequisites
-- Python 3.8+
-- pip or conda
-- OpenAI API key (get it from [openai.com](https://openai.com))
-
-### Installation
-
-1. **Clone the repository**
-```bash
-git clone https://github.com/Wycliffe-Sidon/SHAMBA_ASSISTANT.git
-cd SHAMBA_ASSISTANT
+```text
+shamba-assistant/
+  public/
+    index.html
+    manifest.json
+    sw.js
+  routes/
+    api.js
+    voice.js
+  server.js
+  .env
+  .env.example
+  package.json
+  README.md
 ```
 
-2. **Set up environment variables**
-```bash
-cp .env.example .env
-# Edit .env and add your OPENAI_API_KEY
-echo "OPENAI_API_KEY=your_api_key_here" > .env
+## Environment Variables
+
+Create `.env` from `.env.example` and fill in:
+
+```env
+ANTHROPIC_API_KEY=your_key_here
+OPENWEATHER_API_KEY=your_key_here
+TWILIO_ACCOUNT_SID=your_sid_here
+TWILIO_AUTH_TOKEN=your_token_here
+TWILIO_PHONE_NUMBER=+254700000000
+MARKET_PRICES_URL=
+PORT=3000
 ```
 
-3. **Install dependencies**
-```bash
-pip install -r requirements.txt
-```
+Notes:
 
-4. **Run the application**
-```bash
-python main.py
-# or with uvicorn directly:
-uvicorn main:app --reload --host 0.0.0.0 --port 8000
-```
+- `MARKET_PRICES_URL` is optional. If set, `/api/prices` will try that feed first.
+- If `MARKET_PRICES_URL` is not set or fails, the app falls back to a realistic weekly East Africa price table in `routes/api.js`.
 
-5. **Access the application**
-Open your browser and navigate to `http://localhost:8000`
+## Local Setup
 
-## 📦 Dependencies
-
-### Python (Backend)
-- **fastapi**: Web framework for building APIs
-- **uvicorn**: ASGI server
-- **openai**: Official OpenAI API client
-- **python-multipart**: Form data parsing
-- **pydantic**: Data validation
-
-### Frontend
-- Pure JavaScript (no npm dependencies)
-- Modern CSS3
-- HTML5
-
-## 🔑 Environment Variables
-
-Create a `.env` file in the project root:
+1. Install Node.js 18 or newer.
+2. Install dependencies:
 
 ```bash
-OPENAI_API_KEY=your_openai_api_key_here
+npm install
 ```
 
-## 📱 Responsive Design
-
-The application is fully responsive and optimized for:
-- **Mobile**: Smartphones (320px+)
-- **Tablet**: iPad and similar devices (768px+)
-- **Desktop**: Full HD and above (1024px+)
-
-## 🎨 UI/UX Improvements
-
-### Modern Design System
-- Clean, minimalist interface
-- Green color scheme reflecting agriculture
-- Smooth animations and transitions
-- Professional typography
-- Accessible contrast ratios
-
-### User Experience
-- Intuitive tab-based navigation
-- Location selection with sub-county options
-- Real-time message feedback
-- Typing indicators for AI responses
-- Quick-action buttons for common tasks
-
-### Accessibility
-- Semantic HTML structure
-- Text-to-speech functionality
-- Voice input support
-- High contrast modes
-- Keyboard navigation
-
-## 📊 Data Structure
-
-### Crop Database
-- Soil type requirements
-- pH range preferences
-- Seasonal suitability
-- Maturity period (days)
-- Variety recommendations
-
-### Soil Profiles
-- Soil type classification
-- pH levels
-- Fertility ratings
-- Drainage characteristics
-
-### Market Data
-- Current pricing
-- Trend analysis (rising/stable/falling)
-- Demand indicators
-- Price history (simulated)
-
-## 🔐 Security Features
-
-- **Input Sanitization**: HTML escape and validation
-- **Rate Limiting**: 20 requests per minute per IP
-- **Session Management**: Per-user session tracking
-- **XSS Protection**: Automatic HTML escaping
-- **API Timeouts**: 30-second timeout for AI requests
-
-## 🌐 Deployment
-
-### Render.com (Recommended)
-```yaml
-# render.yaml configuration included
-Python 3.8+
-Gunicorn or Uvicorn worker
-Environment variables configured
-```
-
-### Other Platforms
-- Heroku
-- PythonAnywhere
-- Railway
-- AWS/GCP
-
-## 📚 API Endpoints
-
-### POST /chat
-Chat with the AI assistant
-```json
-{
-  "message": "What crops should I plant?",
-  "session_id": "session_123",
-  "county": "Nairobi",
-  "sublocation": "Westlands",
-  "context": "crops"
-}
-```
-
-### GET /
-Main interface (HTML served)
-
-## 🧪 Testing
+3. Start the server:
 
 ```bash
-# Run tests (add test suite as needed)
-pytest tests/
+node server.js
 ```
 
-## 🤝 Contributing
+4. Open `http://localhost:3000`.
 
-Contributions are welcome! Please:
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/AmazingFeature`)
-3. Commit changes (`git commit -m 'Add AmazingFeature'`)
-4. Push to branch (`git push origin feature/AmazingFeature`)
-5. Open a Pull Request
+The app is designed for Chrome desktop and Chrome for Android. HTTPS is required in production for microphone access.
 
-## 📝 License
+## API Endpoints
 
-This project is licensed under the MIT License - see [LICENSE](LICENSE) file for details.
+- `POST /api/chat` - Claude chat proxy with live location/weather/soil/prices injected into the system prompt
+- `GET /api/weather` - OpenWeatherMap current weather + forecast proxy
+- `GET /api/soil` - SoilGrids soil summary proxy
+- `GET /api/prices` - Market prices JSON
+- `GET /api/config` - Frontend runtime config
+- `POST /voice/incoming` - Twilio greeting + gather webhook
+- `POST /voice/respond` - Twilio speech loop webhook
+- `GET /health` - health check
 
-## 🎯 Future Enhancements
+## Twilio Configuration
 
-- [ ] Integration with real-time weather APIs
-- [ ] Real market price data integration
-- [ ] Soil testing kit integration
-- [ ] Disease identification with image recognition
-- [ ] Mobile app (React Native/Flutter)
-- [ ] Farmer community forum
-- [ ] Advanced analytics dashboard
-- [ ] Integration with farm management tools
-- [ ] IoT sensor integration
-- [ ] Blockchain-based supply chain tracking
+Set your Twilio phone number voice webhook to:
 
-## 📞 Support & Contact
+```text
+https://your-domain.com/voice/incoming
+```
 
-For issues, questions, or suggestions:
-- **Email**: wycliffe.sidon@example.com
-- **GitHub Issues**: [Create an issue](https://github.com/Wycliffe-Sidon/SHAMBA_ASSISTANT/issues)
-- **Twitter**: [@FahamuShamba](https://twitter.com/FahamuShamba)
+Twilio flow:
 
-## 🙏 Acknowledgments
+1. Twilio calls `POST /voice/incoming`
+2. The server returns a greeting and a `<Gather input="speech">`
+3. Twilio posts recognized speech to `POST /voice/respond`
+4. The server sends the speech to Claude and replies with TwiML `<Say>` plus another `<Gather>`
+5. The loop continues until the caller hangs up
 
-- **OpenAI** - For providing powerful AI API
-- **FastAPI** - For the excellent Python web framework
-- **African farmers** - For their valuable feedback and insights
-- **Open source community** - For inspiration and resources
+You can pass optional `lang` and `location` query parameters when testing:
 
-## 📈 Project Stats
+```text
+https://your-domain.com/voice/incoming?lang=sw&location=Nairobi%2C%20Kenya
+```
 
-- **Countries Served**: Kenya (expandable to Africa)
-- **Counties Covered**: 15+
-- **Supported Languages**: 2 (English, Swahili)
-- **AI Model**: OpenAI GPT-3.5 / GPT-4 family
-- **Response Time**: < 2 seconds average
+## Deployment
 
----
+You can deploy to Railway, Render, or Heroku-style Node hosting.
 
-**Made with ❤️ for African farmers**
+### Render
 
-*Last Updated: April 2026*
+- `buildCommand`: `npm install`
+- `startCommand`: `node server.js`
+- Add all environment variables from `.env.example`
+- Ensure HTTPS is enabled
+
+The included `render.yaml` can be used as a starting point.
+
+### Railway / Heroku
+
+- Set the same environment variables
+- Expose port `3000` or honor the platform `PORT`
+- Point the root service to `server.js`
+
+## PWA Install
+
+The app includes:
+
+- `public/manifest.json`
+- `public/sw.js`
+
+On Android Chrome, farmers can install it from the browser menu like a native app.
+
+## Important Behavior
+
+- The assistant responds only in the currently selected language.
+- Non-agriculture questions are refused warmly in the active language.
+- Language switch clears the current web chat session and starts a new greeting.
+- Crop recommendations are instructed to return exactly top 3 ranked options using weather, soil, and market prices.
+- Browser geolocation is used on first load when available.
+
+## Security
+
+- API keys stay on the server
+- `helmet` is enabled
+- `cors` is enabled
+- `/api/chat` is rate-limited to 30 requests per minute
+
+## GitHub Push
+
+To push this project:
+
+```bash
+git add .
+git commit -m "Build SHAMBA ASSISTANT voice-first farming web app"
+git push origin HEAD
+```
