@@ -1,5 +1,6 @@
 const express = require("express");
 const axios = require("axios");
+const { once } = require("events");
 
 const router = express.Router();
 
@@ -147,6 +148,41 @@ async function anthropicRequest(payload) {
     timeout: 30000,
   });
   return response.data;
+}
+
+async function anthropicStreamRequest(payload) {
+  if (!process.env.ANTHROPIC_API_KEY) {
+    throw new Error("ANTHROPIC_API_KEY is not configured.");
+  }
+  const response = await axios.post(ANTHROPIC_URL, payload, {
+    headers: {
+      "Content-Type": "application/json",
+      "x-api-key": process.env.ANTHROPIC_API_KEY,
+      "anthropic-version": "2023-06-01",
+    },
+    timeout: 0,
+    responseType: "stream",
+    validateStatus: () => true,
+  });
+
+  if (response.status >= 400) {
+    const detail = await readStreamToString(response.data);
+    throw new Error(detail || `Anthropic stream failed with status ${response.status}`);
+  }
+
+  return response.data;
+}
+
+function readStreamToString(stream) {
+  return new Promise((resolve, reject) => {
+    let result = "";
+    stream.setEncoding("utf8");
+    stream.on("data", chunk => {
+      result += chunk;
+    });
+    stream.on("end", () => resolve(result));
+    stream.on("error", reject);
+  });
 }
 
 async function geocodeLocation(location) {
@@ -403,6 +439,31 @@ function toAnthropicMessages(history, message) {
   ];
 }
 
+function writeSseChunk(res, text) {
+  const normalized = String(text ?? "").replace(/\r/g, "");
+  const lines = normalized.split("\n");
+  lines.forEach(line => {
+    res.write(`data: ${line}\n`);
+  });
+  res.write("\n");
+}
+
+function beginSse(res) {
+  res.setHeader("Content-Type", "text/event-stream");
+  res.setHeader("Cache-Control", "no-cache");
+  res.setHeader("Connection", "keep-alive");
+  if (typeof res.flushHeaders === "function") {
+    res.flushHeaders();
+  }
+}
+
+async function streamPlainReply(res, text) {
+  beginSse(res);
+  writeSseChunk(res, text);
+  res.write("data: [DONE]\n\n");
+  res.end();
+}
+
 router.get("/config", (_req, res) => {
   res.json({
     defaultLocation: DEFAULT_LOCATION,
@@ -477,12 +538,7 @@ router.post("/chat", async (req, res) => {
     session.language = lang;
 
     if (!isAgriculturalQuery(trimmedMessage)) {
-      return res.json({
-        reply: LANGUAGE_CONFIG[lang].onlyAg,
-        language: lang,
-        location: session.location,
-        intent: detectIntent(trimmedMessage),
-      });
+      return streamPlainReply(res, LANGUAGE_CONFIG[lang].onlyAg);
     }
 
     const context = await buildAssistantContext({
@@ -497,6 +553,7 @@ router.post("/chat", async (req, res) => {
     const payload = {
       model: ANTHROPIC_MODEL,
       max_tokens: 1200,
+      stream: true,
       system: formatSystemPrompt({
         language: lang,
         location: context.weather.location,
@@ -506,23 +563,88 @@ router.post("/chat", async (req, res) => {
       }),
       messages: toAnthropicMessages(session.history, trimmedMessage),
     };
+    const anthropicStream = await anthropicStreamRequest(payload);
+    beginSse(res);
 
-    const data = await anthropicRequest(payload);
-    const reply = data.content?.map(item => item.text || "").join("\n").trim() || LANGUAGE_CONFIG[lang].onlyAg;
+    let reply = "";
+    let buffer = "";
+    let finished = false;
+    let clientClosed = false;
 
-    session.history.push({ role: "user", content: trimmedMessage });
-    session.history.push({ role: "assistant", content: reply });
-    res.json({
-      reply,
-      language: lang,
-      intent: detectIntent(trimmedMessage),
-      location: context.weather.location,
-      weather: context.weather,
-      soil: context.soil,
-      prices: context.prices,
-      locationNotice: LANGUAGE_CONFIG[lang].locationUpdated(context.weather.location),
+    req.on("close", () => {
+      clientClosed = true;
+      anthropicStream.destroy();
     });
+
+    anthropicStream.setEncoding("utf8");
+
+    anthropicStream.on("data", chunk => {
+      buffer += chunk;
+      const events = buffer.split("\n\n");
+      buffer = events.pop() || "";
+
+      for (const event of events) {
+        const lines = event.split("\n");
+        for (const line of lines) {
+          if (!line.startsWith("data:")) {
+            continue;
+          }
+
+          const raw = line.slice(5).trim();
+          if (!raw || raw === "[DONE]") {
+            continue;
+          }
+
+          try {
+            const parsed = JSON.parse(raw);
+            if (parsed.type === "content_block_delta" && parsed.delta?.type === "text_delta") {
+              const text = parsed.delta.text || "";
+              reply += text;
+              writeSseChunk(res, text);
+            }
+            if (parsed.type === "message_stop") {
+              finished = true;
+            }
+          } catch (_error) {
+            // Ignore malformed non-JSON lines from the upstream stream.
+          }
+        }
+      }
+    });
+
+    anthropicStream.on("end", () => {
+      if (!res.writableEnded) {
+        res.write("data: [DONE]\n\n");
+        res.end();
+      }
+    });
+
+    anthropicStream.on("error", error => {
+      if (!res.writableEnded) {
+        writeSseChunk(res, error.message || "Streaming failed.");
+        res.write("data: [DONE]\n\n");
+        res.end();
+      }
+    });
+
+    await Promise.race([
+      once(anthropicStream, "end"),
+      once(anthropicStream, "error").catch(() => []),
+    ]);
+
+    if (finished || reply.trim() || clientClosed) {
+      session.history.push({ role: "user", content: trimmedMessage });
+      session.history.push({ role: "assistant", content: reply || LANGUAGE_CONFIG[lang].onlyAg });
+    }
   } catch (error) {
+    if (res.headersSent) {
+      if (!res.writableEnded) {
+        writeSseChunk(res, error.message || "Chat request failed.");
+        res.write("data: [DONE]\n\n");
+        res.end();
+      }
+      return;
+    }
     const status = error.response?.status || 500;
     const detail = error.response?.data || error.message || "Chat request failed.";
     res.status(status).json({
