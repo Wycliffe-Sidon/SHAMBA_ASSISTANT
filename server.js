@@ -6,7 +6,6 @@ const rateLimit = require("express-rate-limit");
 require("dotenv").config();
 
 const apiRoutes = require("./routes/api");
-const voiceRoutes = require("./routes/voice");
 
 const app = express();
 const port = Number(process.env.PORT || 3000);
@@ -40,7 +39,6 @@ const chatLimiter = rateLimit({
 
 app.use("/api/chat", chatLimiter);
 app.use("/api", apiRoutes);
-app.use("/voice", voiceRoutes);
 app.use(express.static(path.join(__dirname, "public")));
 
 app.get("/health", (_req, res) => {
