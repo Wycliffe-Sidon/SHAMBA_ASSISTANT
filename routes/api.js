@@ -3,8 +3,8 @@ const axios = require("axios");
 
 const router = express.Router();
 
-const ANTHROPIC_URL = "https://api.anthropic.com/v1/messages";
-const DEFAULT_MODEL = "claude-sonnet-4-20250514";
+const GROQ_URL = "https://api.groq.com/openai/v1/chat/completions";
+const DEFAULT_MODEL = process.env.GROQ_MODEL || "meta-llama/llama-4-scout-17b-16e-instruct";
 const DEFAULT_LANGUAGE = "en";
 const DEFAULT_LOCATION = "Siaya County, Kenya";
 
@@ -39,16 +39,15 @@ function isAgriculturalQuery(message = "") {
   return AGRI_REGEX.test(String(message || ""));
 }
 
-async function anthropicRequest(payload) {
-  if (!process.env.ANTHROPIC_API_KEY) {
-    throw new Error("ANTHROPIC_API_KEY is not configured.");
+async function groqRequest(payload) {
+  if (!process.env.GROQ_API_KEY) {
+    throw new Error("GROQ_API_KEY is not configured.");
   }
 
-  const response = await axios.post(ANTHROPIC_URL, payload, {
+  const response = await axios.post(GROQ_URL, payload, {
     headers: {
       "Content-Type": "application/json",
-      "x-api-key": process.env.ANTHROPIC_API_KEY,
-      "anthropic-version": "2023-06-01"
+      Authorization: `Bearer ${process.env.GROQ_API_KEY}`
     },
     timeout: 60000
   });
@@ -97,7 +96,88 @@ async function buildAssistantContext({ location }) {
 
 function validateMessages(messages) {
   return Array.isArray(messages)
-    && messages.every(item => item && typeof item.role === "string" && Array.isArray(item.content));
+    && messages.every(item => item && typeof item.role === "string" && item.content !== undefined);
+}
+
+function normalizeGroqContent(content) {
+  if (typeof content === "string") {
+    return content;
+  }
+
+  if (!Array.isArray(content)) {
+    return "";
+  }
+
+  const normalized = content.map(block => {
+    if (!block || typeof block !== "object") {
+      return null;
+    }
+
+    if (block.type === "text") {
+      return {
+        type: "text",
+        text: String(block.text || "")
+      };
+    }
+
+    if (block.type === "image") {
+      const mediaType = block.source?.media_type || "image/jpeg";
+      const data = block.source?.data || "";
+      if (!data) {
+        return null;
+      }
+      return {
+        type: "image_url",
+        image_url: {
+          url: `data:${mediaType};base64,${data}`
+        }
+      };
+    }
+
+    if (block.type === "image_url" && block.image_url?.url) {
+      return {
+        type: "image_url",
+        image_url: {
+          url: String(block.image_url.url)
+        }
+      };
+    }
+
+    return null;
+  }).filter(Boolean);
+
+  if (!normalized.length) {
+    return "";
+  }
+
+  return normalized.length === 1 && normalized[0].type === "text"
+    ? normalized[0].text
+    : normalized;
+}
+
+function toGroqMessages(messages, system) {
+  const items = [];
+  const hasSystemMessage = Array.isArray(messages) && messages.some(item => item?.role === "system");
+
+  if (system && !hasSystemMessage) {
+    items.push({
+      role: "system",
+      content: String(system)
+    });
+  }
+
+  for (const item of messages || []) {
+    if (!item || typeof item.role !== "string") {
+      continue;
+    }
+
+    items.push({
+      role: item.role,
+      content: normalizeGroqContent(item.content)
+    });
+  }
+
+  return items;
 }
 
 function readStreamToString(stream) {
@@ -114,7 +194,7 @@ function readStreamToString(stream) {
 
 router.get("/config", (_req, res) => {
   res.json({
-    serverProxyAvailable: Boolean(process.env.ANTHROPIC_API_KEY),
+    serverProxyAvailable: Boolean(process.env.GROQ_API_KEY),
     defaultModel: DEFAULT_MODEL,
     defaultLanguage: DEFAULT_LANGUAGE,
     defaultLocation: DEFAULT_LOCATION
@@ -125,38 +205,37 @@ router.post("/chat", async (req, res) => {
   try {
     const {
       model = DEFAULT_MODEL,
-      max_tokens = 1000,
+      max_tokens,
+      max_completion_tokens,
       system = "",
       messages = [],
       stream = true
     } = req.body || {};
 
     if (!validateMessages(messages)) {
-      return res.status(400).json({ error: "A valid Anthropic messages array is required." });
+      return res.status(400).json({ error: "A valid chat messages array is required." });
     }
 
-    if (!process.env.ANTHROPIC_API_KEY) {
-      return res.status(500).json({ error: "ANTHROPIC_API_KEY is not configured on the server." });
+    if (!process.env.GROQ_API_KEY) {
+      return res.status(500).json({ error: "GROQ_API_KEY is not configured on the server." });
     }
 
     const payload = {
       model,
-      max_tokens,
-      system,
-      messages,
+      max_completion_tokens: max_completion_tokens || max_tokens || 1000,
+      messages: toGroqMessages(messages, system),
       stream: Boolean(stream)
     };
 
     if (!stream) {
-      const data = await anthropicRequest(payload);
+      const data = await groqRequest(payload);
       return res.json(data);
     }
 
-    const upstream = await axios.post(ANTHROPIC_URL, payload, {
+    const upstream = await axios.post(GROQ_URL, payload, {
       headers: {
         "Content-Type": "application/json",
-        "x-api-key": process.env.ANTHROPIC_API_KEY,
-        "anthropic-version": "2023-06-01"
+        Authorization: `Bearer ${process.env.GROQ_API_KEY}`
       },
       responseType: "stream",
       timeout: 0,
@@ -165,7 +244,7 @@ router.post("/chat", async (req, res) => {
 
     if (upstream.status >= 400) {
       const detail = await readStreamToString(upstream.data);
-      return res.status(upstream.status).json({ error: detail || "Anthropic streaming request failed." });
+      return res.status(upstream.status).json({ error: detail || "Groq streaming request failed." });
     }
 
     res.setHeader("Content-Type", "text/event-stream");
@@ -200,7 +279,7 @@ module.exports.helpers = {
   DEFAULT_LANGUAGE,
   DEFAULT_LOCATION,
   LANGUAGE_CONFIG,
-  anthropicRequest,
+  groqRequest,
   buildAssistantContext,
   formatSystemPrompt,
   getLanguage,

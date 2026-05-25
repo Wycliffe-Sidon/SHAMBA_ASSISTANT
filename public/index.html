@@ -310,6 +310,8 @@
     }
 
     #inputArea {
+      position: relative;
+      z-index: 1;
       border-radius: 22px;
       background: rgba(253, 252, 249, 0.92);
       border: 1px solid rgba(61, 43, 31, 0.1);
@@ -372,12 +374,16 @@
     }
 
     .composer-row {
+      position: relative;
+      z-index: 2;
       display: flex;
       align-items: flex-end;
       gap: 10px;
     }
 
     #userInput {
+      position: relative;
+      z-index: 3;
       flex: 1;
       min-height: 48px;
       max-height: 80px;
@@ -388,6 +394,11 @@
       padding: 13px 16px;
       outline: none;
       line-height: 1.45;
+      pointer-events: auto;
+      -webkit-appearance: none;
+      -webkit-user-select: text;
+      user-select: text;
+      touch-action: manipulation;
       transition: border-color 0.2s ease, box-shadow 0.2s ease;
     }
 
@@ -924,7 +935,7 @@
           </div>
           <div class="divider"></div>
           <div class="composer-row">
-            <textarea id="userInput" placeholder="Ask about farming in Siaya…"></textarea>
+            <textarea id="userInput" rows="1" enterkeyhint="send" autocapitalize="sentences" autocomplete="off" spellcheck="true" placeholder="Ask about farming in Siaya…"></textarea>
             <button id="voiceBtn" class="icon-btn" type="button" aria-label="Voice input">🎤</button>
             <button id="stopBtn" class="icon-btn" type="button" aria-label="Stop generation">⏹</button>
             <button id="sendBtn" class="icon-btn" type="button" aria-label="Send message">➤</button>
@@ -951,8 +962,9 @@
   <div id="toast"></div>
 
   <script>
-    const DIRECT_ANTHROPIC_API_KEY = "";
-    const ANTHROPIC_URL = "https://api.anthropic.com/v1/messages";
+    const DIRECT_GROQ_API_KEY = "";
+    const GROQ_URL = "https://api.groq.com/openai/v1/chat/completions";
+    const DEFAULT_MODEL = "meta-llama/llama-4-scout-17b-16e-instruct";
     const DEFAULT_IMAGE_PROMPT = "🔍 Please identify this pest/disease and recommend pesticides.";
     const SUBLOCATIONS = ["Siaya", "Bondo", "Rarieda", "Ugenya", "Gem", "Yimbo", "Alego", "Usonga"];
     const AGRI_REGEX = /\b(crop|farm|soil|pest|disease|plant|seed|harvest|fertilizer|pesticide|irrigat|maize|bean|sorghum|cassava|sweet potato|tomato|kale|sukuma|vegetable|weather|rain|market|price|acre|yield|weed|spray|fungus|fungal|blight|aphid|locust|stem borer|animal|chicken|cow|goat|livestock|poultry|feed|pasture|manure|compost|organic|shamba|kilimo|mbegu|mavuno|udongo|chakula|lemo|cham|kuon)\b/i;
@@ -1209,13 +1221,16 @@
     }
 
     function extractTextFromResponse(data) {
-      if (!data || !Array.isArray(data.content)) {
-        return "";
+      const content = data?.choices?.[0]?.message?.content;
+      if (typeof content === "string") {
+        return content;
       }
-      return data.content
-        .filter(block => block.type === "text")
-        .map(block => block.text || "")
-        .join("");
+      if (Array.isArray(content)) {
+        return content
+          .map(part => typeof part === "string" ? part : part?.text || "")
+          .join("");
+      }
+      return "";
     }
 
     function parseJsonArray(text) {
@@ -1226,8 +1241,84 @@
       return JSON.parse(match[0]);
     }
 
+    function normalizeGroqContent(content) {
+      if (typeof content === "string") {
+        return content;
+      }
+
+      if (!Array.isArray(content)) {
+        return "";
+      }
+
+      const normalized = content.map(block => {
+        if (!block || typeof block !== "object") {
+          return null;
+        }
+
+        if (block.type === "text") {
+          return {
+            type: "text",
+            text: String(block.text || "")
+          };
+        }
+
+        if (block.type === "image") {
+          const mediaType = block.source?.media_type || "image/jpeg";
+          const data = block.source?.data || "";
+          if (!data) {
+            return null;
+          }
+          return {
+            type: "image_url",
+            image_url: {
+              url: `data:${mediaType};base64,${data}`
+            }
+          };
+        }
+
+        if (block.type === "image_url" && block.image_url?.url) {
+          return {
+            type: "image_url",
+            image_url: {
+              url: String(block.image_url.url)
+            }
+          };
+        }
+
+        return null;
+      }).filter(Boolean);
+
+      if (!normalized.length) {
+        return "";
+      }
+
+      return normalized.length === 1 && normalized[0].type === "text"
+        ? normalized[0].text
+        : normalized;
+    }
+
+    function toGroqMessages(system, messages) {
+      const mapped = [];
+
+      if (system) {
+        mapped.push({
+          role: "system",
+          content: system
+        });
+      }
+
+      for (const item of messages) {
+        mapped.push({
+          role: item.role,
+          content: normalizeGroqContent(item.content)
+        });
+      }
+
+      return mapped;
+    }
+
     function getApiKey() {
-      return (window.ANTHROPIC_API_KEY || DIRECT_ANTHROPIC_API_KEY || "").trim();
+      return (window.GROQ_API_KEY || DIRECT_GROQ_API_KEY || "").trim();
     }
 
     async function loadRuntimeConfig() {
@@ -1247,12 +1338,10 @@
       const directKey = getApiKey();
       if (directKey) {
         return {
-          url: ANTHROPIC_URL,
+          url: GROQ_URL,
           headers: {
             "Content-Type": "application/json",
-            "x-api-key": directKey,
-            "anthropic-version": "2023-06-01",
-            "anthropic-dangerous-direct-browser-access": "true"
+            Authorization: `Bearer ${directKey}`
           }
         };
       }
@@ -1266,19 +1355,18 @@
         };
       }
 
-      throw new Error("Add your Anthropic API key in DIRECT_ANTHROPIC_API_KEY for direct browser use, or configure ANTHROPIC_API_KEY on the server.");
+      throw new Error("Add your Groq API key in DIRECT_GROQ_API_KEY for direct browser use, or configure GROQ_API_KEY on the server.");
     }
 
-    async function anthropicJson(system, messages) {
+    async function groqJson(system, messages) {
       const target = buildFetchTarget();
       const response = await fetch(target.url, {
         method: "POST",
         headers: target.headers,
         body: JSON.stringify({
-          model: "claude-sonnet-4-20250514",
-          max_tokens: 1000,
-          system,
-          messages,
+          model: DEFAULT_MODEL,
+          max_completion_tokens: 1000,
+          messages: toGroqMessages(system, messages),
           stream: false
         })
       });
@@ -1290,7 +1378,7 @@
       return data;
     }
 
-    async function streamAnthropic(system, messages, onDelta) {
+    async function streamGroq(system, messages, onDelta) {
       const target = buildFetchTarget();
       const ctrl = new AbortController();
       state.abortCtrl = ctrl;
@@ -1299,10 +1387,9 @@
         method: "POST",
         headers: target.headers,
         body: JSON.stringify({
-          model: "claude-sonnet-4-20250514",
-          max_tokens: 1000,
-          system,
-          messages,
+          model: DEFAULT_MODEL,
+          max_completion_tokens: 1000,
+          messages: toGroqMessages(system, messages),
           stream: true
         }),
         signal: ctrl.signal
@@ -1344,13 +1431,12 @@
 
           try {
             const parsed = JSON.parse(payload);
-            const textDelta = parsed.delta && typeof parsed.delta.text === "string"
-              ? parsed.delta.text
-              : parsed.delta && typeof parsed.delta.partial_json === "string"
-                ? parsed.delta.partial_json
-                : parsed.type === "content_block_delta" && parsed.delta && parsed.delta.type === "text_delta"
-                  ? parsed.delta.text || ""
-                  : "";
+            const delta = parsed?.choices?.[0]?.delta?.content;
+            const textDelta = typeof delta === "string"
+              ? delta
+              : Array.isArray(delta)
+                ? delta.map(part => typeof part === "string" ? part : part?.text || "").join("")
+                : "";
 
             if (textDelta) {
               fullText += textDelta;
@@ -1537,6 +1623,17 @@
       $("voiceOrb").classList.remove("listening", "speaking");
       $("voiceOverlay").classList.remove("active");
       $("voiceTranscript").textContent = "";
+      focusComposer();
+    }
+
+    function focusComposer() {
+      const input = $("userInput");
+      if (!input) {
+        return;
+      }
+      window.setTimeout(() => {
+        input.focus({ preventScroll: true });
+      }, 0);
     }
 
     function updateLanguageUI() {
@@ -1638,7 +1735,7 @@
 
       try {
         const prompt = `Give TOP 3 crop recommendations for a farmer in ${state.subloc}, Siaya County during ${state.season} season. For EACH crop respond with EXACTLY this JSON structure (return a JSON array, no other text): [{"rank":1,"name":"CropName","reason":"Why this crop suits this specific location and season","market":"KES price range per 90kg bag","pests":"Key pest risks","tip":"One actionable tip"},...]`;
-        const data = await anthropicJson(buildSystemPrompt(false), [
+        const data = await groqJson(buildSystemPrompt(false), [
           { role: "user", content: [{ type: "text", text: prompt }] }
         ]);
         const parsed = parseJsonArray(extractTextFromResponse(data));
@@ -1696,7 +1793,7 @@
 
       try {
         const prompt = 'Provide current realistic market prices for crops commonly sold in Siaya County and nearby Kisumu market, Western Kenya. Return ONLY a JSON array, no other text: [{"crop":"Name","low":3000,"high":4500,"trend":"up|down|stable","unit":"90kg bag","market":"Siaya/Kisumu"},...] Include at least 10 crops common to the region.';
-        const data = await anthropicJson(buildSystemPrompt(false), [
+        const data = await groqJson(buildSystemPrompt(false), [
           { role: "user", content: [{ type: "text", text: prompt }] }
         ]);
         const parsed = parseJsonArray(extractTextFromResponse(data));
@@ -1881,7 +1978,7 @@
       const payloadMessages = normalizeHistory();
 
       try {
-        const fullText = await streamAnthropic(buildSystemPrompt(hasImage), payloadMessages, text => {
+        const fullText = await streamGroq(buildSystemPrompt(hasImage), payloadMessages, text => {
           updateStreamingBubble(streamTarget, text);
         });
 
@@ -1956,6 +2053,12 @@
           handleSend();
         }
       });
+      $("inputArea").addEventListener("click", event => {
+        if (event.target.closest("button, label, .upload-name, .clear-upload")) {
+          return;
+        }
+        focusComposer();
+      });
 
       $("imageInput").addEventListener("change", event => {
         handleImageSelection(event.target.files[0]);
@@ -1981,6 +2084,7 @@
       $("userInput").placeholder = t("placeholder");
       $("voiceStatus").textContent = t("listening");
       appendWelcome();
+      focusComposer();
       if ("speechSynthesis" in window) {
         window.speechSynthesis.onvoiceschanged = () => chooseVoice();
       }
