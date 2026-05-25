@@ -25,7 +25,7 @@ app.use(
     credentials: true,
   })
 );
-app.use(express.json({ limit: "2mb" }));
+app.use(express.json({ limit: "12mb" }));
 app.use(express.urlencoded({ extended: true }));
 
 const chatLimiter = rateLimit({

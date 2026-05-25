@@ -3,82 +3,55 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="theme-color" content="#1a5c2a">
-  <title>SHAMBA ASSISTANT</title>
-  <link rel="manifest" href="/manifest.json">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <title>Shamba Assistant</title>
   <style>
+    @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500&family=Syne:wght@400;600;700;800&display=swap');
+
     :root {
-      color-scheme: light dark;
-      --green-900: #103717;
-      --green-800: #1a5c2a;
-      --green-700: #28733a;
-      --green-mid: #4b9d60;
-      --gold: #f5a623;
-      --surface: #f4faf4;
-      --panel: rgba(255, 255, 255, 0.82);
-      --panel-strong: rgba(255, 255, 255, 0.94);
-      --text: #17331c;
-      --muted: #607764;
-      --line: rgba(26, 92, 42, 0.13);
-      --shadow: 0 18px 48px rgba(26, 92, 42, 0.12);
-    }
-
-    @media (prefers-color-scheme: dark) {
-      :root {
-        --surface: #0d1910;
-        --panel: rgba(16, 31, 19, 0.86);
-        --panel-strong: rgba(20, 37, 23, 0.96);
-        --text: #eef8ef;
-        --muted: #a9c2ad;
-        --line: rgba(255, 255, 255, 0.08);
-        --shadow: 0 18px 48px rgba(0, 0, 0, 0.3);
-      }
-    }
-
-    body.force-dark {
-      --surface: #0d1910;
-      --panel: rgba(16, 31, 19, 0.86);
-      --panel-strong: rgba(20, 37, 23, 0.96);
-      --text: #eef8ef;
-      --muted: #a9c2ad;
-      --line: rgba(255, 255, 255, 0.08);
-      --shadow: 0 18px 48px rgba(0, 0, 0, 0.3);
+      --soil: #3d2b1f;
+      --earth: #6b4c35;
+      --bark: #8b6347;
+      --straw: #c9a86c;
+      --leaf: #4a7c3f;
+      --seedling: #6aab5e;
+      --sky: #a8c8a0;
+      --mist: #e8f0e4;
+      --cream: #f5f0e8;
+      --white: #fdfcf9;
+      --text: #1e1a16;
+      --muted: #7a6a5a;
+      --accent: #c94f1a;
+      --gold: #d48c2a;
+      --r: 16px;
+      --line: rgba(61, 43, 31, 0.12);
+      --shadow: 0 18px 40px rgba(61, 43, 31, 0.08);
     }
 
     * {
       box-sizing: border-box;
-      margin: 0;
-      padding: 0;
     }
 
     html,
     body {
-      min-height: 100%;
+      margin: 0;
+      height: 100%;
+      overflow: hidden;
+      background: linear-gradient(180deg, var(--mist) 0%, var(--cream) 26%, var(--cream) 100%);
+      color: var(--text);
+      font-family: "DM Sans", sans-serif;
     }
 
     body {
-      font-family: "Nunito", sans-serif;
-      color: var(--text);
-      background:
-        radial-gradient(circle at top left, rgba(245, 166, 35, 0.14), transparent 20%),
-        radial-gradient(circle at top right, rgba(94, 165, 255, 0.1), transparent 22%),
-        linear-gradient(160deg, #edf8ee 0%, #d8eddc 42%, #a9cfae 100%);
-    }
-
-    body.force-dark {
-      background:
-        radial-gradient(circle at top left, rgba(245, 166, 35, 0.14), transparent 22%),
-        radial-gradient(circle at top right, rgba(94, 165, 255, 0.08), transparent 24%),
-        linear-gradient(160deg, #0a130b 0%, #112016 40%, #193022 100%);
+      display: flex;
+      flex-direction: column;
     }
 
     button,
     input,
+    select,
     textarea {
       font: inherit;
+      color: inherit;
     }
 
     button {
@@ -86,1445 +59,1932 @@
       cursor: pointer;
     }
 
-    .page {
-      min-height: 100vh;
-      padding: 0;
+    .app-shell {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      min-height: 0;
     }
 
-    .shell {
-      width: min(1220px, 100%);
-      margin: 0 auto;
-      min-height: 100vh;
-      background: rgba(255, 255, 255, 0.34);
-      border: 1px solid rgba(255, 255, 255, 0.38);
-      backdrop-filter: blur(16px);
-      box-shadow: var(--shadow);
-      overflow: hidden;
-    }
-
-    .header {
+    .topbar {
+      background: var(--soil);
+      color: var(--straw);
+      padding: 14px 18px;
       display: flex;
       align-items: center;
       justify-content: space-between;
-      gap: 10px;
+      gap: 16px;
       flex-wrap: wrap;
-      padding: 8px 14px;
-      background: linear-gradient(135deg, rgba(26, 92, 42, 0.98), rgba(20, 71, 31, 0.96));
-      color: #fff;
+      box-shadow: 0 8px 24px rgba(61, 43, 31, 0.18);
     }
 
     .brand {
       display: flex;
       align-items: center;
-      gap: 8px;
+      gap: 10px;
       min-width: 0;
     }
 
-    .brand-icon {
-      width: 36px;
-      height: 36px;
+    .brand-logo {
+      width: 42px;
+      height: 42px;
       border-radius: 50%;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      background: rgba(255, 255, 255, 0.14);
-      font-size: 18px;
+      display: grid;
+      place-items: center;
+      background: rgba(201, 168, 108, 0.14);
+      font-size: 1.25rem;
       flex: 0 0 auto;
     }
 
-    .brand-title {
-      font-size: 15px;
+    .brand-text {
+      font-family: "Syne", sans-serif;
+      font-size: 1.1rem;
       font-weight: 800;
-      line-height: 1.1;
-      white-space: nowrap;
+      color: var(--straw);
+      letter-spacing: 0.02em;
     }
 
-    .header-actions,
-    .lang-switch {
+    .topbar-controls {
       display: flex;
       align-items: center;
-      gap: 6px;
+      gap: 10px;
       flex-wrap: wrap;
     }
 
-    .lang-btn,
-    .ghost-btn,
-    .call-btn,
-    .action-btn,
-    .icon-btn,
-    .send-btn,
-    .stop-inline-btn {
-      font-family: inherit;
-      transition: background 0.18s ease, opacity 0.18s ease, transform 0.18s ease;
+    .select-wrap {
+      position: relative;
     }
 
-    .lang-btn,
-    .ghost-btn {
-      padding: 6px 10px;
-      border-radius: 999px;
-      background: rgba(255, 255, 255, 0.12);
-      color: #fff;
-      border: 1px solid rgba(255, 255, 255, 0.18);
-      font-size: 11px;
-      font-weight: 800;
-    }
-
-    .lang-btn.active {
-      background: #fff;
-      color: var(--green-800);
-    }
-
-    .call-btn {
-      padding: 6px 10px;
-      border-radius: 999px;
-      background: linear-gradient(135deg, #f5c33c, #f08a21);
-      color: #17331c;
-      font-size: 11px;
-      font-weight: 800;
-    }
-
-    .content {
-      display: grid;
-      gap: 8px;
-      padding: 8px 10px 10px;
-    }
-
-    .status-grid {
-      display: grid;
-      grid-template-columns: repeat(4, minmax(0, 1fr));
-      gap: 6px;
-    }
-
-    .status-card {
-      min-width: 0;
-      padding: 4px 12px;
-      border-radius: 14px;
-      background: var(--panel);
-      border: 1px solid var(--line);
-      box-shadow: var(--shadow);
-      font-size: 10px;
-      white-space: nowrap;
-      overflow: hidden;
-    }
-
-    .status-card small,
-    .status-card strong {
-      display: block;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-
-    .status-card small {
-      color: var(--muted);
-      font-weight: 800;
-      text-transform: uppercase;
-      letter-spacing: 0.04em;
-    }
-
-    .status-card strong {
-      margin-top: 2px;
-      font-size: 10px;
-      font-weight: 800;
-    }
-
-    .status-pill {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      max-width: 100%;
-    }
-
-    .dot {
-      width: 8px;
+    .select-wrap::after {
+      content: "";
+      position: absolute;
+      right: 14px;
+      top: 50%;
+      width: 12px;
       height: 8px;
-      border-radius: 50%;
-      background: #58f47d;
-      box-shadow: 0 0 0 4px rgba(88, 244, 125, 0.12);
-      flex: 0 0 auto;
+      transform: translateY(-50%);
+      pointer-events: none;
+      background: center / contain no-repeat url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 14 8'%3E%3Cpath d='M1 1.25 7 6.25 13 1.25' fill='none' stroke='%23f5f0e8' stroke-linecap='round' stroke-linejoin='round' stroke-width='2'/%3E%3C/svg%3E");
     }
 
-    .location-bar {
-      display: grid;
-      grid-template-columns: minmax(0, 1fr) auto auto;
-      gap: 6px;
-      padding: 5px 12px;
-      border-radius: 14px;
-      background: var(--panel);
-      border: 1px solid var(--line);
-      box-shadow: var(--shadow);
-    }
-
-    .field,
-    textarea {
-      width: 100%;
-      border: 1px solid var(--line);
-      border-radius: 12px;
-      background: var(--panel-strong);
-      color: var(--text);
+    .top-select {
+      appearance: none;
+      min-width: 132px;
+      border: 1px solid rgba(201, 168, 108, 0.28);
+      background: var(--earth);
+      color: var(--cream);
+      border-radius: 999px;
+      padding: 10px 38px 10px 14px;
       outline: none;
+      transition: background 0.2s ease, border-color 0.2s ease;
     }
 
-    .field {
-      height: 32px;
-      padding: 5px 10px;
-      font-size: 12px;
+    .top-select:hover,
+    .top-select:focus {
+      background: var(--bark);
+      border-color: rgba(201, 168, 108, 0.44);
     }
 
-    .action-btn {
-      height: 32px;
-      padding: 5px 10px;
-      border-radius: 12px;
-      background: var(--panel-strong);
-      border: 1px solid var(--line);
-      color: var(--text);
-      font-size: 12px;
-      font-weight: 800;
-    }
-
-    .quick-actions {
+    .tabs {
+      background: var(--soil);
+      padding: 0 18px 14px;
       display: flex;
-      gap: 4px;
+      gap: 10px;
       flex-wrap: wrap;
     }
 
-    .quick-chip {
-      padding: 4px 10px;
+    .tab-btn {
+      border: 1px solid rgba(201, 168, 108, 0.25);
+      background: transparent;
+      color: var(--straw);
       border-radius: 999px;
-      background: var(--panel-strong);
-      border: 1px solid var(--line);
-      color: var(--green-800);
-      font-size: 10px;
-      font-weight: 800;
+      padding: 10px 16px;
+      font-family: "Syne", sans-serif;
+      font-weight: 600;
+      transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease, transform 0.2s ease;
     }
 
-    .speaking-bar {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 8px;
-      flex-wrap: wrap;
-      padding: 3px 10px;
-      border-radius: 14px;
-      background: var(--panel);
-      border: 1px solid var(--line);
-      box-shadow: var(--shadow);
-      font-size: 11px;
+    .tab-btn:hover {
+      transform: translateY(-1px);
+      border-color: rgba(201, 168, 108, 0.5);
     }
 
-    .wave-box {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      min-width: 0;
+    .tab-btn.active {
+      background: var(--leaf);
+      color: var(--white);
+      border-color: var(--leaf);
     }
 
-    .wave-meta {
-      min-width: 0;
-    }
-
-    .wave-meta > div {
+    .main {
+      flex: 1;
+      min-height: 0;
       overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
+      padding: 16px 18px 18px;
     }
 
-    .wave {
-      display: flex;
-      align-items: end;
-      gap: 3px;
-      height: 16px;
-      flex: 0 0 auto;
-    }
-
-    .wave span {
-      width: 4px;
-      height: 6px;
-      border-radius: 999px;
-      background: linear-gradient(180deg, var(--gold), var(--green-700));
-      opacity: 0.45;
-    }
-
-    .speaking .wave span {
-      animation: wave 0.9s ease-in-out infinite;
-    }
-
-    .speaking .wave span:nth-child(2) { animation-delay: 0.08s; }
-    .speaking .wave span:nth-child(3) { animation-delay: 0.16s; }
-    .speaking .wave span:nth-child(4) { animation-delay: 0.24s; }
-    .speaking .wave span:nth-child(5) { animation-delay: 0.32s; }
-
-    @keyframes wave {
-      0%, 100% { height: 5px; opacity: 0.5; }
-      50% { height: 16px; opacity: 1; }
-    }
-
-    .stop-speaking-btn {
+    .panel {
       display: none;
-      padding: 4px 10px;
-      border-radius: 999px;
-      background: rgba(184, 51, 51, 0.12);
-      border: 1px solid rgba(184, 51, 51, 0.2);
-      color: #b83333;
-      font-size: 11px;
-      font-weight: 800;
+      height: 100%;
+      min-height: 0;
     }
 
-    .stop-speaking-btn.show {
-      display: inline-flex;
-    }
-
-    .chat-card {
-      display: grid;
-      grid-template-rows: auto 1fr auto;
-      border-radius: 18px;
-      background: var(--panel);
-      border: 1px solid var(--line);
-      box-shadow: var(--shadow);
-      overflow: hidden;
-    }
-
-    .chat-head {
+    .panel.active {
       display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 8px;
-      flex-wrap: wrap;
-      padding: 6px 10px;
-      border-bottom: 1px solid var(--line);
     }
 
-    .chat-head strong {
-      font-size: 12px;
-    }
-
-    .chat-tools {
-      display: flex;
-      gap: 6px;
-      flex-wrap: wrap;
-    }
-
-    .thread {
-      max-height: 55vh;
-      overflow-y: auto;
-      display: flex;
+    .chat-panel {
       flex-direction: column;
-      gap: 8px;
-      padding: 10px;
-      scroll-behavior: smooth;
-    }
-
-    .message {
-      display: flex;
-      align-items: flex-end;
-      gap: 8px;
-    }
-
-    .message.user {
-      justify-content: flex-end;
-    }
-
-    .avatar {
-      width: 28px;
-      height: 28px;
-      border-radius: 50%;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 14px;
-      background: rgba(26, 92, 42, 0.12);
-      border: 1px solid var(--line);
-      flex: 0 0 auto;
-    }
-
-    .message-stack {
-      display: flex;
-      flex-direction: column;
-      align-items: flex-start;
-      gap: 4px;
-      max-width: 88%;
-    }
-
-    .message.user .message-stack {
-      align-items: flex-end;
-    }
-
-    .bubble {
-      max-width: 100%;
-      padding: 8px 12px;
-      border-radius: 16px;
-      font-size: 13px;
-      line-height: 1.55;
-      box-shadow: 0 8px 20px rgba(16, 55, 23, 0.06);
-      word-break: break-word;
-    }
-
-    .message.user .bubble {
-      background: linear-gradient(135deg, var(--green-700), var(--green-800));
-      color: #fff;
-      border-bottom-right-radius: 6px;
-    }
-
-    .message.bot .bubble {
-      background: var(--panel-strong);
-      border: 1px solid var(--line);
-      border-bottom-left-radius: 6px;
-    }
-
-    .bubble p + p {
-      margin-top: 6px;
-    }
-
-    .bubble ul,
-    .bubble ol {
-      margin-top: 6px;
-      padding-left: 18px;
-    }
-
-    .bubble table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-top: 8px;
-      font-size: 12px;
-    }
-
-    .bubble th,
-    .bubble td {
-      text-align: left;
-      border-bottom: 1px solid var(--line);
-      padding: 6px 4px;
-    }
-
-    .cursor {
-      display: inline-block;
-      animation: blink 0.7s step-end infinite;
-      color: var(--green-mid);
-    }
-
-    @keyframes blink {
-      0%, 100% { opacity: 1; }
-      50% { opacity: 0; }
-    }
-
-    .stop-inline-btn {
-      display: none;
-      padding: 4px 12px;
-      border-radius: 20px;
-      background: #fff3e0;
-      border: 1.5px solid #f5a623;
-      color: #e65100;
-      font-size: 11px;
-      font-weight: 800;
-      align-self: flex-start;
-    }
-
-    .stop-inline-btn.show {
-      display: inline-flex;
-    }
-
-    .composer {
-      display: grid;
-      grid-template-columns: auto minmax(0, 1fr) auto;
-      gap: 8px;
-      align-items: end;
-      padding: 6px 10px;
-      border-top: 1px solid var(--line);
-    }
-
-    textarea {
-      min-height: 36px;
-      max-height: 140px;
-      resize: none;
-      padding: 8px 10px;
-      font-size: 12px;
-    }
-
-    .icon-btn,
-    .send-btn {
-      width: 36px;
-      height: 36px;
-      border-radius: 12px;
-      background: var(--panel-strong);
-      border: 1px solid var(--line);
-      color: var(--green-800);
-      font-size: 14px;
-      font-weight: 800;
-    }
-
-    .send-btn {
-      background: linear-gradient(135deg, var(--green-700), var(--green-800));
-      color: #fff;
-      border-color: transparent;
-    }
-
-    .icon-btn.active {
-      background: rgba(75, 157, 96, 0.16);
-    }
-
-    .call-modal {
-      position: fixed;
-      inset: 0;
-      background: rgba(3, 12, 6, 0.56);
-      display: none;
-      align-items: center;
-      justify-content: center;
-      padding: 20px;
-      z-index: 30;
-    }
-
-    .call-modal.show {
-      display: flex;
-    }
-
-    .call-sheet {
-      width: min(430px, 100%);
-      border-radius: 24px;
-      padding: 18px;
-      background: linear-gradient(180deg, rgba(14, 44, 20, 0.98), rgba(26, 92, 42, 0.97));
-      color: #fff;
-      box-shadow: var(--shadow);
-      display: grid;
       gap: 14px;
     }
 
-    .call-transcript {
-      min-height: 180px;
-      max-height: 250px;
-      overflow: auto;
-      background: rgba(255, 255, 255, 0.08);
-      border: 1px solid rgba(255, 255, 255, 0.08);
-      border-radius: 16px;
-      padding: 12px;
-      display: grid;
-      gap: 8px;
-      font-size: 12px;
+    #chatMessages {
+      flex: 1;
+      min-height: 0;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      padding: 6px 2px 6px 0;
     }
 
-    .call-controls {
+    .message-row {
       display: flex;
+      gap: 10px;
+      align-items: flex-end;
+      animation: slideUp 0.25s ease;
+    }
+
+    .message-row.user {
+      justify-content: flex-end;
+    }
+
+    .message-row.user .message-main {
+      align-items: flex-end;
+    }
+
+    .message-main {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      max-width: min(760px, 88%);
+    }
+
+    .avatar {
+      width: 38px;
+      height: 38px;
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      color: var(--white);
+      font-size: 1rem;
+      flex: 0 0 auto;
+      box-shadow: var(--shadow);
+    }
+
+    .avatar.bot {
+      background: var(--leaf);
+    }
+
+    .avatar.user {
+      background: var(--earth);
+    }
+
+    .bubble {
+      border-radius: 20px;
+      padding: 12px 14px;
+      line-height: 1.5;
+      font-size: 0.95rem;
+      box-shadow: var(--shadow);
+      border: 1px solid rgba(61, 43, 31, 0.06);
+      overflow-wrap: anywhere;
+    }
+
+    .bubble.bot {
+      background: var(--white);
+      color: var(--text);
+      border-bottom-left-radius: 4px;
+      border-top: 3px solid var(--leaf);
+    }
+
+    .bubble.user {
+      background: var(--leaf);
+      color: var(--white);
+      border-bottom-right-radius: 4px;
+    }
+
+    .bubble h4,
+    .md-h4 {
+      margin: 0 0 8px;
+      font-family: "Syne", sans-serif;
+      font-size: 0.92rem;
+      font-weight: 700;
+      color: inherit;
+    }
+
+    .bot-title {
+      margin: 0 0 8px;
+      font-family: "Syne", sans-serif;
+      font-size: 0.92rem;
+      font-weight: 700;
+      color: var(--soil);
+    }
+
+    .md-list {
+      margin: 8px 0;
+      padding-left: 16px;
+    }
+
+    .md-list li + li {
+      margin-top: 4px;
+    }
+
+    .stream-cursor {
+      display: inline-block;
+      width: 7px;
+      height: 13px;
+      background: var(--leaf);
+      margin-left: 4px;
+      border-radius: 2px;
+      vertical-align: middle;
+      animation: blink 0.7s step-end infinite;
+    }
+
+    #inputArea {
+      border-radius: 22px;
+      background: rgba(253, 252, 249, 0.92);
+      border: 1px solid rgba(61, 43, 31, 0.1);
+      box-shadow: var(--shadow);
+      padding: 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .upload-row {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .upload-pill {
+      display: inline-flex;
+      align-items: center;
       gap: 8px;
+      padding: 10px 14px;
+      border-radius: 999px;
+      border: 1.5px dashed var(--straw);
+      background: transparent;
+      color: var(--earth);
+      font-weight: 500;
+      transition: border-color 0.2s ease, color 0.2s ease, background 0.2s ease;
+      cursor: pointer;
+    }
+
+    .upload-pill:hover {
+      border-color: var(--leaf);
+      color: var(--leaf);
+      background: rgba(74, 124, 63, 0.06);
+    }
+
+    .upload-name {
+      display: none;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.86rem;
+      color: var(--muted);
+    }
+
+    .upload-name.show {
+      display: inline-flex;
+    }
+
+    .clear-upload {
+      color: var(--accent);
+      cursor: pointer;
+      font-weight: 600;
+    }
+
+    .divider {
+      width: 100%;
+      height: 1px;
+      background: rgba(61, 43, 31, 0.08);
+    }
+
+    .composer-row {
+      display: flex;
+      align-items: flex-end;
+      gap: 10px;
+    }
+
+    #userInput {
+      flex: 1;
+      min-height: 48px;
+      max-height: 80px;
+      resize: none;
+      border: 1.5px solid transparent;
+      background: var(--cream);
+      border-radius: 22px;
+      padding: 13px 16px;
+      outline: none;
+      line-height: 1.45;
+      transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    #userInput:focus {
+      border-color: var(--leaf);
+      box-shadow: 0 0 0 4px rgba(74, 124, 63, 0.08);
+    }
+
+    .icon-btn {
+      width: 38px;
+      height: 38px;
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      font-size: 1rem;
+      flex: 0 0 auto;
+      transition: transform 0.2s ease, filter 0.2s ease;
+    }
+
+    .icon-btn:hover {
+      transform: translateY(-1px);
+      filter: brightness(1.04);
+    }
+
+    #voiceBtn {
+      background: var(--earth);
+      color: var(--straw);
+    }
+
+    #stopBtn {
+      display: none;
+      background: var(--accent);
+      color: var(--white);
+    }
+
+    #sendBtn {
+      background: var(--leaf);
+      color: var(--white);
+    }
+
+    .content-panel {
+      flex-direction: column;
+      min-height: 0;
+      overflow-y: auto;
+      padding-right: 4px;
+      gap: 14px;
+    }
+
+    .panel-head h2 {
+      margin: 0 0 4px;
+      font-family: "Syne", sans-serif;
+      font-size: 1.2rem;
+      color: var(--soil);
+    }
+
+    .panel-head p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 0.9rem;
+    }
+
+    .weather-bar {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 10px;
+      background: var(--white);
+      border-radius: var(--r);
+      border: 1px solid var(--line);
+      padding: 12px;
+      box-shadow: var(--shadow);
+    }
+
+    .weather-item {
+      padding: 10px 12px;
+      border-radius: 12px;
+      background: linear-gradient(180deg, rgba(232, 240, 228, 0.9), rgba(245, 240, 232, 0.9));
+    }
+
+    .weather-item strong {
+      display: block;
+      margin-top: 6px;
+      font-family: "Syne", sans-serif;
+      color: var(--soil);
+      font-size: 0.92rem;
+    }
+
+    .cards {
+      display: grid;
+      gap: 12px;
+    }
+
+    .rec-card,
+    .profile-card {
+      background: var(--white);
+      border: 1px solid #e0d8cc;
+      border-radius: var(--r);
+      box-shadow: var(--shadow);
+    }
+
+    .rec-card {
+      padding: 12px 14px;
+      border-left: 4px solid var(--leaf);
+    }
+
+    .rec-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+
+    .rec-title {
+      font-family: "Syne", sans-serif;
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: var(--soil);
+    }
+
+    .badge {
+      border-radius: 999px;
+      padding: 6px 10px;
+      font-size: 0.76rem;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+
+    .badge.gold {
+      background: rgba(212, 140, 42, 0.18);
+      color: var(--gold);
+    }
+
+    .badge.leaf {
+      background: rgba(74, 124, 63, 0.12);
+      color: var(--leaf);
+    }
+
+    .badge.bark {
+      background: rgba(139, 99, 71, 0.12);
+      color: var(--earth);
+    }
+
+    .rec-reason {
+      font-size: 0.8rem;
+      color: var(--text);
+      margin: 0 0 12px;
+    }
+
+    .chip-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 10px;
+    }
+
+    .chip {
+      background: var(--mist);
+      border-radius: 8px;
+      padding: 6px 10px;
+      font-size: 0.78rem;
+      color: var(--soil);
+    }
+
+    .rec-tip {
+      font-size: 0.78rem;
+      color: var(--muted);
+    }
+
+    .table-wrap {
+      background: var(--white);
+      border: 1px solid var(--line);
+      border-radius: var(--r);
+      overflow: hidden;
+      box-shadow: var(--shadow);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    thead {
+      background: var(--soil);
+      color: var(--straw);
+      font-family: "Syne", sans-serif;
+    }
+
+    th,
+    td {
+      padding: 12px 14px;
+      text-align: left;
+      font-size: 0.9rem;
+    }
+
+    tbody tr {
+      border-bottom: 1px solid #ede8e0;
+      transition: background 0.2s ease;
+    }
+
+    tbody tr:hover {
+      background: var(--mist);
+    }
+
+    .price-up {
+      color: var(--leaf);
+      font-weight: 700;
+    }
+
+    .price-down {
+      color: var(--accent);
+      font-weight: 700;
+    }
+
+    .price-stable {
+      color: var(--earth);
+      font-weight: 700;
+    }
+
+    .profile-card {
+      padding: 16px;
+      display: grid;
+      gap: 12px;
+      max-width: 760px;
+    }
+
+    .field-grid {
+      display: grid;
+      gap: 12px;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .field-group {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .field-group.full {
+      grid-column: 1 / -1;
+    }
+
+    .field-group label {
+      font-size: 0.75rem;
+      color: var(--muted);
+      margin-bottom: 4px;
+    }
+
+    .profile-input,
+    .profile-select {
+      width: 100%;
+      padding: 7px 10px;
+      border-radius: 10px;
+      border: 1.5px solid #d8cfc3;
+      background: var(--cream);
+      outline: none;
+      transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .profile-input:focus,
+    .profile-select:focus {
+      border-color: var(--leaf);
+      box-shadow: 0 0 0 4px rgba(74, 124, 63, 0.08);
+    }
+
+    .profile-input[disabled] {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+
+    .save-btn {
+      width: 100%;
+      padding: 12px 16px;
+      border-radius: 14px;
+      background: var(--leaf);
+      color: var(--white);
+      font-family: "Syne", sans-serif;
+      font-weight: 600;
+      font-size: 0.95rem;
+    }
+
+    .loading-card,
+    .error-card {
+      background: var(--white);
+      border: 1px solid var(--line);
+      border-radius: var(--r);
+      padding: 16px;
+      color: var(--muted);
+      box-shadow: var(--shadow);
+    }
+
+    .voice-overlay {
+      position: fixed;
+      inset: 0;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      gap: 20px;
+      background: rgba(61, 43, 31, 0.92);
+      z-index: 100;
+      padding: 24px;
+      text-align: center;
+    }
+
+    .voice-overlay.active {
+      display: flex;
+    }
+
+    #voiceOrb {
+      width: 90px;
+      height: 90px;
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      background: radial-gradient(circle at 30% 30%, var(--seedling), var(--leaf));
+      color: var(--white);
+      font-size: 2.2rem;
+      box-shadow: 0 0 0 0 rgba(106, 171, 94, 0.24);
+    }
+
+    #voiceOrb.listening {
+      animation: breathe 1.6s ease-in-out infinite;
+    }
+
+    #voiceOrb.speaking {
+      animation: speakPulse 1s ease-in-out infinite;
+    }
+
+    #voiceStatus {
+      font-family: "Syne", sans-serif;
+      font-size: 1rem;
+      color: var(--straw);
+    }
+
+    #voiceTranscript {
+      min-height: 40px;
+      max-width: 280px;
+      color: var(--sky);
+      font-size: 0.85rem;
+      font-style: italic;
+      line-height: 1.5;
+    }
+
+    .voice-actions {
+      display: flex;
+      gap: 12px;
       flex-wrap: wrap;
       justify-content: center;
     }
 
-    .call-control {
-      padding: 10px 12px;
-      border-radius: 12px;
-      background: rgba(255, 255, 255, 0.1);
-      border: 1px solid rgba(255, 255, 255, 0.14);
-      color: #fff;
-      font-size: 12px;
-      font-weight: 800;
+    .voice-action {
+      padding: 12px 16px;
+      border-radius: 999px;
+      font-weight: 600;
     }
 
-    .call-control.hangup {
-      background: #b83333;
-      border-color: #b83333;
+    #voiceInterrupt {
+      background: var(--gold);
+      color: var(--soil);
     }
 
-    .hidden {
-      display: none;
+    #voiceClose {
+      background: var(--accent);
+      color: var(--white);
     }
 
-    @media (max-width: 900px) {
-      .status-grid {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
+    #toast {
+      position: fixed;
+      left: 50%;
+      bottom: 18px;
+      transform: translate(-50%, 14px);
+      padding: 10px 16px;
+      border-radius: 20px;
+      background: var(--soil);
+      color: var(--straw);
+      font-size: 0.78rem;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s ease, transform 0.3s ease;
+      z-index: 120;
+    }
+
+    #toast.show {
+      opacity: 1;
+      transform: translate(-50%, 0);
+    }
+
+    #chatMessages::-webkit-scrollbar,
+    .content-panel::-webkit-scrollbar {
+      width: 4px;
+      height: 4px;
+    }
+
+    #chatMessages::-webkit-scrollbar-thumb,
+    .content-panel::-webkit-scrollbar-thumb {
+      background: rgba(201, 168, 108, 0.33);
+      border-radius: 4px;
+    }
+
+    @keyframes slideUp {
+      from {
+        opacity: 0;
+        transform: translateY(8px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
       }
     }
 
-    @media (max-width: 760px) {
-      .shell {
+    @keyframes blink {
+      0%, 100% {
+        opacity: 1;
+      }
+      50% {
+        opacity: 0;
+      }
+    }
+
+    @keyframes breathe {
+      0%, 100% {
+        transform: scale(1);
+        box-shadow: 0 0 0 0 rgba(106, 171, 94, 0.18);
+      }
+      50% {
+        transform: scale(1.08);
+        box-shadow: 0 0 0 18px rgba(106, 171, 94, 0);
+      }
+    }
+
+    @keyframes speakPulse {
+      0%, 100% {
+        transform: scale(1);
+        box-shadow: 0 0 0 0 rgba(212, 140, 42, 0.18);
+      }
+      50% {
+        transform: scale(1.12);
+        box-shadow: 0 0 0 18px rgba(212, 140, 42, 0);
+      }
+    }
+
+    @media (max-width: 920px) {
+      .weather-bar,
+      .field-grid {
+        grid-template-columns: 1fr 1fr;
+      }
+    }
+
+    @media (max-width: 720px) {
+      .topbar,
+      .tabs,
+      .main {
+        padding-left: 14px;
+        padding-right: 14px;
+      }
+
+      .topbar {
+        align-items: flex-start;
+      }
+
+      .topbar-controls {
         width: 100%;
-        border-radius: 0;
       }
 
-      .status-grid {
+      .top-select {
+        min-width: 0;
+        width: 100%;
+      }
+
+      .select-wrap {
+        flex: 1 1 100%;
+      }
+
+      .message-main {
+        max-width: 100%;
+      }
+
+      .weather-bar,
+      .field-grid {
         grid-template-columns: 1fr;
       }
 
-      .location-bar {
-        grid-template-columns: 1fr;
-      }
-
-      .thread {
-        max-height: 50vh;
+      .composer-row {
+        gap: 8px;
       }
     }
   </style>
 </head>
 <body>
-  <div class="page">
-    <div class="shell">
-      <header class="header">
-        <div class="brand">
-          <span class="brand-icon">🌾</span>
-          <span class="brand-title" id="title-text">Shamba Assistant</span>
+  <div class="app-shell">
+    <header class="topbar">
+      <div class="brand">
+        <div class="brand-logo">🌱</div>
+        <div class="brand-text">Shamba AI</div>
+      </div>
+      <div class="topbar-controls">
+        <div class="select-wrap">
+          <select id="langSel" class="top-select">
+            <option value="en">EN 🇬🇧</option>
+            <option value="sw">SW 🇰🇪</option>
+            <option value="luo">LUO 🪘</option>
+          </select>
         </div>
-        <div class="header-actions">
-          <div class="lang-switch" id="lang-switch"></div>
-          <button class="ghost-btn" id="theme-btn">🌙</button>
-          <button class="call-btn" id="open-call-btn">📞 Call Shamba</button>
+        <div class="select-wrap">
+          <select id="sublocSel" class="top-select"></select>
         </div>
-      </header>
+        <div class="select-wrap">
+          <select id="seasonSel" class="top-select">
+            <option>Long Rains 🌧</option>
+            <option>Short Rains 🌦</option>
+            <option>Dry ☀️</option>
+          </select>
+        </div>
+      </div>
+    </header>
 
-      <main class="content">
-        <section class="status-grid">
-          <article class="status-card">
-            <small id="status-ai-label">AI Status</small>
-            <strong class="status-pill"><span class="dot"></span><span id="status-ai-value">Online and ready</span></strong>
-          </article>
-          <article class="status-card">
-            <small id="status-location-label">Current Location</small>
-            <strong id="status-location-value">Nairobi, Kenya</strong>
-          </article>
-          <article class="status-card">
-            <small id="status-weather-label">Weather Summary</small>
-            <strong id="status-weather-value">Loading...</strong>
-          </article>
-          <article class="status-card">
-            <small id="status-market-label">Market Status</small>
-            <strong id="status-market-value">Loading prices...</strong>
-          </article>
-        </section>
+    <nav class="tabs">
+      <button class="tab-btn active" data-tab="chat">💬 Chat</button>
+      <button class="tab-btn" data-tab="crops">🌾 Crops</button>
+      <button class="tab-btn" data-tab="market">📈 Market</button>
+      <button class="tab-btn" data-tab="profile">👤 Profile</button>
+    </nav>
 
-        <section class="location-bar">
-          <input class="field" id="location-input" type="text" value="Nairobi, Kenya" placeholder="Type any city">
-          <button class="action-btn" id="update-location-btn">Update</button>
-          <button class="action-btn" id="gps-btn">GPS</button>
-        </section>
-
-        <section class="quick-actions">
-          <button class="quick-chip quick-chip-btn" data-prompt="crop">🌱 Crop Recommendations</button>
-          <button class="quick-chip quick-chip-btn" data-prompt="weather">🌦 Weather</button>
-          <button class="quick-chip quick-chip-btn" data-prompt="market">💹 Market Prices</button>
-          <button class="quick-chip quick-chip-btn" data-prompt="soil">🟤 Soil Analysis</button>
-          <button class="quick-chip quick-chip-btn" data-prompt="pest">🐛 Pest Control</button>
-        </section>
-
-        <section class="speaking-bar" id="speaking-bar">
-          <div class="wave-box">
-            <div class="wave" aria-hidden="true">
-              <span></span><span></span><span></span><span></span><span></span>
-            </div>
-            <div class="wave-meta">
-              <div id="voice-status">Voice ready.</div>
-              <div id="language-status">Current language: English</div>
+    <main class="main">
+      <section id="chatPanel" class="panel chat-panel active">
+        <div id="chatMessages"></div>
+        <div id="inputArea">
+          <div class="upload-row">
+            <label class="upload-pill" for="imageInput">📷 Upload pest/disease photo</label>
+            <input id="imageInput" type="file" accept="image/*" hidden>
+            <div id="uploadName" class="upload-name">
+              <span id="uploadText"></span>
+              <span id="clearUpload" class="clear-upload">✕</span>
             </div>
           </div>
-          <button class="stop-speaking-btn" id="stop-speaking-btn">⏹ Stop</button>
-        </section>
-
-        <section class="chat-card">
-          <div class="chat-head">
-            <strong id="chat-title">Main Chat</strong>
-            <div class="chat-tools">
-              <button class="action-btn" id="continuous-btn">Continuous: Off</button>
-              <button class="action-btn" id="clear-chat-btn">Clear Chat</button>
-            </div>
+          <div class="divider"></div>
+          <div class="composer-row">
+            <textarea id="userInput" placeholder="Ask about farming in Siaya…"></textarea>
+            <button id="voiceBtn" class="icon-btn" type="button" aria-label="Voice input">🎤</button>
+            <button id="stopBtn" class="icon-btn" type="button" aria-label="Stop generation">⏹</button>
+            <button id="sendBtn" class="icon-btn" type="button" aria-label="Send message">➤</button>
           </div>
+        </div>
+      </section>
 
-          <div class="thread" id="thread"></div>
+      <section id="cropsPanel" class="panel content-panel"></section>
+      <section id="marketPanel" class="panel content-panel"></section>
+      <section id="profilePanel" class="panel content-panel"></section>
+    </main>
+  </div>
 
-          <div class="composer">
-            <button class="icon-btn" id="mic-btn" title="Voice input">🎙</button>
-            <textarea id="message-input" placeholder="Ask about crops, livestock, pests, markets, weather, or soil"></textarea>
-            <button class="send-btn" id="send-btn" title="Send">➤</button>
-          </div>
-        </section>
-      </main>
+  <div id="voiceOverlay" class="voice-overlay">
+    <div id="voiceOrb">🎙</div>
+    <div id="voiceStatus"></div>
+    <div id="voiceTranscript"></div>
+    <div class="voice-actions">
+      <button id="voiceInterrupt" class="voice-action" type="button">✋ Interrupt</button>
+      <button id="voiceClose" class="voice-action" type="button">✕ Close</button>
     </div>
   </div>
 
-  <section class="call-modal" id="call-modal">
-    <div class="call-sheet">
-      <div>
-        <h3 id="call-title">Shamba Call</h3>
-        <p><span id="call-number">+254 700 SHAMBA</span> • <span id="call-timer">00:00</span></p>
-      </div>
-      <div class="call-transcript" id="call-transcript"></div>
-      <div class="call-controls">
-        <button class="call-control" id="call-mic-btn">🎙 Talk</button>
-        <button class="call-control" id="call-mute-btn">🔇 Mute</button>
-        <button class="call-control" id="call-speaker-btn">🔊 Speaker</button>
-        <button class="call-control hangup" id="call-hangup-btn">📴 Hang up</button>
-      </div>
-    </div>
-  </section>
+  <div id="toast"></div>
 
   <script>
-    const $ = selector => document.querySelector(selector);
-    const $$ = selector => Array.from(document.querySelectorAll(selector));
-
-    const I18N = {
+    const DIRECT_ANTHROPIC_API_KEY = "";
+    const ANTHROPIC_URL = "https://api.anthropic.com/v1/messages";
+    const DEFAULT_IMAGE_PROMPT = "🔍 Please identify this pest/disease and recommend pesticides.";
+    const SUBLOCATIONS = ["Siaya", "Bondo", "Rarieda", "Ugenya", "Gem", "Yimbo", "Alego", "Usonga"];
+    const AGRI_REGEX = /\b(crop|farm|soil|pest|disease|plant|seed|harvest|fertilizer|pesticide|irrigat|maize|bean|sorghum|cassava|sweet potato|tomato|kale|sukuma|vegetable|weather|rain|market|price|acre|yield|weed|spray|fungus|fungal|blight|aphid|locust|stem borer|animal|chicken|cow|goat|livestock|poultry|feed|pasture|manure|compost|organic|shamba|kilimo|mbegu|mavuno|udongo|chakula|lemo|cham|kuon)\b/i;
+    const STRINGS = {
       en: {
-        title: "Shamba Assistant",
-        aiStatus: "AI Status",
-        aiOnline: "Online and ready",
-        location: "Current Location",
-        weather: "Weather Summary",
-        market: "Market Status",
-        locationPlaceholder: "Type any city",
-        updateLocation: "Update",
-        gps: "GPS",
-        mainChat: "Main Chat",
-        continuousOn: "Continuous: On",
-        continuousOff: "Continuous: Off",
-        clearChat: "Clear Chat",
-        messagePlaceholder: "Ask about crops, livestock, pests, markets, weather, or soil",
-        voiceReady: "Voice ready.",
-        voiceListening: "Listening...",
-        voiceSpeaking: "Speaking...",
-        languageStatus: "Current language: English",
-        loadingPrices: "Loading prices...",
-        callTitle: "Shamba Call",
-        callGreeting: "Call connected. Ask your farming question after the tone.",
-        callMuted: "Muted",
-        callUnmuted: "Unmute",
-        callSpeaker: "Speaker",
-        callEarpiece: "Earpiece",
-        locationUpdated: location => `I have updated your farm context to ${location}.`,
-        welcome: "Hello. I am Shamba Assistant. Ask me about crops, weather, soil, livestock, pests, irrigation, fertilizer, or farm markets.",
-        quickPrompts: {
-          crop: "Give me the top 3 crops to plant here right now and explain why.",
-          weather: "Summarize the current farm weather and the next 7 days for this location.",
-          market: "Show me the latest market prices and what they mean for selling crops.",
-          soil: "Explain this soil analysis and how it affects planting decisions.",
-          pest: "What common pests should I watch for right now and how do I control them?"
-        }
+        greeting: "Hello! I'm your Siaya County farming guide. Ask me about crops, pests, market prices, or upload a photo of a diseased plant. 🌿",
+        placeholder: "Ask about farming in Siaya…",
+        nonAgri: "I'm only able to help with agricultural topics related to Siaya County. Please ask a farming question. 🌾",
+        saved: "Profile saved!",
+        listening: "Listening…",
+        speaking: "Speaking…",
+        interrupt: "Interrupted."
       },
       sw: {
-        title: "Shamba Assistant",
-        aiStatus: "Hali ya AI",
-        aiOnline: "Mkononi na tayari",
-        location: "Eneo la Sasa",
-        weather: "Muhtasari wa Hali ya Hewa",
-        market: "Hali ya Soko",
-        locationPlaceholder: "Andika jiji lolote",
-        updateLocation: "Sasisha",
-        gps: "GPS",
-        mainChat: "Mazungumzo Makuu",
-        continuousOn: "Endelea Kusikiliza: Ndio",
-        continuousOff: "Endelea Kusikiliza: Hapana",
-        clearChat: "Futa Mazungumzo",
-        messagePlaceholder: "Uliza kuhusu mazao, mifugo, wadudu, masoko, hali ya hewa, au udongo",
-        voiceReady: "Sauti iko tayari.",
-        voiceListening: "Ninasikiliza...",
-        voiceSpeaking: "Ninazungumza...",
-        languageStatus: "Lugha ya sasa: Kiswahili",
-        loadingPrices: "Inapakia bei...",
-        callTitle: "Simu ya Shamba",
-        callGreeting: "Simu imeunganishwa. Uliza swali lako la kilimo baada ya mlio.",
-        callMuted: "Kimya",
-        callUnmuted: "Washa",
-        callSpeaker: "Spika",
-        callEarpiece: "Sikioni",
-        locationUpdated: location => `Nimesasisha taarifa za shamba lako hadi ${location}.`,
-        welcome: "Habari. Mimi ni Shamba Assistant. Uliza kuhusu mazao, hali ya hewa, udongo, mifugo, wadudu, umwagiliaji, mbolea, au masoko ya mazao.",
-        quickPrompts: {
-          crop: "Nipe mazao matatu bora ya kupanda hapa sasa na sababu zake.",
-          weather: "Nipe muhtasari wa hali ya hewa ya sasa ya shamba na siku 7 zijazo kwa eneo hili.",
-          market: "Nionyeshe bei za karibuni za soko na maana yake kwa kuuza mazao.",
-          soil: "Eleza uchambuzi huu wa udongo na jinsi unavyoathiri maamuzi ya kupanda.",
-          pest: "Ni wadudu gani wa kawaida ninaopaswa kuangalia sasa na nitawadhibitije?"
-        }
+        greeting: "Habari! Mimi ni msaidizi wako wa kilimo wa Kaunti ya Siaya. Niulize kuhusu mazao, wadudu, bei za soko, au pakia picha ya mmea wenye ugonjwa. 🌿",
+        placeholder: "Uliza kuhusu kilimo Siaya…",
+        nonAgri: "Ninaweza tu kusaidia na mada za kilimo zinazohusiana na Kaunti ya Siaya. Tafadhali uliza swali la kilimo. 🌾",
+        saved: "Wasifu umehifadhiwa!",
+        listening: "Sikiliza…",
+        speaking: "Inasema…",
+        interrupt: "Imekatizwa."
       },
       luo: {
-        title: "Shamba Assistant",
-        aiStatus: "Kit AI",
-        aiOnline: "Osebedo gi kikelo kony",
-        location: "Kama In",
-        weather: "Weche mar Koth",
-        market: "Kit Soko",
-        locationPlaceholder: "Ndik dala moro amora",
-        updateLocation: "Yik Manyien",
-        gps: "GPS",
-        mainChat: "Goyo Weche Madongo",
-        continuousOn: "Winjo Kendo: Ee",
-        continuousOff: "Winjo Kendo: Da",
-        clearChat: "Jwa Weche",
-        messagePlaceholder: "Penja kuom mazao, dhiang', chwiri, soko, koth, kata ngom",
-        voiceReady: "Dwol oikore.",
-        voiceListening: "Awinjo...",
-        voiceSpeaking: "Awacho...",
-        languageStatus: "Dho ma sani: Luo-Dholuo",
-        loadingPrices: "Tiyo kuom bei...",
-        callTitle: "Go mar Shamba",
-        callGreeting: "Go olor. Penja penji mari mar puodho bang' dwol.",
-        callMuted: "Ling'",
-        callUnmuted: "Wek",
-        callSpeaker: "Speaker",
-        callEarpiece: "Ear",
-        locationUpdated: location => `Aseketo weche mar puodhi e ${location}.`,
-        welcome: "Misawa. An Shamba Assistant. Penja kuom mazao, koth, ngom, dhiang', chwiri, kudho pi, yath mar puodho, kata soko.",
-        quickPrompts: {
-          crop: "Nyisa mazao adek maber ma nyal pandore kanyo sani kod sababu.",
-          weather: "Nyisa weche mar koth mar sani kod ndalo 7 mabiro e kama ni.",
-          market: "Nyisa bei mar soko manyien kod gima gikelo e yueyo mazao.",
-          soil: "Lony ni nonro mar ngom ni to ginyalo konyo nadi e pandruok.",
-          pest: "Chwiri mane ma nyaka arit sani kod ango mar ketho gi?"
-        }
+        greeting: "Misawa! An jarit lemo mar Siaya County. Penj kuom cham, tuoche, nengo mar chiro, kata otingʼ picha mar ot motuo. 🌿",
+        placeholder: "Penj kuom lemo Siaya…",
+        nonAgri: "Anyalo konyi ki weche mag lemo mokulore gi Siaya County kende. Penj wach lemo. 🌾",
+        saved: "Profail ooyo!",
+        listening: "Winjo…",
+        speaking: "Wacho…",
+        interrupt: "Orowore."
       }
     };
 
-    const voiceLocales = {
-      en: "en-US",
-      sw: "sw-KE",
-      luo: "luo"
-    };
-
-    const voicePriority = {
-      en: ["en-KE", "en-US", "en-GB"],
-      sw: ["sw-KE", "sw", "en-KE"],
-      luo: ["en-KE", "en-ZA", "en-GB"]
-    };
-
-    const state = {
-      sessionId: `session-${Math.random().toString(36).slice(2)}`,
-      language: "en",
-      currentLocation: "Nairobi, Kenya",
-      lat: null,
-      lon: null,
-      currentWeather: null,
-      currentSoil: null,
-      currentPrices: null,
+    let state = {
+      lang: "en",
+      subloc: "Siaya",
+      season: "Long Rains",
+      profile: { name: "", village: "", acres: "", soil: "Clay (Vertisol)" },
+      history: [],
+      streaming: false,
+      abortCtrl: null,
+      uploadedImage: null,
+      uploadedMime: null,
+      uploadedFilename: "",
+      speech: { speaking: false, utterance: null },
       recognition: null,
-      listening: false,
-      speaking: false,
-      continuousListening: false,
-      callOpen: false,
-      callMuted: false,
-      callSpeaker: true,
-      callTimer: null,
-      callSeconds: 0,
-      config: null,
-      activeStream: null
+      voiceActive: false,
+      activeTab: "chat",
+      proxyAvailable: false,
+      abortHandled: false,
+      lastTranscript: "",
+      cropsCacheKey: "",
+      marketCacheKey: "",
+      cropsCache: null,
+      marketCache: null
     };
+
+    const $ = id => document.getElementById(id);
+    const voiceLocales = { en: "en-KE", sw: "sw-KE", luo: "en-KE" };
 
     function t(key) {
-      return I18N[state.language][key];
+      return (STRINGS[state.lang] || STRINGS.en)[key] || "";
     }
 
-    function escapeHtml(value) {
-      return String(value)
+    function escapeHtml(text) {
+      return String(text || "")
         .replace(/&/g, "&amp;")
         .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;")
-        .replace(/"/g, "&quot;")
-        .replace(/'/g, "&#39;");
+        .replace(/>/g, "&gt;");
     }
 
-    function formatText(text) {
-      return escapeHtml(text)
+    function inlineFormat(text) {
+      return text
         .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")
-        .replace(/^###\s(.+)$/gm, "<strong>$1</strong>");
+        .replace(/\*(.+?)\*/g, "<em>$1</em>");
     }
 
-    function markdownToHtml(text) {
-      const lines = String(text || "").split(/\n/);
+    function renderMarkdown(text) {
+      const lines = escapeHtml(text).replace(/\r/g, "").split("\n");
       let html = "";
       let inList = false;
-      for (const line of lines) {
-        if (/^\s*[-*]\s+/.test(line)) {
+
+      lines.forEach(line => {
+        if (/^###\s+/.test(line)) {
+          if (inList) {
+            html += "</ul>";
+            inList = false;
+          }
+          html += `<h4 class="md-h4">${inlineFormat(line.replace(/^###\s+/, ""))}</h4>`;
+          return;
+        }
+
+        if (/^\s*[-•]\s+/.test(line)) {
           if (!inList) {
-            html += "<ul>";
+            html += '<ul class="md-list">';
             inList = true;
           }
-          html += `<li>${formatText(line.replace(/^\s*[-*]\s+/, ""))}</li>`;
-          continue;
+          html += `<li>${inlineFormat(line.replace(/^\s*[-•]\s+/, ""))}</li>`;
+          return;
         }
+
         if (inList) {
           html += "</ul>";
           inList = false;
         }
-        if (!line.trim()) {
-          html += "<br>";
-          continue;
-        }
-        html += `<p>${formatText(line)}</p>`;
-      }
+
+        html += `${inlineFormat(line)}\n`;
+      });
+
       if (inList) {
         html += "</ul>";
       }
-      return html;
+
+      return html
+        .replace(/\n\n/g, "<br><br>")
+        .replace(/\n/g, "<br>");
     }
 
-    function autoResize(element) {
-      element.style.height = "auto";
-      element.style.height = `${Math.min(element.scrollHeight, 140)}px`;
+    function autoResize(textarea) {
+      textarea.style.height = "auto";
+      textarea.style.height = Math.min(textarea.scrollHeight, 80) + "px";
     }
 
-    function appendCallTranscript(text) {
-      const item = document.createElement("div");
-      item.textContent = text;
-      $("#call-transcript").appendChild(item);
-      $("#call-transcript").scrollTop = $("#call-transcript").scrollHeight;
+    function toast(msg) {
+      const node = $("toast");
+      node.textContent = msg;
+      node.classList.add("show");
+      window.clearTimeout(node._timer);
+      node._timer = window.setTimeout(() => node.classList.remove("show"), 2500);
     }
 
-    function setStreamingBubbleContent(target, text, showCursor) {
-      target.innerHTML = `${markdownToHtml(text)}${showCursor ? '<span class="cursor">▌</span>' : ""}`;
+    function scrollChatToBottom() {
+      const list = $("chatMessages");
+      list.scrollTop = list.scrollHeight;
+    }
+
+    function setComposerState(streaming) {
+      state.streaming = streaming;
+      $("sendBtn").style.display = streaming ? "none" : "grid";
+      $("stopBtn").style.display = streaming ? "grid" : "none";
+    }
+
+    function createMessageRow(role) {
+      const row = document.createElement("div");
+      row.className = `message-row ${role}`;
+
+      const main = document.createElement("div");
+      main.className = "message-main";
+
+      const avatar = document.createElement("div");
+      avatar.className = `avatar ${role === "assistant" ? "bot" : "user"}`;
+      avatar.textContent = role === "assistant" ? "🌱" : "🧑‍🌾";
+
+      const bubble = document.createElement("div");
+      bubble.className = `bubble ${role === "assistant" ? "bot" : "user"}`;
+
+      if (role === "assistant") {
+        const heading = document.createElement("h4");
+        heading.className = "bot-title";
+        heading.textContent = "Shamba Assistant";
+        bubble.appendChild(heading);
+      }
+
+      const content = document.createElement("div");
+      bubble.appendChild(content);
+
+      if (role === "assistant") {
+        main.appendChild(avatar);
+        main.appendChild(bubble);
+      } else {
+        main.appendChild(bubble);
+        main.appendChild(avatar);
+      }
+
+      row.appendChild(main);
+      return { row, bubble, content };
     }
 
     function appendUserMessage(text) {
-      const row = document.createElement("div");
-      row.className = "message user";
-      const stack = document.createElement("div");
-      stack.className = "message-stack";
-      const bubble = document.createElement("div");
-      bubble.className = "bubble";
-      bubble.innerHTML = markdownToHtml(text);
-      stack.appendChild(bubble);
-      row.appendChild(stack);
-      $("#thread").appendChild(row);
-      $("#thread").scrollTop = $("#thread").scrollHeight;
-      if (state.callOpen) {
-        appendCallTranscript(`Farmer: ${text}`);
-      }
+      const { row, content } = createMessageRow("user");
+      content.innerHTML = renderMarkdown(text);
+      $("chatMessages").appendChild(row);
+      scrollChatToBottom();
+      return row;
     }
 
     function appendBotMessage(text) {
-      const row = document.createElement("div");
-      row.className = "message bot";
-      const avatar = document.createElement("div");
-      avatar.className = "avatar";
-      avatar.textContent = "🌾";
-      const stack = document.createElement("div");
-      stack.className = "message-stack";
-      const bubble = document.createElement("div");
-      bubble.className = "bubble";
-      bubble.innerHTML = markdownToHtml(text);
-      stack.appendChild(bubble);
-      row.appendChild(avatar);
-      row.appendChild(stack);
-      $("#thread").appendChild(row);
-      $("#thread").scrollTop = $("#thread").scrollHeight;
-      if (state.callOpen) {
-        appendCallTranscript(`Shamba: ${text}`);
-      }
-      speak(text);
+      const { row, content } = createMessageRow("assistant");
+      content.innerHTML = renderMarkdown(text);
+      $("chatMessages").appendChild(row);
+      scrollChatToBottom();
+      return row;
     }
 
-    function createStreamingBotMessage() {
-      const row = document.createElement("div");
-      row.className = "message bot";
-      const avatar = document.createElement("div");
-      avatar.className = "avatar";
-      avatar.textContent = "🌾";
-      const stack = document.createElement("div");
-      stack.className = "message-stack";
-      const bubble = document.createElement("div");
-      bubble.className = "bubble";
-      const stopButton = document.createElement("button");
-      stopButton.className = "stop-inline-btn show";
-      stopButton.type = "button";
-      stopButton.textContent = "⏹ Stop Generating";
-      setStreamingBubbleContent(bubble, "", true);
-      stack.appendChild(bubble);
-      stack.appendChild(stopButton);
-      row.appendChild(avatar);
-      row.appendChild(stack);
-      $("#thread").appendChild(row);
-      $("#thread").scrollTop = $("#thread").scrollHeight;
-      return { row, bubble, stopButton };
+    function createStreamingBubble() {
+      const { row, content } = createMessageRow("assistant");
+      const cursor = document.createElement("span");
+      cursor.className = "stream-cursor";
+      content.appendChild(cursor);
+      $("chatMessages").appendChild(row);
+      scrollChatToBottom();
+      return { row, content, cursor, text: "" };
     }
 
-    function finalizeActiveStream({ keepText = true, speakText = false } = {}) {
-      if (!state.activeStream) {
+    function updateStreamingBubble(target, text) {
+      target.text = text;
+      target.content.innerHTML = renderMarkdown(text);
+      target.content.appendChild(target.cursor);
+      scrollChatToBottom();
+    }
+
+    function finalizeStreamingBubble(target) {
+      if (!target) {
         return "";
       }
-      const active = state.activeStream;
-      const finalText = keepText ? active.text : "";
-      setStreamingBubbleContent(active.bubble, finalText, false);
-      active.stopButton.classList.remove("show");
-      state.activeStream = null;
-      if (active.stopButton.parentNode) {
-        active.stopButton.remove();
-      }
-      if (speakText && finalText.trim()) {
-        if (state.callOpen) {
-          appendCallTranscript(`Shamba: ${finalText}`);
-        }
-        speak(finalText);
-      }
-      return finalText;
+      target.content.innerHTML = renderMarkdown(target.text);
+      scrollChatToBottom();
+      return target.text;
     }
 
-    async function stopActiveStream() {
-      if (!state.activeStream) {
-        return;
+    function languageRule() {
+      if (state.lang === "sw") {
+        return "Lazima ujibu KWA KISWAHILI PEKE YAKE. Usitumie lugha nyingine yoyote.";
       }
-      const active = state.activeStream;
-      try {
-        if (active.reader) {
-          await active.reader.cancel();
-        }
-      } catch (_error) {}
-      if (active.controller) {
-        active.controller.abort();
+      if (state.lang === "luo") {
+        return "Nyaka idok LUORUOK KENDE. Kik itiend dhok moro amora machielo.";
       }
-      finalizeActiveStream({ keepText: true, speakText: false });
+      return "You MUST respond ONLY in English. Never use any other language.";
     }
 
-    function renderLanguageSwitch() {
-      $("#lang-switch").innerHTML = ["en", "sw", "luo"]
-        .map(lang => `<button class="lang-btn ${lang === state.language ? "active" : ""}" data-lang="${lang}">${lang.toUpperCase()}</button>`)
+    function buildSystemPrompt(hasImage) {
+      return [
+        "You are Shamba Assistant, an agricultural AI agent EXCLUSIVELY for Siaya County, Kenya.",
+        "RULES:",
+        `1. ${languageRule()}`,
+        "2. ONLY answer agricultural questions (crops, soil, pests, diseases, weather impact on farming, market prices for crops, irrigation, fertilizers, pesticides, livestock, poultry). Firmly but politely refuse ALL non-agricultural questions in the current language.",
+        `3. Always factor in: sub-location ${state.subloc}, season ${state.season}, Siaya County geography (Lake Victoria basin, red clay Vertisol soils, pH 5.5–6.5, average rainfall 1200–1800mm/yr).`,
+        "4. For crop recommendations: ALWAYS recommend EXACTLY 3 crops ranked #1, #2, #3. For each: name, rank, why it suits this location + this season, expected KES market price per 90kg bag, key pest risks, one actionable tip.",
+        "5. For pest/disease images: identify pest/disease, recommend specific Kenyan pesticide brands (+ active ingredient), dosage, safety precautions.",
+        "6. For market questions: give realistic current KES price ranges for Siaya/Western Kenya markets (Kisumu, Siaya town, Bondo markets).",
+        "7. Keep responses concise and action-oriented. Use bullet points.",
+        "8. Soil context: predominantly red clay Vertisols, sandy loam near Lake Victoria shore. pH ~5.5–6.5.",
+        "9. Season patterns: Long Rains Mar–Jun, Short Rains Oct–Dec, Dry Jan–Feb and Jul–Sep.",
+        hasImage ? "10. An image has been uploaded — analyze it for pest/disease identification." : null,
+        `Current context: Location: ${state.subloc}, Siaya County, Kenya | Season: ${state.season} | Farmer: ${JSON.stringify(state.profile)}`
+      ].filter(Boolean).join("\n");
+    }
+
+    function normalizeHistory() {
+      return state.history.map(item => ({
+        role: item.role,
+        content: Array.isArray(item.content) ? item.content : [{ type: "text", text: String(item.content || "") }]
+      }));
+    }
+
+    function extractTextFromResponse(data) {
+      if (!data || !Array.isArray(data.content)) {
+        return "";
+      }
+      return data.content
+        .filter(block => block.type === "text")
+        .map(block => block.text || "")
         .join("");
-      $$(".lang-btn").forEach(button => {
-        button.addEventListener("click", () => switchLanguage(button.dataset.lang));
+    }
+
+    function parseJsonArray(text) {
+      const match = String(text || "").match(/\[[\s\S]*\]/);
+      if (!match) {
+        throw new Error("The assistant did not return valid JSON.");
+      }
+      return JSON.parse(match[0]);
+    }
+
+    function getApiKey() {
+      return (window.ANTHROPIC_API_KEY || DIRECT_ANTHROPIC_API_KEY || "").trim();
+    }
+
+    async function loadRuntimeConfig() {
+      try {
+        const res = await fetch("/api/config");
+        if (!res.ok) {
+          return;
+        }
+        const data = await res.json();
+        state.proxyAvailable = Boolean(data.serverProxyAvailable);
+      } catch (_error) {
+        state.proxyAvailable = false;
+      }
+    }
+
+    function buildFetchTarget() {
+      const directKey = getApiKey();
+      if (directKey) {
+        return {
+          url: ANTHROPIC_URL,
+          headers: {
+            "Content-Type": "application/json",
+            "x-api-key": directKey,
+            "anthropic-version": "2023-06-01",
+            "anthropic-dangerous-direct-browser-access": "true"
+          }
+        };
+      }
+
+      if (state.proxyAvailable) {
+        return {
+          url: "/api/chat",
+          headers: {
+            "Content-Type": "application/json"
+          }
+        };
+      }
+
+      throw new Error("Add your Anthropic API key in DIRECT_ANTHROPIC_API_KEY for direct browser use, or configure ANTHROPIC_API_KEY on the server.");
+    }
+
+    async function anthropicJson(system, messages) {
+      const target = buildFetchTarget();
+      const response = await fetch(target.url, {
+        method: "POST",
+        headers: target.headers,
+        body: JSON.stringify({
+          model: "claude-sonnet-4-20250514",
+          max_tokens: 1000,
+          system,
+          messages,
+          stream: false
+        })
       });
-    }
 
-    function renderStaticText() {
-      document.documentElement.lang = state.language === "luo" ? "luo" : state.language;
-      $("#title-text").textContent = t("title");
-      $("#status-ai-label").textContent = t("aiStatus");
-      $("#status-ai-value").textContent = t("aiOnline");
-      $("#status-location-label").textContent = t("location");
-      $("#status-weather-label").textContent = t("weather");
-      $("#status-market-label").textContent = t("market");
-      $("#location-input").placeholder = t("locationPlaceholder");
-      $("#update-location-btn").textContent = t("updateLocation");
-      $("#gps-btn").textContent = t("gps");
-      $("#chat-title").textContent = t("mainChat");
-      $("#continuous-btn").textContent = state.continuousListening ? t("continuousOn") : t("continuousOff");
-      $("#clear-chat-btn").textContent = t("clearChat");
-      $("#message-input").placeholder = t("messagePlaceholder");
-      $("#voice-status").textContent = state.listening ? t("voiceListening") : state.speaking ? t("voiceSpeaking") : t("voiceReady");
-      $("#language-status").textContent = t("languageStatus");
-      $("#call-title").textContent = t("callTitle");
-      $("#open-call-btn").textContent = "📞 Call Shamba";
-      renderLanguageSwitch();
-    }
-
-    function weatherSummaryText() {
-      if (!state.currentWeather) {
-        return "Loading...";
-      }
-      return `${state.currentWeather.current.temperatureC ?? "--"}°C • ${state.currentWeather.current.description || "--"}`;
-    }
-
-    function priceStatusText() {
-      if (!state.currentPrices) {
-        return t("loadingPrices");
-      }
-      const when = new Date(state.currentPrices.updatedAt).toLocaleTimeString();
-      return `${state.currentPrices.source} • ${when}`;
-    }
-
-    function renderStatus() {
-      $("#status-location-value").textContent = state.currentLocation;
-      $("#status-weather-value").textContent = weatherSummaryText();
-      $("#status-market-value").textContent = priceStatusText();
-      $("#language-status").textContent = t("languageStatus");
-    }
-
-    async function fetchJson(url, options) {
-      const response = await fetch(url, options);
-      const data = await response.json();
+      const data = await response.json().catch(() => ({}));
       if (!response.ok) {
-        throw new Error(data.error || "Request failed");
+        throw new Error(data.error || "The request failed.");
       }
       return data;
     }
 
-    async function loadConfig() {
-      state.config = await fetchJson("/api/config");
-      state.currentLocation = state.config.defaultLocation || state.currentLocation;
-      $("#location-input").value = state.currentLocation;
-      $("#call-number").textContent = state.config.phoneNumber || "+254 700 SHAMBA";
-      state.continuousListening = Boolean(state.config.continuousListeningDefault);
+    async function streamAnthropic(system, messages, onDelta) {
+      const target = buildFetchTarget();
+      const ctrl = new AbortController();
+      state.abortCtrl = ctrl;
+
+      const response = await fetch(target.url, {
+        method: "POST",
+        headers: target.headers,
+        body: JSON.stringify({
+          model: "claude-sonnet-4-20250514",
+          max_tokens: 1000,
+          system,
+          messages,
+          stream: true
+        }),
+        signal: ctrl.signal
+      });
+
+      if (!response.ok) {
+        const data = await response.json().catch(() => ({}));
+        throw new Error(data.error || "Streaming failed.");
+      }
+
+      if (!response.body) {
+        throw new Error("Streaming is not supported in this browser.");
+      }
+
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder();
+      let buffer = "";
+      let fullText = "";
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) {
+          break;
+        }
+
+        buffer += decoder.decode(value, { stream: true });
+        const lines = buffer.split(/\r?\n/);
+        buffer = lines.pop() || "";
+
+        for (const line of lines) {
+          if (!line.startsWith("data:")) {
+            continue;
+          }
+
+          const payload = line.slice(5).trim();
+          if (!payload || payload === "[DONE]") {
+            continue;
+          }
+
+          try {
+            const parsed = JSON.parse(payload);
+            const textDelta = parsed.delta && typeof parsed.delta.text === "string"
+              ? parsed.delta.text
+              : parsed.delta && typeof parsed.delta.partial_json === "string"
+                ? parsed.delta.partial_json
+                : parsed.type === "content_block_delta" && parsed.delta && parsed.delta.type === "text_delta"
+                  ? parsed.delta.text || ""
+                  : "";
+
+            if (textDelta) {
+              fullText += textDelta;
+              onDelta(fullText);
+            }
+          } catch (_error) {
+            // Ignore non-JSON upstream event lines.
+          }
+        }
+      }
+
+      return fullText;
     }
 
-    async function refreshPrices() {
-      state.currentPrices = await fetchJson("/api/prices");
-      renderStatus();
-    }
-
-    async function refreshContext(notify = false) {
-      const params = new URLSearchParams({ location: state.currentLocation });
-      if (state.lat !== null && state.lon !== null) {
-        params.set("lat", String(state.lat));
-        params.set("lon", String(state.lon));
-      }
-      const [weather, soil] = await Promise.all([
-        fetchJson(`/api/weather?${params.toString()}`),
-        fetchJson(`/api/soil?${params.toString()}`)
-      ]);
-      state.currentWeather = weather;
-      state.currentSoil = soil;
-      state.currentLocation = weather.location || state.currentLocation;
-      $("#location-input").value = state.currentLocation;
-      renderStatus();
-      if (notify) {
-        appendBotMessage(I18N[state.language].locationUpdated(state.currentLocation));
-      }
+    function stripSpeechText(text) {
+      return String(text || "")
+        .replace(/<[^>]+>/g, " ")
+        .replace(/[`*_#>-]/g, " ")
+        .replace(/\s+/g, " ")
+        .trim()
+        .slice(0, 800);
     }
 
     function chooseVoice() {
       const voices = window.speechSynthesis ? window.speechSynthesis.getVoices() : [];
-      const wanted = voicePriority[state.language];
-      return voices.find(voice => wanted.includes(voice.lang))
-        || voices.find(voice => wanted.some(lang => (voice.lang || "").startsWith(lang.split("-")[0])))
+      const locale = voiceLocales[state.lang];
+      return voices.find(voice => voice.lang === locale)
+        || voices.find(voice => (voice.lang || "").startsWith(locale.split("-")[0]))
         || null;
     }
 
-    function stopSpeaking() {
+    function stopSpeech() {
       if (!("speechSynthesis" in window)) {
         return;
       }
       window.speechSynthesis.cancel();
-      state.speaking = false;
-      $("#speaking-bar").classList.remove("speaking");
-      $("#stop-speaking-btn").classList.remove("show");
-      $("#voice-status").textContent = state.listening ? t("voiceListening") : t("voiceReady");
+      state.speech.speaking = false;
+      state.speech.utterance = null;
+      $("voiceOrb").classList.remove("speaking");
     }
 
-    function speak(text) {
-      if (!("speechSynthesis" in window) || state.callMuted) {
+    function speakText(text) {
+      const cleanText = stripSpeechText(text);
+      if (!cleanText || !("speechSynthesis" in window)) {
         return;
       }
-      stopSpeaking();
-      const utterance = new SpeechSynthesisUtterance(String(text || "").replace(/\*\*/g, ""));
-      utterance.lang = voiceLocales[state.language];
+
+      stopSpeech();
+
+      const utterance = new SpeechSynthesisUtterance(cleanText);
+      utterance.lang = voiceLocales[state.lang];
       utterance.rate = 0.95;
-      utterance.pitch = 1.05;
-      utterance.volume = 1.0;
-      const voice = chooseVoice();
-      if (voice) {
-        utterance.voice = voice;
-        utterance.lang = voice.lang;
+      const selectedVoice = chooseVoice();
+
+      if (selectedVoice) {
+        utterance.voice = selectedVoice;
+        utterance.lang = selectedVoice.lang;
       }
+
       utterance.onstart = () => {
-        state.speaking = true;
-        $("#speaking-bar").classList.add("speaking");
-        $("#stop-speaking-btn").classList.add("show");
-        $("#voice-status").textContent = t("voiceSpeaking");
+        state.speech.speaking = true;
+        $("voiceOrb").classList.remove("listening");
+        $("voiceOrb").classList.add("speaking");
+        $("voiceStatus").textContent = t("speaking");
       };
+
       utterance.onend = () => {
-        state.speaking = false;
-        $("#speaking-bar").classList.remove("speaking");
-        $("#stop-speaking-btn").classList.remove("show");
-        $("#voice-status").textContent = state.listening ? t("voiceListening") : t("voiceReady");
-        if (state.continuousListening && !state.callOpen) {
+        state.speech.speaking = false;
+        state.speech.utterance = null;
+        $("voiceOrb").classList.remove("speaking");
+        if (state.voiceActive) {
           startListening();
         }
       };
+
       utterance.onerror = utterance.onend;
+      state.speech.utterance = utterance;
       window.speechSynthesis.speak(utterance);
     }
 
-    function resetConversation() {
-      stopActiveStream();
-      state.sessionId = `session-${Math.random().toString(36).slice(2)}`;
-      $("#thread").innerHTML = "";
-      appendBotMessage(t("welcome"));
-    }
-
-    async function sendMessage(rawMessage) {
-      const message = String(rawMessage || "").trim();
-      if (!message) {
-        return;
-      }
-
-      await stopActiveStream();
-      appendUserMessage(message);
-
-      const streamingUi = createStreamingBotMessage();
-      const controller = new AbortController();
-      const active = {
-        controller,
-        reader: null,
-        bubble: streamingUi.bubble,
-        stopButton: streamingUi.stopButton,
-        text: ""
-      };
-      state.activeStream = active;
-
-      streamingUi.stopButton.addEventListener("click", async () => {
-        await stopActiveStream();
-      });
-
-      try {
-        const payload = {
-          message,
-          sessionId: state.sessionId,
-          language: state.language,
-          location: state.currentLocation,
-          lat: state.currentWeather?.coordinates?.lat ?? state.lat,
-          lon: state.currentWeather?.coordinates?.lon ?? state.lon
-        };
-
-        const response = await fetch("/api/chat", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(payload),
-          signal: controller.signal
-        });
-
-        if (!response.ok) {
-          const errorData = await response.json().catch(() => ({}));
-          throw new Error(errorData.error || "Request failed");
-        }
-
-        if (!response.body) {
-          throw new Error("Streaming is not available.");
-        }
-
-        const reader = response.body.getReader();
-        active.reader = reader;
-        const decoder = new TextDecoder();
-        let buffer = "";
-        let streaming = true;
-
-        while (streaming) {
-          const { done, value } = await reader.read();
-          if (done) {
-            break;
-          }
-          buffer += decoder.decode(value, { stream: true });
-          const parts = buffer.split(/\r?\n/);
-          buffer = parts.pop() || "";
-
-          for (const line of parts) {
-            if (!line.startsWith("data:")) {
-              continue;
-            }
-            const data = line.slice(5).trimStart();
-            if (data === "[DONE]") {
-              streaming = false;
-              break;
-            }
-            active.text += data === "" ? "\n" : data;
-            setStreamingBubbleContent(active.bubble, active.text, true);
-            $("#thread").scrollTop = $("#thread").scrollHeight;
-          }
-        }
-
-        finalizeActiveStream({ keepText: true, speakText: true });
-      } catch (error) {
-        if (error.name === "AbortError") {
-          finalizeActiveStream({ keepText: true, speakText: false });
-          return;
-        }
-        const hadStream = state.activeStream && state.activeStream.text.trim();
-        if (state.activeStream) {
-          finalizeActiveStream({ keepText: true, speakText: false });
-        }
-        if (!hadStream) {
-          appendBotMessage(error.message || "Request failed.");
-        }
-      }
-    }
-
-    function switchLanguage(language) {
-      if (!I18N[language]) {
-        return;
-      }
-      stopSpeaking();
-      stopActiveStream();
-      if (state.recognition && state.listening) {
-        try {
-          state.recognition.stop();
-        } catch (_error) {}
-      }
-      state.language = language;
-      renderStaticText();
-      renderStatus();
-      resetConversation();
+    function ensureRecognition() {
       if (state.recognition) {
-        state.recognition.lang = voiceLocales[state.language];
+        return state.recognition;
       }
-    }
 
-    function setupRecognition() {
       const Recognition = window.SpeechRecognition || window.webkitSpeechRecognition;
       if (!Recognition) {
-        $("#voice-status").textContent = "Speech recognition unavailable in this browser.";
-        return;
+        toast("Speech recognition is not available in this browser.");
+        return null;
       }
+
       const recognition = new Recognition();
-      recognition.lang = voiceLocales[state.language];
-      recognition.interimResults = false;
       recognition.continuous = false;
-      recognition.onstart = () => {
-        state.listening = true;
-        $("#mic-btn").classList.add("active");
-        $("#voice-status").textContent = t("voiceListening");
-        if (state.speaking) {
-          stopSpeaking();
-        }
-      };
-      recognition.onend = () => {
-        state.listening = false;
-        $("#mic-btn").classList.remove("active");
-        if (!state.speaking) {
-          $("#voice-status").textContent = t("voiceReady");
-        }
-      };
-      recognition.onerror = () => {
-        state.listening = false;
-        $("#mic-btn").classList.remove("active");
-        $("#voice-status").textContent = t("voiceReady");
-      };
+      recognition.interimResults = true;
+      recognition.lang = voiceLocales[state.lang];
+
       recognition.onresult = event => {
-        const transcript = Array.from(event.results).map(item => item[0].transcript).join(" ").trim();
-        if (!transcript) {
-          return;
+        let interim = "";
+        let finalText = "";
+
+        for (let i = event.resultIndex; i < event.results.length; i += 1) {
+          const result = event.results[i];
+          const transcript = result[0] ? result[0].transcript : "";
+          if (result.isFinal) {
+            finalText += transcript;
+          } else {
+            interim += transcript;
+          }
         }
-        if (state.callOpen) {
-          appendCallTranscript(`Farmer: ${transcript}`);
+
+        const combined = [finalText.trim(), interim.trim()].filter(Boolean).join(" ");
+        $("voiceTranscript").textContent = combined;
+
+        if (finalText.trim()) {
+          state.lastTranscript = finalText.trim();
+          $("userInput").value = state.lastTranscript;
+          autoResize($("userInput"));
         }
-        $("#message-input").value = transcript;
-        autoResize($("#message-input"));
-        sendMessage(transcript);
-        $("#message-input").value = "";
-        autoResize($("#message-input"));
       };
+
+      recognition.onend = () => {
+        $("voiceOrb").classList.remove("listening");
+        if (state.lastTranscript && state.voiceActive && !state.streaming && !state.speech.speaking) {
+          const text = state.lastTranscript;
+          state.lastTranscript = "";
+          $("userInput").value = text;
+          autoResize($("userInput"));
+          handleSend();
+        }
+      };
+
+      recognition.onerror = () => {
+        $("voiceOrb").classList.remove("listening");
+      };
+
       state.recognition = recognition;
+      return recognition;
     }
 
-    function startListening() {
+    function stopRecognition() {
       if (!state.recognition) {
         return;
       }
-      state.recognition.lang = voiceLocales[state.language];
       try {
-        state.recognition.start();
-      } catch (_error) {}
-    }
-
-    function startCallTimer() {
-      stopCallTimer();
-      state.callSeconds = 0;
-      $("#call-timer").textContent = "00:00";
-      state.callTimer = setInterval(() => {
-        state.callSeconds += 1;
-        const minutes = String(Math.floor(state.callSeconds / 60)).padStart(2, "0");
-        const seconds = String(state.callSeconds % 60).padStart(2, "0");
-        $("#call-timer").textContent = `${minutes}:${seconds}`;
-      }, 1000);
-    }
-
-    function stopCallTimer() {
-      if (state.callTimer) {
-        clearInterval(state.callTimer);
-      }
-      state.callTimer = null;
-    }
-
-    function openCallModal() {
-      state.callOpen = true;
-      $("#call-transcript").innerHTML = "";
-      $("#call-modal").classList.add("show");
-      $("#call-number").textContent = state.config?.phoneNumber || "+254 700 SHAMBA";
-      appendCallTranscript(t("callGreeting"));
-      startCallTimer();
-    }
-
-    function closeCallModal() {
-      state.callOpen = false;
-      $("#call-modal").classList.remove("show");
-      stopCallTimer();
-      stopSpeaking();
-    }
-
-    function registerServiceWorker() {
-      if ("serviceWorker" in navigator) {
-        navigator.serviceWorker.register("/sw.js").catch(() => {});
+        state.recognition.stop();
+      } catch (_error) {
+        // Ignore redundant stop errors.
       }
     }
 
-    function detectGps() {
-      if (!navigator.geolocation) {
+    function startListening() {
+      const recognition = ensureRecognition();
+      if (!recognition) {
         return;
       }
-      navigator.geolocation.getCurrentPosition(async position => {
-        state.lat = position.coords.latitude;
-        state.lon = position.coords.longitude;
-        try {
-          await refreshContext(true);
-        } catch (_error) {}
+
+      stopSpeech();
+      state.lastTranscript = "";
+      $("voiceTranscript").textContent = "";
+      $("voiceStatus").textContent = t("listening");
+      $("voiceOrb").classList.remove("speaking");
+      $("voiceOrb").classList.add("listening");
+      recognition.lang = voiceLocales[state.lang];
+
+      try {
+        recognition.start();
+      } catch (_error) {
+        // Recognition may already be starting.
+      }
+    }
+
+    function openVoiceOverlay() {
+      state.voiceActive = true;
+      $("voiceOverlay").classList.add("active");
+      $("voiceStatus").textContent = t("listening");
+      $("voiceTranscript").textContent = "";
+      startListening();
+    }
+
+    function closeVoiceOverlay() {
+      state.voiceActive = false;
+      stopRecognition();
+      stopSpeech();
+      $("voiceOrb").classList.remove("listening", "speaking");
+      $("voiceOverlay").classList.remove("active");
+      $("voiceTranscript").textContent = "";
+    }
+
+    function updateLanguageUI() {
+      $("langSel").value = state.lang;
+      $("userInput").placeholder = t("placeholder");
+      $("voiceStatus").textContent = state.speech.speaking ? t("speaking") : t("listening");
+      const pLang = $("pLang");
+      if (pLang) {
+        pLang.value = state.lang;
+      }
+    }
+
+    function setLang(lang) {
+      state.lang = STRINGS[lang] ? lang : "en";
+      if (state.recognition) {
+        state.recognition.lang = voiceLocales[state.lang];
+      }
+      updateLanguageUI();
+    }
+
+    function clearUpload() {
+      state.uploadedImage = null;
+      state.uploadedMime = null;
+      state.uploadedFilename = "";
+      $("imageInput").value = "";
+      $("uploadText").textContent = "";
+      $("uploadName").classList.remove("show");
+    }
+
+    async function handleImageSelection(file) {
+      if (!file) {
+        clearUpload();
+        return;
+      }
+
+      const reader = new FileReader();
+      reader.onload = () => {
+        const dataUrl = String(reader.result || "");
+        const base64 = dataUrl.split(",")[1] || "";
+        state.uploadedImage = base64;
+        state.uploadedMime = file.type || "image/jpeg";
+        state.uploadedFilename = file.name;
+        $("uploadText").textContent = `${file.name.slice(0, 20)}${file.name.length > 20 ? "…" : ""}`;
+        $("uploadName").classList.add("show");
+      };
+      reader.readAsDataURL(file);
+    }
+
+    function showPanel(tab) {
+      state.activeTab = tab;
+      document.querySelectorAll(".tab-btn").forEach(btn => {
+        btn.classList.toggle("active", btn.dataset.tab === tab);
+      });
+      document.querySelectorAll(".panel").forEach(panel => {
+        panel.classList.remove("active");
+      });
+
+      const map = {
+        chat: "chatPanel",
+        crops: "cropsPanel",
+        market: "marketPanel",
+        profile: "profilePanel"
+      };
+      $(map[tab]).classList.add("active");
+
+      if (tab === "crops") {
+        loadCropsPanel();
+      } else if (tab === "market") {
+        loadMarketPanel();
+      } else if (tab === "profile") {
+        renderProfilePanel();
+      }
+    }
+
+    function buildSeasonRainfall() {
+      return state.season === "Long Rains" ? "1400mm" : state.season === "Short Rains" ? "800mm" : "300mm";
+    }
+
+    async function loadCropsPanel() {
+      const panel = $("cropsPanel");
+      const cacheKey = `${state.subloc}|${state.season}|${state.lang}`;
+      panel.innerHTML = `
+        <div class="panel-head">
+          <h2>🌾 Top 3 Crops — ${state.subloc} | ${state.season}</h2>
+        </div>
+        <div class="weather-bar">
+          <div class="weather-item">🌡️ Temp<strong>26°C</strong></div>
+          <div class="weather-item">💧 Humidity<strong>74%</strong></div>
+          <div class="weather-item">🌧️ Rainfall<strong>${buildSeasonRainfall()}</strong></div>
+          <div class="weather-item">🌱 Soil<strong>pH 5.8</strong></div>
+        </div>
+        <div id="recCards" class="cards"><div class="loading-card">🔄 Fetching recommendations…</div></div>
+      `;
+
+      if (state.cropsCacheKey === cacheKey && Array.isArray(state.cropsCache)) {
+        renderCropCards(state.cropsCache);
+        return;
+      }
+
+      try {
+        const prompt = `Give TOP 3 crop recommendations for a farmer in ${state.subloc}, Siaya County during ${state.season} season. For EACH crop respond with EXACTLY this JSON structure (return a JSON array, no other text): [{"rank":1,"name":"CropName","reason":"Why this crop suits this specific location and season","market":"KES price range per 90kg bag","pests":"Key pest risks","tip":"One actionable tip"},...]`;
+        const data = await anthropicJson(buildSystemPrompt(false), [
+          { role: "user", content: [{ type: "text", text: prompt }] }
+        ]);
+        const parsed = parseJsonArray(extractTextFromResponse(data));
+        state.cropsCacheKey = cacheKey;
+        state.cropsCache = parsed;
+        renderCropCards(parsed);
+      } catch (error) {
+        $("recCards").innerHTML = `<div class="error-card">${escapeHtml(error.message || "Failed to load crop recommendations.")}</div>`;
+      }
+    }
+
+    function renderCropCards(items) {
+      const cards = $("recCards");
+      const colors = ["var(--gold)", "var(--leaf)", "var(--bark)"];
+      const badgeMap = {
+        1: { text: "🥇 #1 Best", className: "gold" },
+        2: { text: "🥈 #2 Good", className: "leaf" },
+        3: { text: "🥉 #3 Option", className: "bark" }
+      };
+
+      cards.innerHTML = (items || []).slice(0, 3).map((item, index) => {
+        const badge = badgeMap[item.rank] || badgeMap[index + 1];
+        return `
+          <div class="rec-card" style="border-left-color:${colors[index] || "var(--leaf)"}">
+            <div class="rec-header">
+              <div class="rec-title">${escapeHtml(item.name || `Crop ${index + 1}`)}</div>
+              <div class="badge ${badge.className}">${badge.text}</div>
+            </div>
+            <p class="rec-reason">${escapeHtml(item.reason || "")}</p>
+            <div class="chip-row">
+              <span class="chip">💰 ${escapeHtml(item.market || "")}</span>
+              <span class="chip">🐛 ${escapeHtml(item.pests || "")}</span>
+            </div>
+            <div class="rec-tip">💡 ${escapeHtml(item.tip || "")}</div>
+          </div>
+        `;
+      }).join("");
+    }
+
+    async function loadMarketPanel() {
+      const panel = $("marketPanel");
+      panel.innerHTML = `
+        <div class="panel-head">
+          <h2>📈 Market Prices — Siaya / Western Kenya</h2>
+          <p>📅 Live estimates · Per 90kg bag (KES)</p>
+        </div>
+        <div id="marketTable" class="table-wrap"><div class="loading-card">🔄 Fetching prices…</div></div>
+      `;
+
+      const cacheKey = `${state.lang}|market`;
+      if (state.marketCacheKey === cacheKey && Array.isArray(state.marketCache)) {
+        renderMarketTable(state.marketCache);
+        return;
+      }
+
+      try {
+        const prompt = 'Provide current realistic market prices for crops commonly sold in Siaya County and nearby Kisumu market, Western Kenya. Return ONLY a JSON array, no other text: [{"crop":"Name","low":3000,"high":4500,"trend":"up|down|stable","unit":"90kg bag","market":"Siaya/Kisumu"},...] Include at least 10 crops common to the region.';
+        const data = await anthropicJson(buildSystemPrompt(false), [
+          { role: "user", content: [{ type: "text", text: prompt }] }
+        ]);
+        const parsed = parseJsonArray(extractTextFromResponse(data));
+        state.marketCacheKey = cacheKey;
+        state.marketCache = parsed;
+        renderMarketTable(parsed);
+      } catch (error) {
+        $("marketTable").innerHTML = `<div class="error-card">${escapeHtml(error.message || "Failed to load market prices.")}</div>`;
+      }
+    }
+
+    function renderMarketTable(rows) {
+      const tableWrap = $("marketTable");
+      tableWrap.innerHTML = `
+        <table>
+          <thead>
+            <tr>
+              <th>Crop</th>
+              <th>Price Range</th>
+              <th>Trend</th>
+              <th>Market</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${(rows || []).map(item => {
+              const trend = String(item.trend || "stable").toLowerCase();
+              const trendHtml = trend === "up"
+                ? '<span class="price-up">↑ Rising</span>'
+                : trend === "down"
+                  ? '<span class="price-down">↓ Falling</span>'
+                  : '<span class="price-stable">→ Stable</span>';
+              return `
+                <tr>
+                  <td>${escapeHtml(item.crop || "")}</td>
+                  <td>KES ${escapeHtml(String(item.low || ""))} - ${escapeHtml(String(item.high || ""))}</td>
+                  <td>${trendHtml}</td>
+                  <td>${escapeHtml(item.market || "Siaya/Kisumu")}</td>
+                </tr>
+              `;
+            }).join("")}
+          </tbody>
+        </table>
+      `;
+    }
+
+    function renderProfilePanel() {
+      const panel = $("profilePanel");
+      panel.innerHTML = `
+        <div class="profile-card">
+          <div class="field-grid">
+            <div class="field-group">
+              <label for="pName">Full Name</label>
+              <input id="pName" class="profile-input" type="text" value="${escapeHtml(state.profile.name)}">
+            </div>
+            <div class="field-group">
+              <label for="pCounty">County</label>
+              <input id="pCounty" class="profile-input" type="text" value="Siaya" disabled>
+            </div>
+            <div class="field-group">
+              <label for="pSubloc">Sub-county / Location</label>
+              <select id="pSubloc" class="profile-select">${SUBLIC_OPTIONS(state.subloc)}</select>
+            </div>
+            <div class="field-group">
+              <label for="pVillage">Specific Sub-location / Village</label>
+              <input id="pVillage" class="profile-input" type="text" placeholder="e.g. Ukwala, Ambira…" value="${escapeHtml(state.profile.village)}">
+            </div>
+            <div class="field-group">
+              <label for="pAcres">Farm Size acres</label>
+              <input id="pAcres" class="profile-input" type="number" step="0.1" min="0.1" value="${escapeHtml(state.profile.acres)}">
+            </div>
+            <div class="field-group">
+              <label for="pSoil">Primary Soil Type</label>
+              <select id="pSoil" class="profile-select">
+                ${["Clay (Vertisol)", "Loam", "Sandy Loam", "Black Cotton"].map(option => `<option ${state.profile.soil === option ? "selected" : ""}>${option}</option>`).join("")}
+              </select>
+            </div>
+            <div class="field-group full">
+              <label for="pLang">Preferred Language</label>
+              <select id="pLang" class="profile-select">
+                <option value="en" ${state.lang === "en" ? "selected" : ""}>English</option>
+                <option value="sw" ${state.lang === "sw" ? "selected" : ""}>Kiswahili</option>
+                <option value="luo" ${state.lang === "luo" ? "selected" : ""}>Luo</option>
+              </select>
+            </div>
+          </div>
+          <button id="saveProfile" class="save-btn" type="button">Save Profile</button>
+        </div>
+      `;
+
+      $("saveProfile").addEventListener("click", () => {
+        state.profile = {
+          name: $("pName").value.trim(),
+          village: $("pVillage").value.trim(),
+          acres: $("pAcres").value.trim(),
+          soil: $("pSoil").value
+        };
+        state.subloc = $("pSubloc").value;
+        $("sublocSel").value = state.subloc;
+        setLang($("pLang").value);
+        toast(t("saved"));
       });
     }
 
-    function attachEvents() {
-      $("#theme-btn").addEventListener("click", () => {
-        document.body.classList.toggle("force-dark");
+    function SUBLIC_OPTIONS(selected) {
+      return SUBLOCATIONS.map(option => `<option ${option === selected ? "selected" : ""}>${option}</option>`).join("");
+    }
+
+    async function stopStreaming(pushPartial = true) {
+      if (!state.streaming) {
+        return "";
+      }
+
+      if (state.abortCtrl) {
+        state.abortCtrl.abort();
+      }
+      stopSpeech();
+      setComposerState(false);
+      state.abortCtrl = null;
+
+      const finalText = finalizeStreamingBubble(state._streamTarget);
+      state._streamTarget = null;
+      state.abortHandled = true;
+
+      if (pushPartial && finalText.trim()) {
+        state.history.push({ role: "assistant", content: finalText });
+      }
+
+      return finalText;
+    }
+
+    async function handleSend() {
+      if (state.streaming) {
+        return;
+      }
+
+      const input = $("userInput");
+      const rawText = input.value.trim();
+      const hasImage = Boolean(state.uploadedImage);
+
+      if (!rawText && !hasImage) {
+        return;
+      }
+
+      const userText = rawText || DEFAULT_IMAGE_PROMPT;
+      const userDisplayText = hasImage
+        ? `${userText}\n\n📷 ${state.uploadedFilename || "Image attached"}`
+        : userText;
+
+      input.value = "";
+      autoResize(input);
+
+      if (!hasImage && !AGRI_REGEX.test(userText)) {
+        appendUserMessage(userDisplayText);
+        appendBotMessage(t("nonAgri"));
+        state.history.push({ role: "user", content: [{ type: "text", text: userText }] });
+        state.history.push({ role: "assistant", content: t("nonAgri") });
+        clearUpload();
+        return;
+      }
+
+      appendUserMessage(userDisplayText);
+
+      const userContent = [];
+      if (hasImage) {
+        userContent.push({
+          type: "image",
+          source: {
+            type: "base64",
+            media_type: state.uploadedMime,
+            data: state.uploadedImage
+          }
+        });
+      }
+      userContent.push({ type: "text", text: userText });
+      state.history.push({ role: "user", content: userContent });
+
+      const streamTarget = createStreamingBubble();
+      state._streamTarget = streamTarget;
+      state.abortHandled = false;
+      setComposerState(true);
+
+      const payloadMessages = normalizeHistory();
+
+      try {
+        const fullText = await streamAnthropic(buildSystemPrompt(hasImage), payloadMessages, text => {
+          updateStreamingBubble(streamTarget, text);
+        });
+
+        finalizeStreamingBubble(streamTarget);
+        state.history.push({ role: "assistant", content: fullText });
+        state._streamTarget = null;
+        setComposerState(false);
+        state.abortCtrl = null;
+
+        if (fullText.trim()) {
+          speakText(fullText);
+        }
+      } catch (error) {
+        if (error.name === "AbortError") {
+          if (!state.abortHandled) {
+            const partial = finalizeStreamingBubble(streamTarget);
+            if (partial.trim()) {
+              state.history.push({ role: "assistant", content: partial });
+            }
+          }
+        } else {
+          finalizeStreamingBubble(streamTarget);
+          streamTarget.content.innerHTML = renderMarkdown(error.message || "Something went wrong.");
+        }
+        state._streamTarget = null;
+        state.abortHandled = false;
+        setComposerState(false);
+        state.abortCtrl = null;
+      } finally {
+        clearUpload();
+      }
+    }
+
+    function bindEvents() {
+      $("langSel").addEventListener("change", event => setLang(event.target.value));
+      $("sublocSel").addEventListener("change", event => {
+        state.subloc = event.target.value;
+      });
+      $("seasonSel").addEventListener("change", event => {
+        state.season = event.target.value.replace(/\s[🌧🌦☀️]+$/, "").trim();
       });
 
-      $("#send-btn").addEventListener("click", async () => {
-        const message = $("#message-input").value;
-        $("#message-input").value = "";
-        autoResize($("#message-input"));
-        await sendMessage(message);
+      document.querySelectorAll(".tab-btn").forEach(btn => {
+        btn.addEventListener("click", () => showPanel(btn.dataset.tab));
       });
 
-      $("#message-input").addEventListener("input", () => autoResize($("#message-input")));
+      $("sendBtn").addEventListener("click", handleSend);
+      $("stopBtn").addEventListener("click", async () => {
+        await stopStreaming(true);
+        if (state.voiceActive) {
+          $("voiceStatus").textContent = t("interrupt");
+        }
+      });
+      $("voiceBtn").addEventListener("click", openVoiceOverlay);
+      $("voiceClose").addEventListener("click", closeVoiceOverlay);
+      $("voiceInterrupt").addEventListener("click", () => {
+        stopSpeech();
+        stopRecognition();
+        $("voiceStatus").textContent = t("interrupt");
+        $("voiceOrb").classList.remove("listening", "speaking");
+        window.setTimeout(() => {
+          if (state.voiceActive) {
+            startListening();
+          }
+        }, 800);
+      });
 
-      $("#message-input").addEventListener("keydown", async event => {
+      $("userInput").addEventListener("input", event => autoResize(event.target));
+      $("userInput").addEventListener("keydown", event => {
         if (event.key === "Enter" && !event.shiftKey) {
           event.preventDefault();
-          const message = $("#message-input").value;
-          $("#message-input").value = "";
-          autoResize($("#message-input"));
-          await sendMessage(message);
+          handleSend();
         }
       });
 
-      $("#mic-btn").addEventListener("click", startListening);
-      $("#stop-speaking-btn").addEventListener("click", stopSpeaking);
-      $("#continuous-btn").addEventListener("click", () => {
-        state.continuousListening = !state.continuousListening;
-        $("#continuous-btn").textContent = state.continuousListening ? t("continuousOn") : t("continuousOff");
-      });
-      $("#clear-chat-btn").addEventListener("click", resetConversation);
-      $("#gps-btn").addEventListener("click", detectGps);
-      $("#update-location-btn").addEventListener("click", async () => {
-        state.currentLocation = $("#location-input").value.trim() || state.currentLocation;
-        state.lat = null;
-        state.lon = null;
-        await refreshContext(true);
+      $("imageInput").addEventListener("change", event => {
+        handleImageSelection(event.target.files[0]);
       });
 
-      $$(".quick-chip-btn").forEach(button => {
-        button.addEventListener("click", async () => {
-          await sendMessage(I18N[state.language].quickPrompts[button.dataset.prompt]);
-        });
-      });
-
-      $("#open-call-btn").addEventListener("click", openCallModal);
-      $("#call-hangup-btn").addEventListener("click", closeCallModal);
-      $("#call-mic-btn").addEventListener("click", startListening);
-      $("#call-mute-btn").addEventListener("click", () => {
-        state.callMuted = !state.callMuted;
-        $("#call-mute-btn").textContent = state.callMuted ? `🔈 ${t("callUnmuted")}` : `🔇 ${t("callMuted")}`;
-        if (state.callMuted) {
-          stopSpeaking();
-        }
-      });
-      $("#call-speaker-btn").addEventListener("click", () => {
-        state.callSpeaker = !state.callSpeaker;
-        $("#call-speaker-btn").textContent = state.callSpeaker ? `🔊 ${t("callSpeaker")}` : `🎧 ${t("callEarpiece")}`;
-      });
+      $("clearUpload").addEventListener("click", clearUpload);
     }
 
-    async function init() {
-      renderStaticText();
-      setupRecognition();
-      attachEvents();
-      await loadConfig();
-      renderStaticText();
-      await refreshPrices();
-      await refreshContext();
-      resetConversation();
-      registerServiceWorker();
-      detectGps();
+    function seedTopbarOptions() {
+      $("sublocSel").innerHTML = SUBLIC_OPTIONS(state.subloc);
+      $("langSel").value = state.lang;
+      $("seasonSel").value = "Long Rains 🌧";
+    }
+
+    function appendWelcome() {
+      appendBotMessage(t("greeting"));
+    }
+
+    (async function init() {
+      seedTopbarOptions();
+      bindEvents();
+      await loadRuntimeConfig();
+      $("userInput").placeholder = t("placeholder");
+      $("voiceStatus").textContent = t("listening");
+      appendWelcome();
       if ("speechSynthesis" in window) {
         window.speechSynthesis.onvoiceschanged = () => chooseVoice();
       }
-    }
-
-    init().catch(error => {
-      appendBotMessage(error.message || "Failed to initialize Shamba Assistant.");
-    });
+    })();
   </script>
 </body>
 </html>
